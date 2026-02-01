@@ -1,0 +1,207 @@
+#+private file
+package game
+
+import "core:fmt"
+import "core:math"
+import "core:math/rand"
+import "core:strings"
+import "core:unicode"
+
+
+b: strings.Builder
+
+not := map[string]bool{}
+
+
+// odinfmt: disable
+name_a := [?]string {
+  "luc","lev","bry","mat","cal","mas","nav","oct","lay","jac","con","ky","eve","des","jo","cay","ne","raf","nic","ben",
+  "pri","fer","tal","col","tav","nel","sep","sar","ren","ler","tor","mar","ver","aya","una","lex","chi","ade","ett","ito",
+  "ria","me","vo","de","le","ti","ge","ni","ros","co","ti","li","en","ar","les","ra","ba","mi","at","des",
+  "do","liel","lo","ni","ma","nos","la","ry","id","ter","as","io","ah","an","ert","ia","et","ly","el","in",
+  "nes","ro","vi","so","no","is","te","da","fa","us","ma","ly","la","si","po","er","de","ri","or","ta",
+  "sen","ce","ty","ce","sa","ras","sap","si","es","se","no","to","e","ce","ma","ry","ta","la","co","ner",
+  "no","el","le","net","ri","da","ro","ge","pi","il","be","la","ma","sa","so","lu","cu","ran","me","lar",
+  "tor","tak","na","ca","no","ce","li","me","mi","tar","ni","les","lo","te","ral","til","tin","tik","li","on",
+  "er","ke","la","no","tic","ri","me","pi","lo","ra","tan","le","ca","so","ni","si","mi","na","ta","la",
+  "ete","ce","ni","no","li","ti","ta","ni","li","mo","ram","ce","lo","na","so","tix","sa","es","te","le",
+}
+name_b := [?]string {
+  "ab", "ba", "ae", "ai", "ao", "au", "ac", "ca", "ad", "da", "af", "fa", "ag", "ga", "ah", "ha", "aj", "ak", "ka", "al", "la", "am", "ma", "an", "na", "ap", "pa", "aq", "ar", "ra", "as", "sa", "at", "ta", "av", "va", "aw", "ax", "ay", "az", "eb", "be", "ea", "ei", "eo", "eu", "ec", "ce", "ed", "de", "ef", "fe", "eg", "ge", "eh", "he", "ej", "ek", "ke", "el", "le", "em", "me", "en", "ne", "ep", "pe", "eq", "er", "re", "es", "se", "et", "te", "ev", "ve", "ew", "ex", "ey", "ez", "ib", "bi", "ia", "ie", "io", "iu", "ic", "ci", "id", "di", "if", "fi", "ig", "gi", "ih", "hi", "ij", "ik", "ki", "il", "li", "im", "mi", "in", "ni", "ip", "pi", "iq", "ir", "ri", "is", "si", "it", "ti", "iv", "vi", "iw", "ix", "iy", "iz", "ob", "bo", "oa", "oe", "oi", "ou", "oc", "co", "od", "do", "of", "fo", "og", "go", "oh", "ho", "oj", "ok", "ko", "ol", "lo", "om", "mo", "on", "no", "op", "po", "oq", "or", "ro", "os", "so", "ot", "to", "ov", "vo", "ow", "ox", "oy", "oz", "ub", "bu", "ua", "ue", "ui", "uo", "uc", "cu", "ud", "du", "uf", "fu", "ug", "gu", "uh", "hu", "uj", "uk", "ku", "ul", "lu", "um", "mu", "un", "nu", "up", "pu", "uq", "ur", "ru", "us", "su", "ut", "tu", "uv", "vu", "uw", "ux", "uy", "uz",
+  "bac", "bad", "bag", "bak", "bal", "bam", "ban", "bap", "bar", "bas", "bat", "bav", "bay", "aba", "abe", "abi", "abo", "abu", "cab", "cad", "cag", "cak", "cal", "cam", "can", "cap", "car", "cas", "cat", "cav", "cay", "aca", "ace", "aci", "aco", "acu", "dab", "dac", "dag", "dak", "dal", "dam", "dan", "dap", "dar", "das", "dat", "dav", "day", "ada", "ade", "adi", "ado", "adu", "fab", "fac", "fad", "fag", "fak", "fal", "fam", "fan", "fap", "far", "fas", "fat", "fav", "fay", "afa", "afe", "afi", "afo", "afu", "gab", "gac", "gad", "gak", "gal", "gam", "gan", "gap", "gar", "gas", "gat", "gav", "gay", "aga", "age", "agi", "ago", "agu", "hab", "hac", "had", "hag", "hak", "hal", "ham", "han", "hap", "har", "has", "hat", "hav", "hay", "aha", "ahe", "ahi", "aho", "ahu", "kab", "kac", "kad", "kag", "kal", "kam", "kan", "kap", "kar", "kas", "kat", "kav", "kay", "aka", "ake", "aki", "ako", "aku", "lab", "lac", "lad", "lag", "lak", "lam", "lan", "lap", "lar", "las", "lat", "lav", "lay", "ala", "ale", "ali", "alo", "alu", "mab", "mac", "mad", "mag", "mak", "mal", "man", "map", "mar", "mas", "mat", "mav", "may", "ama", "ame", "ami", "amo", "amu", "nab", "nac", "nad", "nag", "nak", "nal", "nam", "nap", "nar", "nas", "nat", "nav", "nay", "ana", "ane", "ani", "ano", "anu", "pab", "pac", "pad", "pag", "pak", "pal", "pam", "pan", "par", "pas", "pat", "pav", "pay", "apa", "ape", "api", "apo", "apu", "rab", "rac", "rad", "rag", "rak", "ral", "ram", "ran", "rap", "ras", "rat", "rav", "ray", "ara", "are", "ari", "aro", "aru", "sab", "sac", "sad", "sag", "sak", "sal", "sam", "san", "sap", "sar", "sat", "sav", "say", "asa", "ase", "asi", "aso", "asu", "tab", "tac", "tad", "tag", "tak", "tal", "tam", "tan", "tap", "tar", "tas", "tav", "tay", "ata", "ate", "ati", "ato", "atu", "vab", "vac", "vad", "vag", "vak", "val", "vam", "van", "vap", "var", "vas", "vat", "vay", "ava", "ave", "avi", "avo", "avu", "ach", "adr", "afr", "ash", "ask", "ast", "atr", "cha", "dra", "fla", "fra", "gra", "pha", "pla", "pra", "sha", "ska", "sla", "sra", "sta", "tha", "tra", "bec", "bed", "beg", "bek", "bel", "bem", "ben", "bep", "ber", "bes", "bet", "bev", "bey", "eba", "ebe", "ebi", "ebo", "ebu", "ceb", "ced", "ceg", "cek", "cel", "cem", "cen", "cep", "cer", "ces", "cet", "cev", "cey", "eca", "ece", "eci", "eco", "ecu", "deb", "dec", "deg", "dek", "del", "dem", "den", "dep", "der", "des", "det", "dev", "dey", "eda", "ede", "edi", "edo", "edu", "feb", "fec", "fed", "feg", "fek", "fel", "fem", "fen", "fep", "fer", "fes", "fet", "fev", "fey", "efa", "efe", "efi", "efo", "efu", "geb", "gec", "ged", "gek", "gel", "gem", "gen", "gep", "ger", "ges", "get", "gev", "gey", "ega", "ege", "egi", "ego", "egu", "heb", "hec", "hed", "heg", "hek", "hel", "hem", "hen", "hep", "her", "hes", "het", "hev", "hey", "eha", "ehe", "ehi", "eho", "ehu", "keb", "kec", "ked", "keg", "kel", "kem", "ken", "kep", "ker", "kes", "ket", "kev", "key", "eka", "eke", "eki", "eko", "eku", "leb", "lec", "led", "leg", "lek", "lem", "len", "lep", "ler", "les", "let", "lev", "ley", "ela", "ele", "eli", "elo", "elu", "meb", "mec", "med", "meg", "mek", "mel", "men", "mep", "mer", "mes", "met", "mev", "mey", "ema", "eme", "emi", "emo", "emu", "neb", "nec", "ned", "neg", "nek", "nel", "nem", "nep", "ner", "nes", "net", "nev", "ney", "ena", "ene", "eni", "eno", "enu", "peb", "pec", "ped", "peg", "pek", "pel", "pem", "pen", "per", "pes", "pet", "pev", "pey", "epa", "epe", "epi", "epo", "epu", "reb", "rec", "red", "reg", "rek", "rel", "rem", "ren", "rep", "res", "ret", "rev", "rey", "era", "ere", "eri", "ero", "eru", "seb", "sec", "sed", "seg", "sek", "sel", "sem", "sen", "sep", "ser", "set", "sev", "sey", "esa", "ese", "esi", "eso", "esu", "teb", "tec", "ted", "teg", "tek", "tel", "tem", "ten", "tep", "ter", "tes", "tev", "tey", "eta", "ete", "eti", "eto", "etu", "veb", "vec", "ved", "veg", "vek", "vel", "vem", "ven", "vep", "ver", "ves", "vet", "vey", "eva", "eve", "evi", "evo", "evu", "ech", "edr", "efr", "esh", "esk", "est", "etr", "che", "dre", "fle", "fre", "gre", "phe", "ple", "pre", "she", "ske", "sle", "sre", "ste", "the", "tre", "bic", "bid", "big", "bik", "bil", "bim", "bin", "bip", "bir", "bis", "bit", "biv", "biy", "iba", "ibe", "ibi", "ibo", "ibu", "cib", "cid", "cig", "cik", "cil", "cim", "cin", "cip", "cir", "cis", "cit", "civ", "ciy", "ica", "ice", "ici", "ico", "icu", "dib", "dic", "dig", "dik", "dil", "dim", "din", "dip", "dir", "dis", "dit", "div", "diy", "ida", "ide", "idi", "ido", "idu", "fib", "fic", "fid", "fig", "fik", "fil", "fim", "fin", "fip", "fir", "fis", "fit", "fiv", "fiy", "ifa", "ife", "ifi", "ifo", "ifu", "gib", "gic", "gid", "gik", "gil", "gim", "gin", "gip", "gir", "gis", "git", "giv", "giy", "iga", "ige", "igi", "igo", "igu", "hib", "hic", "hid", "hig", "hik", "hil", "him", "hin", "hip", "hir", "his", "hit", "hiv", "hiy", "iha", "ihe", "ihi", "iho", "ihu", "kib", "kic", "kid", "kig", "kil", "kim", "kin", "kip", "kir", "kis", "kit", "kiv", "kiy", "ika", "ike", "iki", "iko", "iku", "lib", "lic", "lid", "lig", "lik", "lim", "lin", "lip", "lir", "lis", "lit", "liv", "liy", "ila", "ile", "ili", "ilo", "ilu", "mib", "mic", "mid", "mig", "mik", "mil", "min", "mip", "mir", "mis", "mit", "miv", "miy", "ima", "ime", "imi", "imo", "imu", "nib", "nic", "nid", "nik", "nil", "nim", "nip", "nir", "nis", "nit", "niv", "niy", "ina", "ine", "ini", "ino", "inu", "pib", "pic", "pid", "pig", "pik", "pil", "pim", "pin", "pir", "pis", "pit", "piv", "piy", "ipa", "ipe", "ipi", "ipo", "ipu", "rib", "ric", "rid", "rig", "rik", "ril", "rim", "rin", "rip", "ris", "rit", "riv", "riy", "ira", "ire", "iri", "iro", "iru", "sib", "sic", "sid", "sig", "sik", "sil", "sim", "sin", "sip", "sir", "sit", "siv", "siy", "isa", "ise", "isi", "iso", "isu", "tib", "tic", "tid", "tig", "tik", "til", "tim", "tin", "tip", "tir", "tis", "tiv", "tiy", "ita", "ite", "iti", "ito", "itu", "vib", "vic", "vid", "vig", "vik", "vil", "vim", "vin", "vip", "vir", "vis", "vit", "viy", "iva", "ive", "ivi", "ivo", "ivu", "ich", "idr", "ifr", "ish", "isk", "ist", "itr", "chi", "dri", "fli", "fri", "gri", "phi", "pli", "pri", "shi", "ski", "sli", "sri", "sti", "thi", "tri", "boc", "bod", "bog", "bok", "bol", "bom", "bon", "bop", "bor", "bos", "bot", "bov", "boy", "oba", "obe", "obi", "obo", "obu", "cob", "cod", "cog", "cok", "col", "com", "con", "cop", "cor", "cos", "cot", "cov", "coy", "oca", "oce", "oci", "oco", "ocu", "dob", "doc", "dog", "dok", "dol", "dom", "don", "dop", "dor", "dos", "dot", "dov", "doy", "oda", "ode", "odi", "odo", "odu", "fob", "foc", "fod", "fog", "fok", "fol", "fom", "fon", "fop", "for", "fos", "fot", "fov", "foy", "ofa", "ofe", "ofi", "ofo", "ofu", "gob", "goc", "god", "gok", "gol", "gom", "gon", "gop", "gor", "gos", "got", "gov", "goy", "oga", "oge", "ogi", "ogo", "ogu", "hob", "hoc", "hod", "hog", "hok", "hol", "hom", "hon", "hop", "hor", "hos", "hot", "hov", "hoy", "oha", "ohe", "ohi", "oho", "ohu", "kob", "koc", "kod", "kog", "kol", "kom", "kon", "kop", "kor", "kos", "kot", "kov", "koy", "oka", "oke", "oki", "oko", "oku", "lob", "loc", "lod", "log", "lok", "lom", "lon", "lop", "lor", "los", "lot", "lov", "loy", "ola", "ole", "oli", "olo", "olu", "mob", "moc", "mod", "mog", "mok", "mol", "mon", "mop", "mor", "mos", "mot", "mov", "moy", "oma", "ome", "omi", "omo", "omu", "nob", "noc", "nod", "nog", "nok", "nol", "nom", "nop", "nor", "nos", "not", "nov", "noy", "ona", "one", "oni", "ono", "onu", "pob", "poc", "pod", "pog", "pok", "pol", "pom", "pon", "por", "pos", "pot", "pov", "poy", "opa", "ope", "opi", "opo", "opu", "rob", "roc", "rod", "rog", "rok", "rol", "rom", "ron", "rop", "ros", "rot", "rov", "roy", "ora", "ore", "ori", "oro", "oru", "sob", "soc", "sod", "sog", "sok", "sol", "som", "son", "sop", "sor", "sot", "sov", "soy", "osa", "ose", "osi", "oso", "osu", "tob", "toc", "tod", "tog", "tok", "tol", "tom", "ton", "top", "tor", "tos", "tov", "toy", "ota", "ote", "oti", "oto", "otu", "vob", "voc", "vod", "vog", "vok", "vol", "vom", "von", "vop", "vor", "vos", "vot", "voy", "ova", "ove", "ovi", "ovo", "ovu", "och", "odr", "ofr", "osh", "osk", "ost", "otr", "cho", "dro", "flo", "fro", "gro", "pho", "plo", "pro", "sho", "sko", "slo", "sro", "sto", "tho", "tro", "buc", "bud", "bug", "buk", "bul", "bum", "bun", "bup", "bur", "bus", "but", "buv", "buy", "uba", "ube", "ubi", "ubo", "ubu", "cub", "cud", "cug", "cuk", "cul", "cum", "cun", "cup", "cur", "cus", "cut", "cuv", "cuy", "uca", "uce", "uci", "uco", "ucu", "dub", "duc", "dug", "duk", "dul", "dum", "dun", "dup", "dur", "dus", "dut", "duv", "duy", "uda", "ude", "udi", "udo", "udu", "fub", "fuc", "fud", "fug", "fuk", "ful", "fum", "fun", "fup", "fur", "fus", "fut", "fuv", "fuy", "ufa", "ufe", "ufi", "ufo", "ufu", "gub", "guc", "gud", "guk", "gul", "gum", "gun", "gup", "gur", "gus", "gut", "guv", "guy", "uga", "uge", "ugi", "ugo", "ugu", "hub", "huc", "hud", "hug", "huk", "hul", "hum", "hun", "hup", "hur", "hus", "hut", "huv", "huy", "uha", "uhe", "uhi", "uho", "uhu", "kub", "kuc", "kud", "kug", "kul", "kum", "kun", "kup", "kur", "kus", "kut", "kuv", "kuy", "uka", "uke", "uki", "uko", "uku", "lub", "luc", "lud", "lug", "luk", "lum", "lun", "lup", "lur", "lus", "lut", "luv", "luy", "ula", "ule", "uli", "ulo", "ulu", "mub", "muc", "mud", "mug", "muk", "mul", "mun", "mup", "mur", "mus", "mut", "muv", "muy", "uma", "ume", "umi", "umo", "umu", "nub", "nuc", "nud", "nug", "nuk", "nul", "num", "nup", "nur", "nus", "nut", "nuv", "nuy", "una", "une", "uni", "uno", "unu", "pub", "puc", "pud", "pug", "puk", "pul", "pum", "pun", "pur", "pus", "put", "puv", "puy", "upa", "upe", "upi", "upo", "upu", "rub", "ruc", "rud", "rug", "ruk", "rul", "rum", "run", "rup", "rus", "rut", "ruv", "ruy", "ura", "ure", "uri", "uro", "uru", "sub", "suc", "sud", "sug", "suk", "sul", "sum", "sun", "sup", "sur", "sut", "suv", "suy", "usa", "use", "usi", "uso", "usu", "tub", "tuc", "tud", "tug", "tuk", "tul", "tum", "tun", "tup", "tur", "tus", "tuv", "tuy", "uta", "ute", "uti", "uto", "utu", "vub", "vuc", "vud", "vug", "vuk", "vul", "vum", "vun", "vup", "vur", "vus", "vut", "vuy", "uva", "uve", "uvi", "uvo", "uvu", "uch", "udr", "ufr", "ush", "usk", "ust", "utr", "chu", "dru", "flu", "fru", "gru", "phu", "plu", "pru", "shu", "sku", "slu", "sru", "stu", "thu", "tru",
+  "astr", "stra", "estr", "stre", "istr", "stri", "ostr", "stro", "ustr", "stru",
+}
+faction_name_suffix := [?]string {
+  " Alliance",
+  " Assembly",
+  " Brotherhood",
+  " Coalition",
+  " Collective",
+  " Confederacy",
+  " Conglomerate",
+  " Consortium",
+  " Council",
+  " Dominion",
+  " Empire",
+  " Federation",
+  " Protectorate",
+  " Republic",
+  " Syndicate",
+  " Union",
+}
+letters := [?]byte { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' }
+numbers := [?]byte { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }
+// odinfmt: enable
+
+
+@(private)
+text_load :: proc() {
+  b = strings.builder_make(0xFF)
+}
+
+@(private)
+make_random_name :: proc() -> string {
+  strings.builder_reset(&b)
+  build_random_name()
+  capitalize()
+  return strings.clone(strings.to_string(b))
+}
+
+@(private)
+make_random_full_name :: proc() -> string {
+  strings.builder_reset(&b)
+  build_random_name()
+  capitalize()
+  strings.write_string(&b, " ")
+  last_name_idx := len(b.buf)
+  build_random_name()
+  capitalize(last_name_idx)
+  return strings.clone(strings.to_string(b))
+}
+
+@(private)
+make_faction_name :: proc() -> string {
+  strings.builder_reset(&b)
+  clear(&not)
+
+  syllable_count := rand_bellcurve(2, 4, 2)
+  for i: i32 = 0; i < syllable_count; i += 1 {
+    syllable := rand_choice(name_a[:], &not)
+    not[syllable] = true
+    strings.write_string(&b, syllable)
+  }
+  strings.write_string(&b, rand_choice(faction_name_suffix[:]))
+  capitalize()
+
+  return strings.clone(strings.to_string(b))
+}
+
+@(private)
+make_ship_callsign :: proc() -> string {
+  id := [7]byte{}
+
+  id[0] = rand_choice(letters[:])
+  id[1] = rand_choice(numbers[:])
+  id[2] = rand_choice(chance(0.3) ? letters[:] : numbers[:])
+  id[3] = '-'
+  id[4] = rand_choice(chance(0.5) ? letters[:] : numbers[:])
+  id[5] = rand_choice(chance(0.7) ? letters[:] : numbers[:])
+  id[6] = rand_choice(chance(0.9) ? letters[:] : numbers[:])
+
+  return strings.clone_from_bytes(id[:])
+}
+
+@(private)
+format_number :: proc(amount: $T) -> string where IS_NUMERIC(T) {
+  if amount >= 1_000_000_000 {
+    return fmt.tprintf("%.2fB", amount / 1_000_000_000)
+  } else if amount >= 1_000_000 {
+    return fmt.tprintf("%.2fM", amount / 1_000_000)
+  } else if amount >= 1_000 {
+    return fmt.tprintf("%.2fk", amount / 1_000)
+  } else {
+    return fmt.tprintf("%.0f", math.floor(amount))
+  }
+}
+
+@(private)
+format_money :: proc(amount: $T) -> string where IS_NUMERIC(T) {
+  if amount >= 1_000_000_000 {
+    return fmt.tprintf("$%.2fB", amount / 1_000_000_000)
+  } else if amount >= 1_000_000 {
+    return fmt.tprintf("$%.2fM", amount / 1_000_000)
+  } else if amount >= 1_000 {
+    return fmt.tprintf("$%.2fk", amount / 1_000)
+  } else {
+    return fmt.tprintf("$%.0f", math.floor(amount))
+  }
+}
+
+
+build_random_name :: proc() {
+  clear(&not)
+
+  variant := rand.int32_range(0, 4)
+  if variant == 0 {
+    syllable_count := rand_bellcurve(1, 4, 3)
+    for i: i32 = 0; i < syllable_count; i += 1 {
+      syllable := rand_choice(name_a[:], &not)
+      not[syllable] = true
+      strings.write_string(&b, syllable)
+    }
+  } else if variant == 1 {
+    syllable_count := rand_bellcurve(1, 4, 4)
+    for i: i32 = 0; i < syllable_count; i += 1 {
+      syllable := rand_choice(name_b[:], &not)
+      not[syllable] = true
+      strings.write_string(&b, syllable)
+    }
+  } else if variant == 2 {
+    syllable_count := rand_bellcurve(1, 4, 3)
+    for i: i32 = 0; i < syllable_count; i += 1 {
+      strings.write_string(&b, rand_choice(name_a[:]))
+    }
+  } else if variant == 3 {
+    syllable_count := rand_bellcurve(1, 4, 4)
+    for i: i32 = 0; i < syllable_count; i += 1 {
+      strings.write_string(&b, rand_choice(name_b[:]))
+    }
+  } else {
+    unreachable()
+  }
+}
+
+capitalize :: proc(idx: int = 0) {
+  b.buf[idx] = byte(unicode.to_upper(rune(b.buf[idx])))
+}
+
+chance :: proc(percentage: f32) -> bool {
+  return rand.float32() < percentage
+}
+
+rand_bellcurve :: proc(min, max, bell_curve: i32) -> i32 {
+  total: i32 = 0
+  for i := i32(0); i < bell_curve; i += 1 {
+    total += rand.int32_range(min, max + 1)
+  }
+  return total / bell_curve
+}
+
+rand_choice_any :: proc(arr: []$T) -> T {
+  return rand.choice(arr)
+}
+rand_choice_not :: proc(arr: []$T, not: ^map[T]bool) -> T {
+  for {
+    out := rand.choice(arr)
+    if not == nil {
+      return out
+    }
+    if _, found := not[out]; !found {
+      return out
+    }
+  }
+}
+rand_choice :: proc {
+  rand_choice_any,
+  rand_choice_not,
+}
