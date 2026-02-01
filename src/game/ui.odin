@@ -12,6 +12,20 @@ import rl "vendor:raylib"
 import gl "vendor:raylib/rlgl"
 
 
+@(private)
+ui: struct {
+  hovering:      bool,
+  tooltip:       Maybe(string),
+  window_width:  f32,
+  window_height: f32,
+}
+
+@(private)
+UI :: clay.UI
+@(private)
+Style :: clay.ElementDeclaration
+
+
 // #region Types
 UIImageData :: struct {
   index: int,
@@ -58,8 +72,8 @@ ui_load :: proc(width, height: f32) {
   create_font_variants_for_ui()
   init_raylib_implementation(width, height)
 
-  window_width = width
-  window_height = height
+  ui.window_width = width
+  ui.window_height = height
 }
 
 @(private)
@@ -70,7 +84,7 @@ ui_unload :: proc() {
 
 @(private)
 ui_update :: proc() {
-  hovering = false
+  ui.hovering = false
 
   mouse_position := rl.GetMousePosition()
   clay.SetPointerState(
@@ -82,11 +96,11 @@ ui_update :: proc() {
   {
     dpi := rl.GetWindowScaleDPI()
     new_width := f32(rl.GetRenderWidth()) / dpi.x
-    new_height := f32(rl.GetRenderHeight()) / dpi.x
-    if new_width != window_width || new_height != window_height {
-      window_width = new_width
-      window_height = new_height
-      clay.SetLayoutDimensions({window_width, window_height})
+    new_height := f32(rl.GetRenderHeight()) / dpi.y
+    if new_width != ui.window_width || new_height != ui.window_height {
+      ui.window_width = new_width
+      ui.window_height = new_height
+      clay.SetLayoutDimensions({ui.window_width, ui.window_height})
     }
   }
 

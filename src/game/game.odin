@@ -1,185 +1,93 @@
+#+private file
 package game
 
 import "core:fmt"
-import "core:math"
-import "core:math/linalg"
+import "deps:box"
 import rl "vendor:raylib"
 
-INITIAL_WINDOW_WIDTH :: 1280
-INITIAL_WINDOW_HEIGHT :: 720
-
-load :: proc() {
-  text_load()
-  render_load()
-  ui_load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
-  world_load()
-
-  start_new_game()
-}
-
-unload :: proc() {
-  ui_unload()
-}
-
-update :: proc() {
-  rl.BeginDrawing()
-  rl.ClearBackground(rl.BLACK)
-
-  update_time()
-  ui_update()
-  render_update()
-  ui_begin()
-  rl.BeginMode3D(camera.c3d)
-  rl.BeginShaderMode(assets.shaders.base)
-  update_systems()
-  rl.EndShaderMode()
-  rl.EndMode3D()
-  render_finish()
-  ui_end()
-  draw_debug_2d()
-
-  free_all(context.temp_allocator)
-  rl.EndDrawing()
-}
-
-// #region Start new game
+@(private)
 start_new_game :: proc() {
-  spawn_station()
+  // Reset all boxes
+  box.clear(&sectors)
+  box.clear(&stations)
+  box.clear(&ships)
+  box.clear(&characters)
 
-  ship_eid := spawn_ship()
-  tag(&tags.player, ship_eid)
+  // Spawn a sector
+  box.append(&sectors, Sector{name = make_random_name(), position = to_vec3(rand_offset(10, 50))})
 
+  // Spawn 3 player characters
   for i := 0; i < 3; i += 1 {
-    eid := spawn_character()
-    char := get_component(&components.character, eid)
-    char.at = ship_eid
-    tag(&tags.player, eid)
-  }
-}
-// #endregion
-
-// #region Debug procedures
-debug_mode := true
-
-draw_debug_3d :: proc() {
-  @(static) position := Vec3{1, 0, 1}
-  {
-    // Player sprite test
-    @(static) flip := false
-    input: Vec3
-    velocity: Vec3
-    if rl.IsKeyDown(.A) {
-      input.x -= 1
-      flip = true
-    }
-    if rl.IsKeyDown(.D) {
-      input.x += 1
-      flip = false
-    }
-    if rl.IsKeyDown(.W) do input.z -= 1
-    if rl.IsKeyDown(.S) do input.z += 1
-    if input.x != 0 || input.z != 0 {
-      velocity = linalg.normalize(
-        camera.ground_forward * -input.z + camera.ground_right * -input.x,
-      )
-      position += velocity * time.dt
-      camera.target = position
-    }
-
-    rl.DrawBillboardPro(
-      camera.c3d,
-      assets.textures.sprites,
-      Rect{16 + (flip ? 16 : 0), 0, 16 * (flip ? -1 : 1), 16},
-      position,
-      camera.up,
-      Vec2(1),
-      Vec2{0.5, 0.125}, // 0.125 is 1 / 16 * 2 (2 pixels up)
-      0,
-      rl.WHITE,
-    )
-    rl.DrawCircle3D(position, 0.5, Vec3{1, 0, 0}, 90, rl.RED)
-    rl.DrawLine3D(position, position + velocity, rl.RED)
-  }
-
-  {
-    // Player gun sprite test
-    @(static) flip := false
-    @(static) angle := f32(0)
-    ray := rl.GetScreenToWorldRay(rl.GetMousePosition(), camera.c3d)
-    collision := rl.GetRayCollisionQuad(
-      ray,
-      Vec3{-10000, 0, -10000},
-      Vec3{10000, 0, -10000},
-      Vec3{10000, 0, 10000},
-      Vec3{-10000, 0, 10000},
-    )
-    if collision.hit {
-      position_2d := rl.GetWorldToScreen(position, camera.c3d)
-      target_2d := rl.GetWorldToScreen(collision.point, camera.c3d)
-      angle = -angle_between(target_2d, position_2d) * RAD_TO_DEG
-      flip = angle > 90 || angle < -90
-    }
-    gun_position := position
-    gun_position += camera.forward * -0.2 + camera.up * 0.2
-    gun_position +=
-      camera.right * math.cos(angle * DEG_TO_RAD) * -0.1 +
-      camera.up * math.sin(angle * DEG_TO_RAD) * 0.1
-    gun_scale :: 0.75
-
-    rl.DrawBillboardPro(
-      camera.c3d,
-      assets.textures.sprites,
-      Rect{32, 0 + (flip ? 16 : 0), 16, 16 * (flip ? -1 : 1)},
-      gun_position,
-      camera.up,
-      Vec2(1) * gun_scale,
-      Vec2{0.5, 0.5} * gun_scale,
-      angle,
-      rl.WHITE,
-    )
-  }
-
-  {
-    // Camera rotation test
-    pan: Vec2
-    zoom: f32
-    if rl.IsKeyDown(.LEFT_SHIFT) {
-      zoom = -rl.GetMouseWheelMoveV().y
-    } else {
-      pan = rl.GetMouseWheelMoveV() * 2.5
-    }
-    camera.angle.x += pan.x
-    camera.angle.y -= pan.y
-    camera.distance += zoom
-  }
-
-  if debug_mode {
-    rl.EndShaderMode()
-    rl.DrawGrid(20, 1)
+    eid, _ := box.append(&characters, Character{name = make_random_full_name()})
+    box.append(&player.character_ids, eid)
   }
 }
 
-draw_debug_2d :: proc() {
-  if rl.IsKeyPressed(.SLASH) {
-    debug_mode = !debug_mode
-  }
+@(private)
+game_loop :: proc() {
+  draw_character_portraits()
+  draw_player_select()
+}
 
-  rl.DrawTextEx(
-    assets.fonts.regular24,
-    fmt.ctprintf("CAM: [%1.f, %1.f - %.1f]", camera.angle.x, camera.angle.y, camera.distance),
-    Vec2{0, 20},
-    24,
-    0,
-    rl.BLACK,
-  )
-  if debug_mode {
-    rl.DrawFPS(0, 0)
+draw_character_portraits :: proc() {
+  if UI()({
+    layout = {
+      sizing = sizing_grow,
+      layoutDirection = .LeftToRight,
+      padding = {8, 8, 8, 8},
+      childAlignment = {.Left, .Bottom},
+      childGap = 8,
+    },
+    floating = {attachTo = .Root},
+  }) {
+
+    for id in box.every(&player.character_ids) {
+      if id == none do continue
+      char := box.get(&characters, id)
+
+      if UI()({
+        layout = {padding = {8, 8, 6, 6}},
+        backgroundColor = is_hovered() ? {75, 75, 75, 255} : {50, 50, 50, 255},
+      }) {
+        text(char.name)
+        if is_clicked() {
+          player_select(.Character, char.id)
+        }
+      }
+    }
+
+    text(fmt.tprintf("%.3f", time.wtc), .Regular20dim)
   }
 }
 
-draw_debug_ui :: proc() {
-  if UI()({layout = {padding = {32, 32, 32, 32}}, backgroundColor = {0, 0, 0, 255}}) {
-    text("Hello, World!", .Regular24)
+draw_player_select :: proc() {
+  #partial switch (player.select_kind) {
+  case .Character:
+    char := box.get(&characters, player.select_id)
+
+    if UI()({
+      layout = {
+        sizing = sizing_grow,
+        layoutDirection = .LeftToRight,
+        padding = {8, 8, 8, 8},
+        childAlignment = {.Left, .Bottom},
+        childGap = 8,
+      },
+      floating = {attachTo = .Root, offset = {0, -64}},
+    }) {
+      if UI()({layout = {padding = {8, 8, 6, 6}}, backgroundColor = {50, 50, 50, 255}}) {
+        text(fmt.tprintf("Selected: %v", char.name))
+      }
+    }
   }
 }
-// #endregion
+
+player_select :: proc(kind: Kind, id: EID) {
+  if player.select_kind == kind && player.select_id == id {
+    player.select_kind = .None
+    player.select_id = none
+  } else {
+    player.select_kind = kind
+    player.select_id = id
+  }
+}

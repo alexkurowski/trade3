@@ -5,6 +5,5 @@
 /extra/*
 !/extra/todo.txt
 /backup*
-/deps/*
 !/deps/.keep
 /trash

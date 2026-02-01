@@ -3,6 +3,7 @@ package game
 
 import "core:math"
 import "core:math/linalg"
+import "deps:box"
 import rl "vendor:raylib"
 
 assets: struct {
@@ -42,7 +43,7 @@ Sprite :: struct {
   position: Vec2,
 }
 @(private = "file")
-sprite_queue: Pool(256, Sprite)
+sprite_queue: box.Pool(Sprite, 256)
 
 render_load :: proc() {
   assets.fonts.regular16 = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", 32, nil, 0)
@@ -93,17 +94,17 @@ render_update :: proc() {
   camera.ground_right = linalg.normalize(linalg.cross(camera.c3d.up, forward))
 
   // Reset sprite queue
-  pool_clear(&sprite_queue)
+  box.clear(&sprite_queue)
 }
 
 render_finish :: proc() {
-  for sprite in pool_every(&sprite_queue) {
+  for sprite in box.every(&sprite_queue) {
     rl.DrawRectangleV(sprite.position, Vec2{10, 10}, rl.RED)
   }
 }
 
 render_sprite :: proc(type: int, position: Vec2) {
-  pool_append(&sprite_queue, Sprite{type, position})
+  box.append(&sprite_queue, Sprite{type, position})
 }
 
 is_on_screen :: #force_inline proc(position: Vec3) -> bool {

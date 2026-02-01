@@ -1,12 +1,11 @@
-#+private
-package game
+package box
 
-Pool :: struct($S: int, $T: typeid) {
+Pool :: struct($T: typeid, $S: int) {
   data:  [S]T,
   count: int,
 }
 
-pool_append :: proc(p: ^Pool($S, $T), value: T) -> ^T {
+append_pool :: proc(p: ^Pool($T, $S), value: T) -> ^T {
   if p.count < S {
     p.data[p.count] = value
     p.count += 1
@@ -15,7 +14,7 @@ pool_append :: proc(p: ^Pool($S, $T), value: T) -> ^T {
   return nil
 }
 
-pool_prepend :: proc(p: ^Pool($S, $T), value: T) {
+prepend :: proc(p: ^Pool($T, $S), value: T) {
   if p.count < S {
     for i: int = p.count; i > 0; i -= 1 {
       p.data[i] = p.data[i - 1]
@@ -25,7 +24,7 @@ pool_prepend :: proc(p: ^Pool($S, $T), value: T) {
   }
 }
 
-pool_shift :: proc(p: ^Pool($S, $T)) -> T {
+shift :: proc(p: ^Pool($T, $S)) -> T {
   if p.count == 0 do return T{}
 
   result: T = p.data[0]
@@ -36,7 +35,7 @@ pool_shift :: proc(p: ^Pool($S, $T)) -> T {
   return result
 }
 
-pool_pop :: proc(p: ^Pool($S, $T)) -> T {
+pop :: proc(p: ^Pool($T, $S)) -> T {
   if p.count == 0 do return T{}
 
   p.count -= 1
@@ -44,14 +43,14 @@ pool_pop :: proc(p: ^Pool($S, $T)) -> T {
 }
 
 // Make sure to iterate backwards when calling this
-pool_remove :: proc(p: ^Pool($S, $T), idx: int) {
+remove_pool :: proc(p: ^Pool($T, $S), idx: int) {
   if idx < p.count - 1 {
     p.data[idx] = p.data[p.count - 1]
   }
   p.count -= 1
 }
 
-pool_move_to_front :: proc(p: ^Pool($S, $T), idx: int) {
+move_to_front :: proc(p: ^Pool($T, $S), idx: int) {
   if idx > 0 {
     temp: T = p.data[idx]
     for i := idx; i > 0; i -= 1 {
@@ -61,7 +60,7 @@ pool_move_to_front :: proc(p: ^Pool($S, $T), idx: int) {
   }
 }
 
-pool_move_to_back :: proc(p: ^Pool($S, $T), idx: int) {
+move_to_back :: proc(p: ^Pool($T, $S), idx: int) {
   if idx < p.count - 1 {
     temp: T = p.data[idx]
     for i := idx; i < p.count - 1; i += 1 {
@@ -71,24 +70,24 @@ pool_move_to_back :: proc(p: ^Pool($S, $T), idx: int) {
   }
 }
 
-pool_clear :: proc(p: ^Pool($S, $T)) {
+clear_pool :: proc(p: ^Pool($T, $S)) {
   p.count = 0
 }
 
-pool_is_full :: proc(p: ^Pool($S, $T)) -> bool {
+is_full :: proc(p: ^Pool($T, $S)) -> bool {
   return p.count >= S
 }
 
-pool_every :: proc(p: ^Pool($S, $T)) -> []T {
+every :: proc(p: ^Pool($T, $S)) -> []T {
   return p.data[:p.count]
 }
 
-pool_first :: proc(p: ^Pool($S, $T)) -> ^T {
+first :: proc(p: ^Pool($T, $S)) -> ^T {
   if p.count == 0 do return nil
   return &p.data[0]
 }
 
-pool_last :: proc(p: ^Pool($S, $T)) -> ^T {
+last :: proc(p: ^Pool($T, $S)) -> ^T {
   if p.count == 0 do return nil
   return &p.data[p.count - 1]
 }

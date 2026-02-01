@@ -5,16 +5,6 @@ import clay "deps:clay-odin"
 import rl "vendor:raylib"
 
 
-hovering: bool
-tooltip: Maybe(string)
-window_width: f32
-window_height: f32
-
-
-UI :: clay.UI
-Style :: clay.ElementDeclaration
-
-
 grow :: clay.SizingGrow
 fit :: clay.SizingFit
 fixed :: clay.SizingFixed
@@ -52,7 +42,7 @@ sizing_fixed :: proc {
 }
 
 sizing_fullscreen :: proc() -> clay.Sizing {
-  return clay.Sizing{clay.SizingFixed(window_width), clay.SizingFixed(window_height)}
+  return clay.Sizing{clay.SizingFixed(ui.window_width), clay.SizingFixed(ui.window_height)}
 }
 
 
@@ -80,7 +70,7 @@ border :: proc(width: u16) -> clay.BorderWidth {
 
 stop_propagation :: proc() {
   if clay.Hovered() {
-    hovering = true
+    ui.hovering = true
   }
 }
 

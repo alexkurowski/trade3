@@ -1,6 +1,7 @@
 #+private
 package game
 
+import "core:math"
 import rl "vendor:raylib"
 
 time: struct {
@@ -15,7 +16,7 @@ time: struct {
 }
 
 update_time :: proc() {
-  time.dt = rl.GetFrameTime()
+  time.dt = math.min(rl.GetFrameTime(), 0.07)
   time.factor += (time.target - time.factor) * 2.5 * time.dt
   time.wdt = time.dt * time.factor
 
