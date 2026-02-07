@@ -42,6 +42,7 @@ Sprite :: struct {
   type:     int,
   position: Vec2,
 }
+
 @(private = "file")
 sprite_queue: box.Pool(Sprite, 256)
 
@@ -103,7 +104,7 @@ render_finish :: proc() {
   }
 }
 
-render_sprite :: proc(type: int, position: Vec2) {
+draw_sprite :: proc(type: int, position: Vec2) {
   box.append(&sprite_queue, Sprite{type, position})
 }
 

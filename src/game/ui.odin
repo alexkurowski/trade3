@@ -812,6 +812,7 @@ text_var :: proc(str: string, variant: FontVariant = .Regular16) {
   clay.TextDynamic(str, &font_configs[variant])
 }
 @(private)
+// Draw text
 text :: proc {
   text_const,
   text_var,

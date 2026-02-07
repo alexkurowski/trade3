@@ -6,11 +6,7 @@ import "core:math"
 import "core:math/linalg"
 import "core:math/rand"
 import "core:time"
-import "deps:box"
 import rl "vendor:raylib"
-
-EID :: box.ArrayItem
-none :: EID{0, 0}
 
 Grid2 :: [2]i32
 Vec2 :: [2]f32

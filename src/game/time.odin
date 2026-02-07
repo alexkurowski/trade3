@@ -31,6 +31,6 @@ set_time_factor :: proc(f: f32) {
   time.target = f
 }
 
-is_turn :: proc() -> bool {
+is_turn :: #force_inline proc() -> bool {
   return time.wtc <= 0
 }

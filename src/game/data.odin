@@ -1,55 +1,72 @@
 #+private
 package game
 
-import box "deps:box"
+import "deps:box"
 
-Sector :: struct {
+Location :: struct {
+  id:         EID,
+  kind:       LocationKind,
+  position:   Vec3,
+  connection: [4]EID,
+}
+
+LocationKind :: enum u8 {
+  None,
+}
+
+
+Vehicle :: struct {
   id:       EID,
-  name:     string,
-  position: Vec3,
+  location: EID,
+  kind:     VehicleKind,
+  fitting:  VehicleFitting,
+  cargo:    VehicleCargo,
 }
 
-Station :: struct {
-  id:        EID,
-  name:      string,
-  position:  Vec3,
-  sector_id: EID,
+VehicleKind :: enum u8 {
+  None,
+  Landcraft,
+  Aircraft,
+  Spacecraft,
 }
 
-Ship :: struct {
-  id:        EID,
-  name:      string,
-  position:  Vec3,
-  sector_id: EID,
-}
+VehicleFitting :: struct {}
+
+VehicleCargo :: struct {}
+
 
 Character :: struct {
-  id:      EID,
-  name:    string,
-  ship_id: EID,
+  id:       EID,
+  location: EID,
+  needs:    CharacterNeeds,
+  skills:   CharacterSkills,
 }
 
+CharacterNeeds :: struct {
+  food:  f32,
+  sleep: f32,
+}
+
+CharacterSkills :: struct {
+  combat:   f32,
+  repair:   f32,
+  piloting: f32,
+}
 
 //
+//
+//
 
-
-Kind :: enum u8 {
-  None,
-  Sector,
-  Station,
-  Ship,
-  Character,
-}
-
-sectors: box.Array(Sector, EID, 32)
-stations: box.Array(Station, EID, 128)
-ships: box.Array(Ship, EID, 4096)
+locations: box.Array(Location, EID, 4096)
+vehicles: box.Array(Vehicle, EID, 4096)
 characters: box.Array(Character, EID, 4096)
 
-player: struct {
-  character_ids: box.Pool(EID, 32),
+//
+//
+//
 
-  // interaction
-  select_kind:   Kind,
-  select_id:     EID,
+EID :: box.ArrayItem
+none :: EID{0, 0}
+is_none :: #force_inline proc(eid: EID) -> bool {
+  return eid == none
 }
