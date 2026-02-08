@@ -85,6 +85,7 @@ ui_unload :: proc() {
 @(private)
 ui_update :: proc() {
   ui.hovering = false
+  ui.tooltip = nil
 
   mouse_position := rl.GetMousePosition()
   clay.SetPointerState(
@@ -119,9 +120,9 @@ ui_begin :: proc() {
 
 @(private)
 ui_end :: proc() {
-  // if str, ok := tooltip.?; ok {
-  //   draw_tooltip(str)
-  // }
+  if str, ok := ui.tooltip.?; ok {
+    draw_tooltip(str)
+  }
   layout := clay.EndLayout()
   render(&layout)
 }

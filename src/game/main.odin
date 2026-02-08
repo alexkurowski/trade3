@@ -5,8 +5,8 @@ import "core:math"
 import "core:math/linalg"
 import rl "vendor:raylib"
 
-INITIAL_WINDOW_WIDTH :: 1280
-INITIAL_WINDOW_HEIGHT :: 720
+INITIAL_WINDOW_WIDTH :: 800
+INITIAL_WINDOW_HEIGHT :: 600
 
 load :: proc() {
   text_load()
@@ -151,9 +151,9 @@ draw_debug_2d :: proc() {
     assets.fonts.regular24,
     fmt.ctprintf("CAM: [%1.f, %1.f - %.1f]", camera.angle.x, camera.angle.y, camera.distance),
     Vec2{0, 20},
-    24,
+    16,
     0,
-    rl.BLACK,
+    rl.WHITE,
   )
   if debug_mode {
     rl.DrawFPS(0, 0)

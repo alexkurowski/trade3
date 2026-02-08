@@ -13,6 +13,7 @@ assets: struct {
   },
   textures: struct {
     sprites: rl.Texture,
+    icons:   rl.Texture,
   },
   shaders:  struct {
     base: rl.Shader,
@@ -39,8 +40,16 @@ CAMERA_MIN_PITCH :: -80
 CAMERA_MAX_PITCH :: 80
 
 Sprite :: struct {
-  type:     int,
+  type:     SpriteType,
   position: Vec2,
+}
+
+SpriteType :: enum u8 {
+  None,
+  Circle,
+  Square,
+  TriangleUp,
+  TriangleRight,
 }
 
 @(private = "file")
@@ -51,6 +60,7 @@ render_load :: proc() {
   assets.fonts.regular24 = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", 48, nil, 0)
 
   assets.textures.sprites = rl.LoadTexture("assets/textures/sprites.png")
+  assets.textures.icons = rl.LoadTexture("assets/textures/icons.png")
 
   assets.shaders.base = rl.LoadShader(
     "assets/shaders/gl330/base_vertex.glsl",
@@ -100,12 +110,54 @@ render_update :: proc() {
 
 render_finish :: proc() {
   for sprite in box.every(&sprite_queue) {
-    rl.DrawRectangleV(sprite.position, Vec2{10, 10}, rl.RED)
+    source := Rect{0, 0, 32, 32}
+    switch sprite.type {
+    case .None:
+    // NOP
+    case .Circle:
+      source.x = 32
+    case .Square:
+      source.x = 64
+    case .TriangleUp:
+      source.x = 96
+    case .TriangleRight:
+      source.x = 128
+    }
+    rl.DrawTexturePro(
+      assets.textures.icons,
+      source,
+      Rect{sprite.position.x, sprite.position.y, 16, 16},
+      Vec2{8, 8},
+      0,
+      rl.WHITE,
+    )
   }
 }
 
-draw_sprite :: proc(type: int, position: Vec2) {
+draw_sprite :: proc {
+  draw_sprite_vec2,
+  draw_sprite_vec3,
+}
+draw_sprite_vec2 :: proc(type: SpriteType, position: Vec2) {
   box.append(&sprite_queue, Sprite{type, position})
+}
+draw_sprite_vec3 :: proc(type: SpriteType, position: Vec3) {
+  if is_on_screen(position) {
+    box.append(&sprite_queue, Sprite{type, to_screen_position(position)})
+  }
+}
+
+draw_plane_line :: proc(position: Vec3) {
+  p1 := position
+  if p1.y > 0.2 {
+    p1.y -= 0.2
+  } else if p1.y < -0.2 {
+    p1.y += 0.2
+  } else {
+    return
+  }
+  p2 := Vec3{p1.x, 0, p1.z}
+  rl.DrawLine3D(p1, p2, rl.WHITE)
 }
 
 is_on_screen :: #force_inline proc(position: Vec3) -> bool {
@@ -115,4 +167,8 @@ is_on_screen :: #force_inline proc(position: Vec3) -> bool {
 
 get_screen_position :: #force_inline proc(position: Vec3) -> Vec2 {
   return rl.GetWorldToScreen(position, camera.c3d)
+}
+
+to_screen_position :: #force_inline proc(position: Vec3) -> (Vec2, bool) #optional_ok {
+  return get_screen_position(position), is_on_screen(position)
 }

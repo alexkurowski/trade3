@@ -6,60 +6,83 @@ import "deps:box"
 Location :: struct {
   id:         EID,
   kind:       LocationKind,
-  position:   Vec3,
+  parent:     EID,
   connection: [4]EID,
+  name:       string,
+  position:   Vec3,
 }
 
 LocationKind :: enum u8 {
   None,
+  Sector,
+  Planet,
+  Station,
 }
 
 
-Vehicle :: struct {
+Entity :: struct {
   id:       EID,
+  kind:     EntityKind,
   location: EID,
-  kind:     VehicleKind,
-  fitting:  VehicleFitting,
-  cargo:    VehicleCargo,
+  parent:   EID,
+  next:     EID,
+  name:     string,
+  position: Vec3,
 }
 
-VehicleKind :: enum u8 {
+EntityKind :: enum u8 {
   None,
   Landcraft,
-  Aircraft,
   Spacecraft,
 }
 
-VehicleFitting :: struct {}
 
-VehicleCargo :: struct {}
-
-
-Character :: struct {
-  id:       EID,
-  location: EID,
-  needs:    CharacterNeeds,
-  skills:   CharacterSkills,
-}
-
-CharacterNeeds :: struct {
-  food:  f32,
-  sleep: f32,
-}
-
-CharacterSkills :: struct {
-  combat:   f32,
-  repair:   f32,
-  piloting: f32,
-}
+// Vehicle :: struct {
+//   id:       EID,
+//   location: EID,
+//   name:     string,
+//   kind:     VehicleKind,
+//   fitting:  VehicleFitting,
+//   cargo:    VehicleCargo,
+// }
+//
+// VehicleKind :: enum u8 {
+//   None,
+//   Landcraft,
+//   Aircraft,
+//   Spacecraft,
+// }
+//
+// VehicleFitting :: struct {}
+//
+// VehicleCargo :: struct {}
+//
+//
+// Character :: struct {
+//   id:       EID,
+//   location: EID,
+//   name:     string,
+//   needs:    CharacterNeeds,
+//   skills:   CharacterSkills,
+// }
+//
+// CharacterNeeds :: struct {
+//   food:  f32,
+//   sleep: f32,
+// }
+//
+// CharacterSkills :: struct {
+//   combat:   f32,
+//   repair:   f32,
+//   piloting: f32,
+// }
 
 //
 //
 //
 
-locations: box.Array(Location, EID, 4096)
-vehicles: box.Array(Vehicle, EID, 4096)
-characters: box.Array(Character, EID, 4096)
+locations: box.Array(Location, EID, 1024)
+entities: box.Array(Entity, EID, 8192)
 
 //
 //

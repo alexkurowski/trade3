@@ -226,6 +226,6 @@ iter :: proc(it: ^Handle_Map_Iterator($T, $HT, $N)) -> (val: ^T, h: HT, cond: bo
 //     }
 //     // do stuff
 // }
-skip :: proc(e: $T) -> bool {
+skip :: #force_inline proc(e: $T) -> bool {
   return e.id.idx == 0
 }
