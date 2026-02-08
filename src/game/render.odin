@@ -34,7 +34,7 @@ camera: struct {
   distance:       f32,
 }
 CAMERA_CLOSEST :: 5
-CAMERA_FARTHEST :: 50
+CAMERA_FARTHEST :: 250
 CAMERA_SPEED :: 4
 CAMERA_MIN_PITCH :: -80
 CAMERA_MAX_PITCH :: 80
@@ -46,10 +46,11 @@ Sprite :: struct {
 
 SpriteType :: enum u8 {
   None,
-  Circle,
-  Square,
-  TriangleUp,
-  TriangleRight,
+  Star,
+  Station,
+  Planet,
+  Asteroid,
+  Ship,
 }
 
 @(private = "file")
@@ -111,23 +112,29 @@ render_update :: proc() {
 render_finish :: proc() {
   for sprite in box.every(&sprite_queue) {
     source := Rect{0, 0, 32, 32}
+    size := Vec2{16, 16}
     switch sprite.type {
     case .None:
     // NOP
-    case .Circle:
+    case .Star:
       source.x = 32
-    case .Square:
+      source.y = 32
+    case .Station:
       source.x = 64
-    case .TriangleUp:
+    case .Planet:
+      source.x = 32
+    case .Asteroid:
       source.x = 96
-    case .TriangleRight:
+      size /= 2
+    case .Ship:
       source.x = 128
+      source.y = 32
     }
     rl.DrawTexturePro(
       assets.textures.icons,
       source,
-      Rect{sprite.position.x, sprite.position.y, 16, 16},
-      Vec2{8, 8},
+      Rect{sprite.position.x, sprite.position.y, size.x, size.y},
+      size / 2,
       0,
       rl.WHITE,
     )
@@ -147,16 +154,16 @@ draw_sprite_vec3 :: proc(type: SpriteType, position: Vec3) {
   }
 }
 
-draw_plane_line :: proc(position: Vec3) {
+draw_plane_line :: proc(position: Vec3, zero_y: f32 = 0) {
   p1 := position
-  if p1.y > 0.2 {
+  if p1.y > zero_y + 0.3 {
     p1.y -= 0.2
-  } else if p1.y < -0.2 {
+  } else if p1.y < zero_y - 0.3 {
     p1.y += 0.2
   } else {
     return
   }
-  p2 := Vec3{p1.x, 0, p1.z}
+  p2 := Vec3{p1.x, zero_y, p1.z}
   rl.DrawLine3D(p1, p2, rl.WHITE)
 }
 

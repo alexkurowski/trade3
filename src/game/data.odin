@@ -3,11 +3,24 @@ package game
 
 import "deps:box"
 
+ObjectType :: enum {
+  None,
+  Location,
+  Entity,
+}
+
+ObjectSelector :: struct {
+  type: ObjectType,
+  idx:  IDX,
+}
+
+
 Location :: struct {
-  id:         EID,
+  id:         IDX,
   kind:       LocationKind,
-  parent:     EID,
-  connection: [4]EID,
+  trait:      LocationTrait,
+  parent:     IDX,
+  connection: [4]IDX,
   name:       string,
   position:   Vec3,
 }
@@ -19,27 +32,39 @@ LocationKind :: enum u8 {
   Station,
 }
 
+LocationTrait :: enum u8 {
+  None,
+  BinaryStar,
+}
+
 
 Entity :: struct {
-  id:       EID,
+  id:       IDX,
   kind:     EntityKind,
-  location: EID,
-  parent:   EID,
-  next:     EID,
+  trait:    EntityTrait,
+  location: IDX,
+  parent:   IDX,
+  next:     IDX,
   name:     string,
   position: Vec3,
+  target:   ObjectSelector,
+  velocity: Vec3,
 }
 
 EntityKind :: enum u8 {
   None,
-  Landcraft,
-  Spacecraft,
+  Asteroid,
+  Ship,
+}
+
+EntityTrait :: enum u8 {
+  None,
 }
 
 
 // Vehicle :: struct {
-//   id:       EID,
-//   location: EID,
+//   id:       IDX,
+//   location: IDX,
 //   name:     string,
 //   kind:     VehicleKind,
 //   fitting:  VehicleFitting,
@@ -59,8 +84,8 @@ EntityKind :: enum u8 {
 //
 //
 // Character :: struct {
-//   id:       EID,
-//   location: EID,
+//   id:       IDX,
+//   location: IDX,
 //   name:     string,
 //   needs:    CharacterNeeds,
 //   skills:   CharacterSkills,
@@ -81,15 +106,22 @@ EntityKind :: enum u8 {
 //
 //
 
-locations: box.Array(Location, EID, 1024)
-entities: box.Array(Entity, EID, 8192)
+locations: box.Array(Location, IDX, 1024)
+entities: box.Array(Entity, IDX, 8192)
+
+player: struct {
+  current_ship:     IDX,
+  current_location: IDX,
+  hover:            ObjectSelector,
+  selected:         ObjectSelector,
+}
 
 //
 //
 //
 
-EID :: box.ArrayItem
-none :: EID{0, 0}
-is_none :: #force_inline proc(eid: EID) -> bool {
-  return eid == none
+IDX :: box.ArrayItem
+none :: IDX{0, 0}
+is_none :: #force_inline proc(idx: IDX) -> bool {
+  return idx == none
 }
