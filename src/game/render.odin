@@ -40,17 +40,8 @@ CAMERA_MIN_PITCH :: -80
 CAMERA_MAX_PITCH :: 80
 
 Sprite :: struct {
-  type:     SpriteType,
+  kind:     EntityKind,
   position: Vec2,
-}
-
-SpriteType :: enum u8 {
-  None,
-  Star,
-  Station,
-  Planet,
-  Asteroid,
-  Ship,
 }
 
 @(private = "file")
@@ -109,13 +100,11 @@ render_update :: proc() {
   box.clear(&sprite_queue)
 }
 
-render_finish :: proc() {
+render_sprites :: proc() {
   for sprite in box.every(&sprite_queue) {
     source := Rect{0, 0, 32, 32}
     size := Vec2{16, 16}
-    switch sprite.type {
-    case .None:
-    // NOP
+    #partial switch sprite.kind {
     case .Star:
       source.x = 32
       source.y = 32
@@ -145,12 +134,12 @@ draw_sprite :: proc {
   draw_sprite_vec2,
   draw_sprite_vec3,
 }
-draw_sprite_vec2 :: proc(type: SpriteType, position: Vec2) {
-  box.append(&sprite_queue, Sprite{type, position})
+draw_sprite_vec2 :: proc(kind: EntityKind, position: Vec2) {
+  box.append(&sprite_queue, Sprite{kind, position})
 }
-draw_sprite_vec3 :: proc(type: SpriteType, position: Vec3) {
+draw_sprite_vec3 :: proc(kind: EntityKind, position: Vec3) {
   if is_on_screen(position) {
-    box.append(&sprite_queue, Sprite{type, to_screen_position(position)})
+    box.append(&sprite_queue, Sprite{kind, to_screen_position(position)})
   }
 }
 

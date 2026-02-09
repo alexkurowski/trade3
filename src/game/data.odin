@@ -3,68 +3,42 @@ package game
 
 import "deps:box"
 
-ObjectType :: enum {
+Entity :: struct {
+  id:             ID,
+  kind:           EntityKind,
+  trait:          bit_set[EntityTrait],
+  location_id:    ID,
+  connection_ids: [4]ID,
+  parent_id:      ID,
+  next_id:        ID,
+  target_id:      ID,
+  name:           string,
+  position:       Vec3,
+  velocity:       Vec3,
+}
+
+EntityKind :: enum u8 {
   None,
-  Location,
-  Entity,
-}
-
-ObjectSelector :: struct {
-  type: ObjectType,
-  idx:  IDX,
-}
-
-
-Location :: struct {
-  id:         IDX,
-  kind:       LocationKind,
-  trait:      LocationTrait,
-  parent:     IDX,
-  connection: [4]IDX,
-  name:       string,
-  position:   Vec3,
-}
-
-LocationKind :: enum u8 {
-  None,
-  Sector,
+  Star,
   Planet,
   Station,
+  Asteroid,
+  Ship,
 }
 
-LocationTrait :: enum u8 {
+is_location :: proc(e: ^Entity) -> bool {
+  return e.kind == .Star || e.kind == .Planet
+}
+
+EntityTrait :: enum u8 {
   None,
   BinaryStar,
 }
 
 
-Entity :: struct {
-  id:       IDX,
-  kind:     EntityKind,
-  trait:    EntityTrait,
-  location: IDX,
-  parent:   IDX,
-  next:     IDX,
-  name:     string,
-  position: Vec3,
-  target:   ObjectSelector,
-  velocity: Vec3,
-}
-
-EntityKind :: enum u8 {
-  None,
-  Asteroid,
-  Ship,
-}
-
-EntityTrait :: enum u8 {
-  None,
-}
-
-
 // Vehicle :: struct {
-//   id:       IDX,
-//   location: IDX,
+//   id:       ID,
+//   location: ID,
 //   name:     string,
 //   kind:     VehicleKind,
 //   fitting:  VehicleFitting,
@@ -84,8 +58,8 @@ EntityTrait :: enum u8 {
 //
 //
 // Character :: struct {
-//   id:       IDX,
-//   location: IDX,
+//   id:       ID,
+//   location: ID,
 //   name:     string,
 //   needs:    CharacterNeeds,
 //   skills:   CharacterSkills,
@@ -106,22 +80,22 @@ EntityTrait :: enum u8 {
 //
 //
 
-locations: box.Array(Location, IDX, 1024)
-entities: box.Array(Entity, IDX, 8192)
+entities: box.Array(Entity, ID, 8192)
+entity_kind_cache: [EntityKind]box.Pool(ID, 1024)
 
 player: struct {
-  current_ship:     IDX,
-  current_location: IDX,
-  hover:            ObjectSelector,
-  selected:         ObjectSelector,
+  ship_id:          ID,
+  view_location_id: ID,
+  hover_id:         ID,
+  selected_id:      ID,
 }
 
 //
 //
 //
 
-IDX :: box.ArrayItem
-none :: IDX{0, 0}
-is_none :: #force_inline proc(idx: IDX) -> bool {
-  return idx == none
+ID :: box.ArrayItem
+none :: ID{0, 0}
+is_none :: #force_inline proc(id: ID) -> bool {
+  return id == none
 }

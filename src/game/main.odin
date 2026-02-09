@@ -24,7 +24,7 @@ update :: proc() {
   rl.BeginDrawing()
   rl.ClearBackground(rl.BLACK)
 
-  update_time()
+  time_update()
   ui_update()
   render_update()
   ui_begin()
@@ -33,7 +33,7 @@ update :: proc() {
   game_loop()
   rl.EndShaderMode()
   rl.EndMode3D()
-  render_finish()
+  render_sprites()
   ui_end()
   draw_debug_2d()
 

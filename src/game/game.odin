@@ -6,65 +6,55 @@ import rl "vendor:raylib"
 
 @(private)
 start_new_game :: proc() {
-  box.clear(&locations)
   box.clear(&entities)
 
-  sector_idx := box.append(&locations, Location{kind = .Sector, name = make_random_name()})
-  player.current_location = sector_idx
+  location_id := spawn(Entity{kind = .Star, name = make_random_name()})
+  player.view_location_id = location_id
 
   for i := 0; i < 3; i += 1 {
-    box.append(
-      &locations,
-      Location {
+    spawn(Entity {
         kind = .Planet,
-        parent = sector_idx,
+        location_id = location_id,
         name = make_random_name(),
-        position = to_vec3(rand_offset(5, 10), randf(-5, 5)),
-      },
-    )
+        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
+      })
   }
 
   for i := 0; i < 3; i += 1 {
-    box.append(
-      &locations,
-      Location {
+    spawn(Entity {
         kind = .Station,
-        parent = sector_idx,
+        location_id = location_id,
         name = make_random_name(),
-        position = to_vec3(rand_offset(5, 10), randf(-5, 5)),
-      },
-    )
+        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
+      })
   }
 
   for i := 0; i < 5; i += 1 {
-    box.append(
-      &entities,
-      Entity {
+    spawn(Entity {
         kind = .Asteroid,
-        location = sector_idx,
-        position = to_vec3(rand_offset(5, 10), randf(-5, 5)),
-      },
-    )
-    box.append(
-      &entities,
-      Entity {
+        location_id = location_id,
+        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
+      })
+    spawn(Entity {
         kind = .Ship,
-        location = sector_idx,
+        location_id = location_id,
         name = make_random_full_name(),
-        position = to_vec3(rand_offset(5, 10), randf(-5, 5)),
-      },
-    )
+        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
+      })
   }
 
-  player.current_ship = box.append(
-    &entities,
-    Entity {
+  player.ship_id = spawn(Entity {
       kind = .Ship,
-      location = sector_idx,
+      location_id = location_id,
       name = make_random_full_name(),
-      position = to_vec3(rand_offset(5, 10), randf(-5, 5)),
-    },
-  )
+      position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
+    })
+}
+
+spawn :: proc(entity: Entity) -> ID {
+  id := box.append(&entities, entity)
+  box.append(&entity_kind_cache[entity.kind], id)
+  return id
 }
 
 //
@@ -75,77 +65,50 @@ start_new_game :: proc() {
 game_loop :: proc() {
   mouse_position := rl.GetMousePosition()
 
-  player.hover = ObjectSelector{}
+  player.hover_id = none
 
-  player_entity := box.get(&entities, player.current_ship)
-  player_plane_y := player_entity.position.y
+  player_ship := box.get(&entities, player.ship_id)
+  player_plane_y := player_ship.position.y
 
-  {
-    star := box.get(&locations, player.current_location)
-    draw_sprite(.Star, star.position)
+  is_in_current_location :: #force_inline proc(e: ^Entity) -> bool {
+    return e.location_id == player.view_location_id || e.id == player.view_location_id
   }
 
-  for &location in locations.items {
-    if box.skip(location) do continue
-    if location.parent != player.current_location do continue
-
-    screen_position, on_screen := to_screen_position(location.position)
-
-    is_hover := distance_squared(screen_position, mouse_position) < 100
-    if is_hover {
-      player.hover.type = .Location
-      player.hover.idx = location.id
-      ui.tooltip = location.name
-    }
-
-    if on_screen {
-      if location.kind == .Planet {
-        draw_sprite(.Planet, screen_position)
-      } else if location.kind == .Station {
-        draw_sprite(.Station, screen_position)
-      }
-      draw_plane_line(location.position, player_plane_y)
-
-      if player.selected.type == .Location && player.selected.idx == location.id {
-        rl.DrawCircle3D(location.position, 0.75, Vec3{1, 0, 0}, 90, rl.GREEN)
-      }
-    }
-  }
-
+  is_hover: bool
   for &entity in entities.items {
     if box.skip(entity) do continue
-    if entity.location != player.current_location do continue
-
-    screen_position, on_screen := to_screen_position(entity.position)
-
-    is_hover := distance_squared(screen_position, mouse_position) < 100
-    if is_hover {
-      player.hover.type = .Entity
-      player.hover.idx = entity.id
-
-      if entity.kind == .Asteroid {
-        ui.tooltip = "Asteroid"
-      } else {
-        ui.tooltip = entity.name
-      }
-    }
 
     if entity.kind == .Ship {
-      ship_ai(&entity)
+      if entity.id != player.ship_id {
+        ship_ai(&entity)
+      }
+
+      ship_approach(&entity)
+      entity.position += entity.velocity * time.wdt
     }
 
-    entity.position += entity.velocity * time.wdt
+    if is_in_current_location(&entity) {
+      screen_position, on_screen := to_screen_position(entity.position)
 
-    if on_screen {
-      if entity.kind == .Ship {
-        draw_sprite(.Ship, screen_position)
-      } else if entity.kind == .Asteroid {
-        draw_sprite(.Asteroid, screen_position)
+      is_hover = distance_squared(screen_position, mouse_position) < 100
+      if is_hover {
+        player.hover_id = entity.id
+
+        if entity.kind == .Asteroid {
+          ui.tooltip = "Asteroid"
+        } else {
+          ui.tooltip = entity.name
+        }
       }
-      draw_plane_line(entity.position, player_plane_y)
 
-      if player.selected.type == .Entity && player.selected.idx == entity.id {
-        rl.DrawCircle3D(entity.position, 0.5, Vec3{1, 0, 0}, 90, rl.GREEN)
+
+      if on_screen {
+        draw_sprite(entity.kind, screen_position)
+        draw_plane_line(entity.position, player_plane_y)
+
+        if player.selected_id == entity.id {
+          rl.DrawCircle3D(entity.position, 0.5, Vec3{1, 0, 0}, 90, rl.GREEN)
+        }
       }
     }
   }
@@ -157,37 +120,31 @@ game_loop :: proc() {
     right_click := rl.IsMouseButtonPressed(.RIGHT)
 
     if left_click {
-      player.selected = player.hover
+      if player.selected_id != player.hover_id {
+        player.selected_id = player.hover_id
+      } else {
+        player_ship.target_id = player.hover_id
+      }
     }
-    if right_click && player.hover.type != .None {
-      player_entity.target = player.hover
+    if right_click && player.hover_id != none {
+      pp("Context menu", player.hover_id)
     }
   }
 
-  if player_entity.target.type != .None {
-    switch player_entity.target.type {
-    case .None: // NOP
-    case .Location:
-      rl.DrawLine3D(
-        player_entity.position,
-        box.get(&locations, player_entity.target.idx).position,
-        rl.GRAY,
-      )
-    case .Entity:
-      rl.DrawLine3D(
-        player_entity.position,
-        box.get(&entities, player_entity.target.idx).position,
-        rl.GRAY,
-      )
-    }
+  if player_ship.target_id != none {
+    rl.DrawLine3D(
+      player_ship.position,
+      box.get(&entities, player_ship.target_id).position,
+      rl.GRAY,
+    )
   }
 
   {
     // Velocity vector
-    rl.DrawLine3D(player_entity.position, player_entity.position + player_entity.velocity, rl.GRAY)
+    rl.DrawLine3D(player_ship.position, player_ship.position + player_ship.velocity, rl.GRAY)
     // Radar circles
     for i := 5; i <= 20; i += 5 {
-      rl.DrawCircle3D(player_entity.position, f32(i), Vec3{1, 0, 0}, 90, rl.WHITE)
+      rl.DrawCircle3D(player_ship.position, f32(i), Vec3{1, 0, 0}, 90, rl.WHITE)
     }
   }
 
@@ -198,16 +155,24 @@ game_loop :: proc() {
 }
 
 ship_ai :: proc(e: ^Entity) {
-  target_position: Vec3
-  switch e.target.type {
-  case .None:
-    return
-  case .Location:
-    target_position = box.get(&locations, e.target.idx).position
-  case .Entity:
-    target_position = box.get(&entities, e.target.idx).position
+  if e.target_id == none {
+    e.target_id = rand_choice(box.every(&entity_kind_cache[.Asteroid]))
+  } else {
+    target := box.get(&entities, e.target_id)
+    distance_to_target := length(e.position - target.position)
+    if distance_to_target <= 0.5 {
+      if target.kind == .Asteroid {
+        e.target_id = rand_choice(box.every(&entity_kind_cache[.Station]))
+      } else {
+        e.target_id = rand_choice(box.every(&entity_kind_cache[.Asteroid]))
+      }
+    }
   }
+}
 
+ship_approach :: proc(e: ^Entity) {
+  if e.target_id == none do return
+  target_position := box.get(&entities, e.target_id).position
   direction := target_position - e.position - e.velocity
   if length(direction) > length(e.velocity) + 0.5 {
     e.velocity += normalize(direction) * time.wdt
@@ -231,8 +196,7 @@ camera_controls :: proc() {
       move_by *= time.dt
       camera.target += move_by
     } else {
-      camera.target +=
-        (box.get(&entities, player.current_ship).position - camera.target) * 5 * time.dt
+      camera.target += (box.get(&entities, player.ship_id).position - camera.target) * 5 * time.dt
     }
   }
   {
