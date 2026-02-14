@@ -6,7 +6,14 @@ import "core:math"
 import "core:math/linalg"
 import "core:math/rand"
 import "core:time"
+import "deps:box"
 import rl "vendor:raylib"
+
+ID :: box.ArrayItem
+none :: ID{0, 0}
+is_none :: #force_inline proc(id: ID) -> bool {
+  return id == none
+}
 
 Grid2 :: [2]i32
 Vec2 :: [2]f32
@@ -18,6 +25,8 @@ Size :: struct {
 Rect :: rl.Rectangle
 Color :: rl.Color
 
+PI :: math.PI
+TAU :: math.TAU
 EPSILON :: 0.00001
 DEG_TO_RAD :: math.RAD_PER_DEG
 RAD_TO_DEG :: math.DEG_PER_RAD
@@ -28,6 +37,7 @@ ceil :: math.ceil
 min :: math.min
 max :: math.max
 clamp :: math.clamp
+abs :: math.abs
 pow :: math.pow
 sign :: math.sign
 sqrt :: math.sqrt

@@ -15,7 +15,7 @@ time: struct {
   target = 1,
 }
 
-time_update :: proc() {
+time_step :: proc() {
   time.dt = math.min(rl.GetFrameTime(), 0.07)
   time.factor += (time.target - time.factor) * 2.5 * time.dt
   time.wdt = time.dt * time.factor

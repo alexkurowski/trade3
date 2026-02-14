@@ -1,60 +1,14 @@
 #+private file
 package game
 
+import "core:strings"
 import "deps:box"
 import rl "vendor:raylib"
 
 @(private)
 start_new_game :: proc() {
-  box.clear(&entities)
-
-  location_id := spawn(Entity{kind = .Star, name = make_random_name()})
-  player.view_location_id = location_id
-
-  for i := 0; i < 3; i += 1 {
-    spawn(Entity {
-        kind = .Planet,
-        location_id = location_id,
-        name = make_random_name(),
-        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
-      })
-  }
-
-  for i := 0; i < 3; i += 1 {
-    spawn(Entity {
-        kind = .Station,
-        location_id = location_id,
-        name = make_random_name(),
-        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
-      })
-  }
-
-  for i := 0; i < 5; i += 1 {
-    spawn(Entity {
-        kind = .Asteroid,
-        location_id = location_id,
-        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
-      })
-    spawn(Entity {
-        kind = .Ship,
-        location_id = location_id,
-        name = make_random_full_name(),
-        position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
-      })
-  }
-
-  player.ship_id = spawn(Entity {
-      kind = .Ship,
-      location_id = location_id,
-      name = make_random_full_name(),
-      position = to_vec3(rand_offset(100, 200), randf(-20, 20)),
-    })
-}
-
-spawn :: proc(entity: Entity) -> ID {
-  id := box.append(&entities, entity)
-  box.append(&entity_kind_cache[entity.kind], id)
-  return id
+  reset_world()
+  generate_new_world()
 }
 
 //
@@ -62,122 +16,96 @@ spawn :: proc(entity: Entity) -> ID {
 //
 
 @(private)
-game_loop :: proc() {
-  mouse_position := rl.GetMousePosition()
-
-  player.hover_id = none
-
-  player_ship := box.get(&entities, player.ship_id)
-  player_plane_y := player_ship.position.y
-
-  is_in_current_location :: #force_inline proc(e: ^Entity) -> bool {
-    return e.location_id == player.view_location_id || e.id == player.view_location_id
-  }
-
-  is_hover: bool
-  for &entity in entities.items {
-    if box.skip(entity) do continue
-
-    if entity.kind == .Ship {
-      if entity.id != player.ship_id {
-        ship_ai(&entity)
-      }
-
-      ship_approach(&entity)
-      entity.position += entity.velocity * time.wdt
-    }
-
-    if is_in_current_location(&entity) {
-      screen_position, on_screen := to_screen_position(entity.position)
-
-      is_hover = distance_squared(screen_position, mouse_position) < 100
-      if is_hover {
-        player.hover_id = entity.id
-
-        if entity.kind == .Asteroid {
-          ui.tooltip = "Asteroid"
-        } else {
-          ui.tooltip = entity.name
-        }
-      }
-
-
-      if on_screen {
-        draw_sprite(entity.kind, screen_position)
-        draw_plane_line(entity.position, player_plane_y)
-
-        if player.selected_id == entity.id {
-          rl.DrawCircle3D(entity.position, 0.5, Vec3{1, 0, 0}, 90, rl.GREEN)
-        }
-      }
-    }
-  }
-
+scene_update_and_render :: proc() {
+  reset_input()
   camera_controls()
 
-  {
-    left_click := rl.IsMouseButtonPressed(.LEFT)
-    right_click := rl.IsMouseButtonPressed(.RIGHT)
+  // TODO: scene switch
+  draw_locations()
+  draw_location_breadcrumb_ui()
 
-    if left_click {
-      if player.selected_id != player.hover_id {
-        player.selected_id = player.hover_id
-      } else {
-        player_ship.target_id = player.hover_id
-      }
-    }
-    if right_click && player.hover_id != none {
-      pp("Context menu", player.hover_id)
-    }
-  }
-
-  if player_ship.target_id != none {
-    rl.DrawLine3D(
-      player_ship.position,
-      box.get(&entities, player_ship.target_id).position,
-      rl.GRAY,
-    )
-  }
-
-  {
-    // Velocity vector
-    rl.DrawLine3D(player_ship.position, player_ship.position + player_ship.velocity, rl.GRAY)
-    // Radar circles
-    for i := 5; i <= 20; i += 5 {
-      rl.DrawCircle3D(player_ship.position, f32(i), Vec3{1, 0, 0}, 90, rl.WHITE)
-    }
-  }
-
-  if debug_mode {
+  if g.debug_mode {
+    camera_controls()
     rl.DrawGrid(20, 1)
     rl.DrawCircle3D(camera.target, 0.1, {1, 0, 0}, 90, rl.WHITE)
   }
 }
 
-ship_ai :: proc(e: ^Entity) {
-  if e.target_id == none {
-    e.target_id = rand_choice(box.every(&entity_kind_cache[.Asteroid]))
-  } else {
-    target := box.get(&entities, e.target_id)
-    distance_to_target := length(e.position - target.position)
-    if distance_to_target <= 0.5 {
-      if target.kind == .Asteroid {
-        e.target_id = rand_choice(box.every(&entity_kind_cache[.Station]))
-      } else {
-        e.target_id = rand_choice(box.every(&entity_kind_cache[.Asteroid]))
+reset_input :: proc() {
+  g.mouse_position = rl.GetMousePosition()
+  g.location_hover_id = none
+  g.entity_hover_id = none
+}
+
+draw_locations :: proc() {
+  current_location := box.get(&world.locations, g.location_view_id)
+
+  for &location in world.locations.items {
+    if box.skip(location) do continue
+    if g.location_view_id != location.parent_id do continue
+
+    rl.DrawSphere(location.position, 0.5, rl.WHITE)
+
+    // Hover
+    screen_position, on_screen := to_screen_position(location.position)
+    if on_screen && distance(g.mouse_position, screen_position) < 5 {
+      g.location_hover_id = location.id
+      ui.tooltip = location.name
+      rl.DrawSphereWires(location.position, 0.75, 6, 6, rl.GRAY)
+    }
+
+    // Draw connection routes
+    if location.kind == .System {
+      for conn_id in box.every(&location.connection_ids) {
+        if location.id.idx > conn_id.idx do continue
+
+        other_location := box.get(&world.locations, conn_id)
+        rl.DrawLine3D(location.position, other_location.position, rl.WHITE)
       }
+    }
+
+    // Draw planet orbit
+    if location.kind == .Planet {
+      distance := length(location.position)
+      rl.DrawCircle3D(Vec3(0), distance, Vec3{1, 0, 0}, 90, rl.WHITE)
+    }
+  }
+
+  // Draw system star
+  if current_location != nil {
+    if current_location.kind == .System {
+      rl.DrawSphere(Vec3(0), 2, rl.YELLOW)
+    } else if current_location.kind == .Planet {
+      rl.DrawSphereWires(Vec3(0), current_location.size, 6, 12, rl.GREEN)
+    }
+  }
+
+  if rl.IsMouseButtonPressed(.LEFT) && g.location_hover_id != none {
+    if current_location == nil || current_location.kind != .Planet {
+      g.location_view_id = g.location_hover_id
+    }
+  } else if rl.IsMouseButtonPressed(.RIGHT) {
+    if current_location != nil && current_location.kind != .None {
+      g.location_view_id = current_location.parent_id
     }
   }
 }
 
-ship_approach :: proc(e: ^Entity) {
-  if e.target_id == none do return
-  target_position := box.get(&entities, e.target_id).position
-  direction := target_position - e.position - e.velocity
-  if length(direction) > length(e.velocity) + 0.5 {
-    e.velocity += normalize(direction) * time.wdt
-  } else {
-    e.velocity += (Vec3(0) - e.velocity) * time.wdt
+draw_location_breadcrumb_ui :: proc() {
+  location := box.get(&world.locations, g.location_view_id)
+  if location == nil do return
+
+  path: [4]string
+  i: i32
+
+  for location != nil {
+    path[i] = location.name
+    i += 1
+    location = box.get(&world.locations, location.parent_id)
+  }
+
+  if UI()({}) {
+    text(strings.join(path[:], " > ", context.temp_allocator))
   }
 }
 
@@ -191,13 +119,9 @@ camera_controls :: proc() {
     if rl.IsKeyDown(.E) do move.y = +speed
     if rl.IsKeyDown(.W) do move.z = +speed
     if rl.IsKeyDown(.S) do move.z = -speed
-    if !is_zero(move) {
-      move_by := camera.ground_right * move.x + {0, move.y, 0} + camera.ground_forward * move.z
-      move_by *= time.dt
-      camera.target += move_by
-    } else {
-      camera.target += (box.get(&entities, player.ship_id).position - camera.target) * 5 * time.dt
-    }
+    move_by := camera.ground_right * move.x + {0, move.y, 0} + camera.ground_forward * move.z
+    move_by *= time.dt
+    camera.target += move_by
   }
   {
     rotate: Vec2

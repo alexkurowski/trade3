@@ -4,35 +4,42 @@ package game
 import "deps:box"
 
 Entity :: struct {
-  id:             ID,
-  kind:           EntityKind,
-  trait:          bit_set[EntityTrait],
-  location_id:    ID,
-  connection_ids: [4]ID,
-  parent_id:      ID,
-  next_id:        ID,
-  target_id:      ID,
-  name:           string,
-  position:       Vec3,
-  velocity:       Vec3,
+  id:          ID,
+  cache_id:    i32,
+  kind:        EntityKind,
+  trait:       bit_set[EntityTrait],
+  location_id: ID,
+  parent_id:   ID,
+  next_id:     ID,
+  target_id:   ID,
+  name:        string,
+  position:    Vec3,
+  velocity:    Vec3,
 }
 
 EntityKind :: enum u8 {
   None,
-  Star,
-  Planet,
-  Station,
-  Asteroid,
-  Ship,
-}
-
-is_location :: proc(e: ^Entity) -> bool {
-  return e.kind == .Star || e.kind == .Planet
+  Vehicle,
+  Character,
 }
 
 EntityTrait :: enum u8 {
   None,
-  BinaryStar,
+}
+
+spawn :: proc(entity: Entity) -> ID {
+  id := box.append(&world.entities, entity)
+  box.append(&world.entity_by_kind[entity.kind], id)
+  return id
+}
+
+despawn :: proc(id: ID) {
+  entity := box.get(&world.entities, id)
+  if entity.id == id {
+    delete(entity.name)
+    box.remove(&world.entity_by_kind[entity.kind], entity.cache_id)
+    box.remove(&world.entities, id)
+  }
 }
 
 
@@ -75,27 +82,3 @@ EntityTrait :: enum u8 {
 //   repair:   f32,
 //   piloting: f32,
 // }
-
-//
-//
-//
-
-entities: box.Array(Entity, ID, 8192)
-entity_kind_cache: [EntityKind]box.Pool(ID, 1024)
-
-player: struct {
-  ship_id:          ID,
-  view_location_id: ID,
-  hover_id:         ID,
-  selected_id:      ID,
-}
-
-//
-//
-//
-
-ID :: box.ArrayItem
-none :: ID{0, 0}
-is_none :: #force_inline proc(id: ID) -> bool {
-  return id == none
-}

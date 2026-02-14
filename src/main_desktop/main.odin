@@ -20,6 +20,9 @@ main :: proc() {
   defer game.unload()
 
   for !rl.WindowShouldClose() {
+    rl.BeginDrawing()
+    rl.ClearBackground(rl.BLACK)
     game.update()
+    rl.EndDrawing()
   }
 }

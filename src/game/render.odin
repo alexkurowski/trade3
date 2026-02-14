@@ -39,14 +39,6 @@ CAMERA_SPEED :: 4
 CAMERA_MIN_PITCH :: -80
 CAMERA_MAX_PITCH :: 80
 
-Sprite :: struct {
-  kind:     EntityKind,
-  position: Vec2,
-}
-
-@(private = "file")
-sprite_queue: box.Pool(Sprite, 256)
-
 render_load :: proc() {
   assets.fonts.regular16 = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", 32, nil, 0)
   assets.fonts.regular24 = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", 48, nil, 0)
@@ -69,15 +61,16 @@ render_load :: proc() {
   camera.c3d.up = Vec3{0, 1, 0}
 }
 
-render_update :: proc() {
+render_begin_frame :: proc() {
   // Camera
   camera.distance = math.clamp(camera.distance, CAMERA_CLOSEST, CAMERA_FARTHEST)
   camera.angle.y = math.clamp(camera.angle.y, CAMERA_MIN_PITCH, CAMERA_MAX_PITCH)
   // Recalculate camera offset
-  d, a := camera.distance, camera.angle
-  camera.offset.x = d * math.cos(a.y * DEG_TO_RAD) * math.sin(a.x * DEG_TO_RAD)
-  camera.offset.y = d * math.sin(a.y * DEG_TO_RAD)
-  camera.offset.z = d * math.cos(a.y * DEG_TO_RAD) * math.cos(a.x * DEG_TO_RAD)
+  a := camera.angle
+  camera.offset.x = math.cos(a.y * DEG_TO_RAD) * math.sin(a.x * DEG_TO_RAD)
+  camera.offset.y = math.sin(a.y * DEG_TO_RAD)
+  camera.offset.z = math.cos(a.y * DEG_TO_RAD) * math.cos(a.x * DEG_TO_RAD)
+  camera.offset *= camera.distance
   // Lerp camera
   camera.c3d.target = linalg.lerp(camera.c3d.target, camera.target, CAMERA_SPEED * time.dt)
   camera.c3d.position = linalg.lerp(
@@ -100,61 +93,24 @@ render_update :: proc() {
   box.clear(&sprite_queue)
 }
 
-render_sprites :: proc() {
-  for sprite in box.every(&sprite_queue) {
-    source := Rect{0, 0, 32, 32}
-    size := Vec2{16, 16}
-    #partial switch sprite.kind {
-    case .Star:
-      source.x = 32
-      source.y = 32
-    case .Station:
-      source.x = 64
-    case .Planet:
-      source.x = 32
-    case .Asteroid:
-      source.x = 96
-      size /= 2
-    case .Ship:
-      source.x = 128
-      source.y = 32
-    }
-    rl.DrawTexturePro(
-      assets.textures.icons,
-      source,
-      Rect{sprite.position.x, sprite.position.y, size.x, size.y},
-      size / 2,
-      0,
-      rl.WHITE,
-    )
-  }
+render_begin_3d :: proc() {
+  rl.BeginMode3D(camera.c3d)
+  rl.BeginShaderMode(assets.shaders.base)
 }
 
-draw_sprite :: proc {
-  draw_sprite_vec2,
-  draw_sprite_vec3,
-}
-draw_sprite_vec2 :: proc(kind: EntityKind, position: Vec2) {
-  box.append(&sprite_queue, Sprite{kind, position})
-}
-draw_sprite_vec3 :: proc(kind: EntityKind, position: Vec3) {
-  if is_on_screen(position) {
-    box.append(&sprite_queue, Sprite{kind, to_screen_position(position)})
-  }
+render_end_3d :: proc() {
+  rl.EndShaderMode()
+  rl.EndMode3D()
 }
 
-draw_plane_line :: proc(position: Vec3, zero_y: f32 = 0) {
-  p1 := position
-  if p1.y > zero_y + 0.3 {
-    p1.y -= 0.2
-  } else if p1.y < zero_y - 0.3 {
-    p1.y += 0.2
-  } else {
-    return
-  }
-  p2 := Vec3{p1.x, zero_y, p1.z}
-  rl.DrawLine3D(p1, p2, rl.WHITE)
+render_begin_2d :: proc() {
+  // rl.BeginShaderMode(assets.shaders.base)
 }
+
+render_end_2d :: proc() {
+  rl.EndMode2D()
+}
+
 
 is_on_screen :: #force_inline proc(position: Vec3) -> bool {
   t := rl.Vector3Transform(position, camera.m3d)
