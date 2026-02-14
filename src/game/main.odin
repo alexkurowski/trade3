@@ -6,12 +6,15 @@ INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
 g: struct {
+  player_company_id:  ID,
   mouse_position:     Vec2,
   debug_mode:         bool,
   location_view_id:   ID,
   location_hover_id:  ID,
   entity_hover_id:    ID,
   entity_selected_id: ID,
+} = {
+  debug_mode = true,
 }
 
 load :: proc() {

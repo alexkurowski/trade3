@@ -78,6 +78,10 @@ is_full :: proc(p: ^Pool($T, $S)) -> bool {
   return p.count >= S
 }
 
+is_empty :: proc(p: ^Pool($T, $S)) -> bool {
+  return p.count == 0
+}
+
 every :: proc(p: ^Pool($T, $S)) -> []T {
   return p.items[:p.count]
 }

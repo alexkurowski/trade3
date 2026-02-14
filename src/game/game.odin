@@ -1,19 +1,16 @@
 #+private file
 package game
 
+import "core:slice"
 import "core:strings"
 import "deps:box"
 import rl "vendor:raylib"
 
 @(private)
 start_new_game :: proc() {
-  reset_world()
+  clear_world()
   generate_new_world()
 }
-
-//
-//
-//
 
 @(private)
 scene_update_and_render :: proc() {
@@ -21,14 +18,23 @@ scene_update_and_render :: proc() {
   camera_controls()
 
   // TODO: scene switch
-  draw_locations()
-  draw_location_breadcrumb_ui()
+  update_and_draw_locations()
+  update_and_draw_entities()
+
+  draw_ui_location_breadcrumb()
+
+  camera_controls()
 
   if g.debug_mode {
-    camera_controls()
     rl.DrawGrid(20, 1)
     rl.DrawCircle3D(camera.target, 0.1, {1, 0, 0}, 90, rl.WHITE)
+
+    if rl.IsKeyPressed(.R) {
+      start_new_game()
+    }
   }
+
+  if rl.IsKeyPressed(.SLASH) do g.debug_mode = !g.debug_mode
 }
 
 reset_input :: proc() {
@@ -37,7 +43,35 @@ reset_input :: proc() {
   g.entity_hover_id = none
 }
 
-draw_locations :: proc() {
+camera_controls :: proc() {
+  if g.debug_mode {
+    move: Vec3
+    speed :: 5
+    if rl.IsKeyDown(.A) do move.x = +speed
+    if rl.IsKeyDown(.D) do move.x = -speed
+    if rl.IsKeyDown(.Q) do move.y = -speed
+    if rl.IsKeyDown(.E) do move.y = +speed
+    if rl.IsKeyDown(.W) do move.z = +speed
+    if rl.IsKeyDown(.S) do move.z = -speed
+    move_by := camera.ground_right * move.x + {0, move.y, 0} + camera.ground_forward * move.z
+    move_by *= time.dt
+    camera.target += move_by
+  }
+  {
+    rotate: Vec2
+    zoom: f32
+    if rl.IsKeyDown(.LEFT_SHIFT) {
+      zoom = -rl.GetMouseWheelMoveV().y
+    } else {
+      rotate = rl.GetMouseWheelMoveV() * 2.5
+    }
+    camera.angle.x += rotate.x
+    camera.angle.y -= rotate.y
+    camera.distance += zoom
+  }
+}
+
+update_and_draw_locations :: proc() {
   current_location := box.get(&world.locations, g.location_view_id)
 
   for &location in world.locations.items {
@@ -66,73 +100,65 @@ draw_locations :: proc() {
 
     // Draw planet orbit
     if location.kind == .Planet {
-      distance := length(location.position)
-      rl.DrawCircle3D(Vec3(0), distance, Vec3{1, 0, 0}, 90, rl.WHITE)
+      distance := length(location.position - current_location.position)
+      rl.DrawCircle3D(current_location.position, distance, Vec3{1, 0, 0}, 90, rl.WHITE)
     }
   }
 
-  // Draw system star
+  // Draw current location parent (star or planet)
   if current_location != nil {
     if current_location.kind == .System {
-      rl.DrawSphere(Vec3(0), 2, rl.YELLOW)
+      rl.DrawSphere(current_location.position, 2, rl.YELLOW)
     } else if current_location.kind == .Planet {
-      rl.DrawSphereWires(Vec3(0), current_location.size, 6, 12, rl.GREEN)
+      rl.DrawSphereWires(current_location.position, current_location.size, 6, 12, rl.GREEN)
     }
   }
 
+  // Location selection
   if rl.IsMouseButtonPressed(.LEFT) && g.location_hover_id != none {
     if current_location == nil || current_location.kind != .Planet {
-      g.location_view_id = g.location_hover_id
+      location := box.get(&world.locations, g.location_hover_id)
+      if location != nil {
+        g.location_view_id = location.id
+        camera.target = location.position
+      }
     }
   } else if rl.IsMouseButtonPressed(.RIGHT) {
     if current_location != nil && current_location.kind != .None {
-      g.location_view_id = current_location.parent_id
+      location := box.get(&world.locations, current_location.parent_id)
+      if location != nil {
+        g.location_view_id = location.id
+        camera.target = location.position
+      } else {
+        g.location_view_id = none
+        camera.target = current_location.position
+      }
     }
   }
 }
 
-draw_location_breadcrumb_ui :: proc() {
+draw_ui_location_breadcrumb :: proc() {
   location := box.get(&world.locations, g.location_view_id)
   if location == nil do return
 
-  path: [4]string
-  i: i32
+  path: box.Pool(string, 4)
 
   for location != nil {
-    path[i] = location.name
-    i += 1
+    box.append(&path, location.name)
     location = box.get(&world.locations, location.parent_id)
   }
 
-  if UI()({}) {
-    text(strings.join(path[:], " > ", context.temp_allocator))
+  slice.reverse(box.every(&path))
+
+  if !box.is_empty(&path) {
+    if UI()({}) {
+      ui_text(strings.join(box.every(&path), " > ", context.temp_allocator))
+    }
   }
 }
 
-camera_controls :: proc() {
-  {
-    move: Vec3
-    speed :: 5
-    if rl.IsKeyDown(.A) do move.x = +speed
-    if rl.IsKeyDown(.D) do move.x = -speed
-    if rl.IsKeyDown(.Q) do move.y = -speed
-    if rl.IsKeyDown(.E) do move.y = +speed
-    if rl.IsKeyDown(.W) do move.z = +speed
-    if rl.IsKeyDown(.S) do move.z = -speed
-    move_by := camera.ground_right * move.x + {0, move.y, 0} + camera.ground_forward * move.z
-    move_by *= time.dt
-    camera.target += move_by
-  }
-  {
-    rotate: Vec2
-    zoom: f32
-    if rl.IsKeyDown(.LEFT_SHIFT) {
-      zoom = -rl.GetMouseWheelMoveV().y
-    } else {
-      rotate = rl.GetMouseWheelMoveV() * 2.5
-    }
-    camera.angle.x += rotate.x
-    camera.angle.y -= rotate.y
-    camera.distance += zoom
+update_and_draw_entities :: proc() {
+  for &entity in world.entities.items {
+    if box.skip(entity) do continue
   }
 }

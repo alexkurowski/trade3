@@ -53,7 +53,7 @@ render_load :: proc() {
 
   camera.target = Vec3(0)
   camera.angle = Vec2{225, 45}
-  camera.distance = 30
+  camera.distance = 100
   camera.c3d.fovy = 20
   camera.c3d.projection = .PERSPECTIVE
   camera.c3d.target = Vec3(0)

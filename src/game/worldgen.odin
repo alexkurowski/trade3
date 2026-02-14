@@ -12,6 +12,12 @@ generate_new_world :: proc() {
     box.append(&world.factions, Faction{name = make_faction_name()})
   }
 
+  // Generate companies
+  for i := 0; i < COMPANY_COUNT; i += 1 {
+    box.append(&world.companies, Company{name = make_random_name()})
+  }
+  g.player_company_id = world.companies.items[0].id
+
   // Generate systems
   system_ids: [SYSTEM_COUNT]ID
   for i := 0; i < SYSTEM_COUNT; i += 1 {
@@ -109,17 +115,19 @@ generate_new_world :: proc() {
   // Generate planets
   for i := 0; i < SYSTEM_COUNT; i += 1 {
     system_id := system_ids[i]
+    parent_position := box.get(&world.locations, system_id).position
     planet_count := randu_bell(0, 6, 3)
 
     planet_distance := f32(10)
     for j := u16(0); j < planet_count; j += 1 {
+      planet_position := parent_position + at_angle(rand_angle()) * planet_distance
       planet_size := randf_bell(5, 10, 2)
       planet_id := box.append(
         &world.locations,
         Location {
           kind = .Planet,
           name = make_random_name(),
-          position = at_angle(rand_angle()) * planet_distance,
+          position = planet_position,
           size = planet_size,
           parent_id = system_id,
         },
@@ -135,6 +143,7 @@ generate_new_world :: proc() {
         city_position.y = math.sin(lon * DEG_TO_RAD)
         city_position.z = math.cos(lon * DEG_TO_RAD) * math.cos(lat * DEG_TO_RAD)
         city_position *= planet_size
+        city_position += planet_position
 
         box.append(
           &world.locations,
