@@ -28,18 +28,20 @@ EntityTrait :: enum u8 {
   None,
 }
 
-spawn :: proc(entity: Entity) -> ID {
-  id := box.append(&world.entities, entity)
-  box.append(&world.entity_by_kind[entity.kind], id)
+spawn :: proc(entity: Entity, kind: EntityKind) -> ID {
+  e := entity
+  e.kind = kind
+  id := box.append(&w.entities, e)
+  box.append(&w.entity_by_kind[kind], id)
   return id
 }
 
 despawn :: proc(id: ID) {
-  entity := box.get(&world.entities, id)
-  if entity.id == id {
-    delete(entity.name)
-    box.remove(&world.entity_by_kind[entity.kind], entity.cache_id)
-    box.remove(&world.entities, id)
+  e := box.get(&w.entities, id)
+  if e.id == id {
+    delete(e.name)
+    box.remove(&w.entity_by_kind[e.kind], e.cache_id)
+    box.remove(&w.entities, id)
   }
 }
 

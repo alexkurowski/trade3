@@ -73,9 +73,9 @@ camera_controls :: proc() {
 }
 
 update_and_draw_locations :: proc() {
-  current_location := box.get(&world.locations, g.location_view_id)
+  current_location := box.get(&w.locations, g.location_view_id)
 
-  for &location in world.locations.items {
+  for &location in w.locations.items {
     if box.skip(location) do continue
     if g.location_view_id != location.parent_id do continue
 
@@ -94,7 +94,7 @@ update_and_draw_locations :: proc() {
       for conn_id in box.every(&location.connection_ids) {
         if location.id.idx > conn_id.idx do continue
 
-        other_location := box.get(&world.locations, conn_id)
+        other_location := box.get(&w.locations, conn_id)
         rl.DrawLine3D(location.position, other_location.position, rl.WHITE)
       }
     }
@@ -118,7 +118,7 @@ update_and_draw_locations :: proc() {
   // Location selection
   if rl.IsMouseButtonPressed(.LEFT) && g.location_hover_id != none {
     if current_location == nil || current_location.kind != .Planet {
-      location := box.get(&world.locations, g.location_hover_id)
+      location := box.get(&w.locations, g.location_hover_id)
       if location != nil {
         g.location_view_id = location.id
         camera.target = location.position
@@ -126,7 +126,7 @@ update_and_draw_locations :: proc() {
     }
   } else if rl.IsMouseButtonPressed(.RIGHT) {
     if current_location != nil && current_location.kind != .None {
-      location := box.get(&world.locations, current_location.parent_id)
+      location := box.get(&w.locations, current_location.parent_id)
       if location != nil {
         g.location_view_id = location.id
         camera.target = location.position
@@ -139,14 +139,14 @@ update_and_draw_locations :: proc() {
 }
 
 draw_ui_location_breadcrumb :: proc() {
-  location := box.get(&world.locations, g.location_view_id)
+  location := box.get(&w.locations, g.location_view_id)
   if location == nil do return
 
   path: box.Pool(string, 4)
 
   for location != nil {
     box.append(&path, location.name)
-    location = box.get(&world.locations, location.parent_id)
+    location = box.get(&w.locations, location.parent_id)
   }
 
   slice.reverse(box.every(&path))
@@ -159,12 +159,13 @@ draw_ui_location_breadcrumb :: proc() {
 }
 
 update_companies :: proc() {
-  for &company in world.companies.items {
+  for &company in w.companies.items {
+    if box.skip(company) do continue
   }
 }
 
 update_and_draw_entities :: proc() {
-  for &entity in world.entities.items {
+  for &entity in w.entities.items {
     if box.skip(entity) do continue
   }
 }

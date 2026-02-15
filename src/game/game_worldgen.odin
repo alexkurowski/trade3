@@ -9,20 +9,20 @@ import "deps:box"
 generate_new_world :: proc() {
   // Generate factions
   for i := 0; i < FACTION_COUNT; i += 1 {
-    box.append(&world.factions, Faction{name = make_faction_name()})
+    box.append(&w.factions, Faction{name = make_faction_name()})
   }
 
   // Generate companies
   for i := 0; i < COMPANY_COUNT; i += 1 {
-    box.append(&world.companies, Company{name = make_random_name()})
+    box.append(&w.companies, Company{name = make_random_name()})
   }
-  g.player_company_id = world.companies.items[0].id
+  g.player_company_id = w.companies.items[0].id
 
   // Generate systems
   system_ids: [SYSTEM_COUNT]ID
   for i := 0; i < SYSTEM_COUNT; i += 1 {
     system_ids[i] = box.append(
-      &world.locations,
+      &w.locations,
       Location {
         kind = .System,
         name = make_random_name(),
@@ -63,12 +63,12 @@ generate_new_world :: proc() {
     other_systems: box.Pool(OtherSystem, SYSTEM_COUNT)
     other_angles: box.Pool(f32, 4)
     for i := 0; i < SYSTEM_COUNT; i += 1 {
-      system := box.get(&world.locations, system_ids[i])
+      system := box.get(&w.locations, system_ids[i])
       box.clear(&other_systems)
 
       for j := 0; j < SYSTEM_COUNT; j += 1 {
         if i == j do continue
-        other_system := box.get(&world.locations, system_ids[j])
+        other_system := box.get(&w.locations, system_ids[j])
         d := distance(system.position, other_system.position)
         box.append(&other_systems, OtherSystem{id = system_ids[j], distance = d})
       }
@@ -93,7 +93,7 @@ generate_new_world :: proc() {
         if other_angles.count >= 4 do break
         if other_systems.count <= j do break
 
-        other_system := box.get(&world.locations, other_systems.items[j].id)
+        other_system := box.get(&w.locations, other_systems.items[j].id)
 
         // Skip if angle too close to existing connection
         angle := angle_between(system.position, other_system.position)
@@ -115,7 +115,7 @@ generate_new_world :: proc() {
   // Generate planets
   for i := 0; i < SYSTEM_COUNT; i += 1 {
     system_id := system_ids[i]
-    parent_position := box.get(&world.locations, system_id).position
+    parent_position := box.get(&w.locations, system_id).position
     planet_count := randu_bell(0, 6, 3)
 
     planet_distance := f32(10)
@@ -123,7 +123,7 @@ generate_new_world :: proc() {
       planet_position := parent_position + at_angle(rand_angle()) * planet_distance
       planet_size := randf_bell(5, 10, 2)
       planet_id := box.append(
-        &world.locations,
+        &w.locations,
         Location {
           kind = .Planet,
           name = make_random_name(),
@@ -146,7 +146,7 @@ generate_new_world :: proc() {
         city_position += planet_position
 
         box.append(
-          &world.locations,
+          &w.locations,
           Location {
             kind = .City,
             name = make_random_name(),

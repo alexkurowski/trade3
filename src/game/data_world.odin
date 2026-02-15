@@ -7,38 +7,30 @@ COMPANY_COUNT :: 64
 FACTION_COUNT :: 3
 SYSTEM_COUNT :: 32
 
-world: struct {
-  factions:       box.Array(Faction, ID, FACTION_COUNT),
-  companies:      box.Array(Company, ID, COMPANY_COUNT),
-  locations:      box.Array(Location, ID, 1024),
-  entities:       box.Array(Entity, ID, 102400),
-  entity_by_kind: [EntityKind]box.Pool(ID, 1024),
-}
-
 world_clear :: proc() {
-  for &f in world.factions.items {
+  for &f in w.factions.items {
     if box.skip(&f) do continue
     delete(f.name)
   }
-  for &c in world.companies.items {
+  for &c in w.companies.items {
     if box.skip(&c) do continue
     delete(c.name)
   }
-  for &l in world.locations.items {
+  for &l in w.locations.items {
     if box.skip(&l) do continue
     delete(l.name)
   }
-  for &e in world.entities.items {
+  for &e in w.entities.items {
     if box.skip(&e) do continue
     despawn(e.id)
   }
 
-  box.clear(&world.factions)
-  box.clear(&world.companies)
-  box.clear(&world.locations)
-  box.clear(&world.entities)
+  box.clear(&w.factions)
+  box.clear(&w.companies)
+  box.clear(&w.locations)
+  box.clear(&w.entities)
   for kind in EntityKind {
-    box.clear(&world.entity_by_kind[kind])
+    box.clear(&w.entity_by_kind[kind])
   }
 
   g.location_view_id = none
