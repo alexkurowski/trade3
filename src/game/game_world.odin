@@ -49,19 +49,35 @@ world_cleanup :: proc() {
 
 world_update :: proc() {
   update_locations :: proc() {
-    current_location := get_current_location()
+    view_location := get_current_location()
+    view_kind := view_location.kind
 
     for &location in w.locations.items {
       if box.skip(location) do continue
       if g.location_view_id != location.parent_id && g.location_view_id != location.id do continue
 
-      #partial switch location.kind {
-      case .System:
-        draw_sprite(.Star, location.position)
-      case .Planet:
-        draw_sprite(.Planet, location.position)
-      case .City:
-        draw_sprite(.City, location.position)
+      // Draw location sprite/shape
+      {
+        if location.kind == .System {
+          draw_sprite(.Star, location.position)
+        }
+
+        if location.kind == .Planet {
+          if view_kind == .Planet {
+            draw_shape(.SphereWires, location.position, location.size)
+          } else {
+            draw_sprite(.Planet, location.position)
+            draw_shape(
+              .CircleY,
+              view_location.position,
+              length(location.position - view_location.position),
+            )
+          }
+        }
+
+        if location.kind == .City {
+          draw_sprite(.City, location.position)
+        }
       }
 
       // Hover
@@ -73,7 +89,7 @@ world_update :: proc() {
       }
 
       // Draw connection routes
-      if current_location == nil && location.kind == .System {
+      if view_kind == .World && location.kind == .System {
         for conn_id in box.every(&location.connection_ids) {
           if location.id.idx > conn_id.idx do continue
 
@@ -82,62 +98,31 @@ world_update :: proc() {
           // rl.DrawLine3D(location.position, other_location.position, rl.WHITE)
         }
       }
-
-      // Draw planet orbit
-      if location.kind == .Planet {
-        distance := length(location.position - current_location.position)
-        draw_shape(.CircleY, current_location.position, distance)
-        // rl.DrawCircle3D(current_location.position, distance, Vec3{1, 0, 0}, 90, rl.WHITE)
-      }
-    }
-
-    // Draw current location parent (star or planet)
-    if current_location != nil {
-      if current_location.kind == .System {
-        // draw_sprite(.Star, current_location.position)
-      } else if current_location.kind == .Planet {
-        draw_shape(.SphereWires, current_location.position, current_location.size)
-      }
     }
   }
 
   update_entities :: proc() {
-    current_location := get_current_location()
+    view_location := get_current_location()
+    view_kind := view_location.kind
 
     for &entity in w.entities.items {
       if box.skip(&entity) do continue
 
-      location := box.get(&w.locations, entity.location_id)
-      if location == nil do continue
+      screen_position, on_screen := get_entity_screen_position(view_kind, &entity)
+      if !on_screen do continue
 
-      if current_location == nil {
-        // Looking for system
-        location = location_find_parent(location, .System)
-      } else if current_location.kind == .System {
-        // Looking for planet/station
-        location = location_find_parent(location, .Planet)
-      } else if current_location.kind == .Planet {
-        // Looking for city
-        location = location_find_parent(location, .City)
-      }
+      screen_position += Vec2{12, -12}
+      draw_sprite(.Ship, screen_position, Color{0, 255, 0, 255})
 
-      if location == nil do continue
-      location_screen_position, on_screen := to_screen_position(location.position)
-      entity_screen_position := location_screen_position + Vec2{12, -12}
-
-      if on_screen {
-        draw_sprite(.Ship, entity_screen_position, Color{0, 255, 0, 255})
-      }
-
-      if on_screen && distance(g.mouse_position, entity_screen_position) < 10 {
+      if distance(g.mouse_position, screen_position) < 10 {
         g.location_hover_id = none
         g.entity_hover_id = entity.id
         ui.tooltip = entity.name
-        draw_sprite(.Planet, entity_screen_position, 2, Color{255, 255, 255, 128})
+        draw_sprite(.Planet, screen_position, 2, Color{255, 255, 255, 128})
       }
 
       if entity.id == g.entity_selected_id {
-        draw_sprite(.Planet, entity_screen_position, 2, Color{255, 64, 64, 128})
+        draw_sprite(.Planet, screen_position, 2, Color{255, 64, 64, 128})
       }
     }
   }

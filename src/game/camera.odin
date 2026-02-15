@@ -68,9 +68,9 @@ camera_step :: proc() {
 camera_controls :: proc() {
   c := &g.camera
 
-  if g.debug_mode {
+  {
     move: Vec3
-    speed :: 5
+    speed :: 20
     if rl.IsKeyDown(.A) do move.x = +speed
     if rl.IsKeyDown(.D) do move.x = -speed
     if rl.IsKeyDown(.Q) do move.y = -speed

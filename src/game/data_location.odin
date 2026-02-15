@@ -15,20 +15,41 @@ Location :: struct {
 }
 
 LocationKind :: enum u8 {
-  None,
+  World,
   System,
   Planet,
-  Settlement,
-  City,
   Station,
+  City,
 }
 
 get_current_location :: proc() -> ^Location {
-  return box.get(&w.locations, g.location_view_id)
+  location := box.get(&w.locations, g.location_view_id)
+  if location == nil {
+    return &w.locations.items[0]
+  } else {
+    return location
+  }
 }
 
-location_find_parent :: proc(l: ^Location, kind: LocationKind) -> ^Location {
-  loc := l
+get_parent_location_kind :: proc(kind: LocationKind) -> Maybe(LocationKind) {
+  if kind == .System do return nil
+  if kind == .Planet do return .System
+  if kind == .Station do return .System
+  if kind == .City do return .Planet
+  return nil
+}
+
+get_child_location_kind :: proc(kind: LocationKind) -> Maybe(LocationKind) {
+  if kind == .World do return .System
+  if kind == .System do return .Planet // or .Station
+  if kind == .Planet do return .City
+  if kind == .City do return nil
+  return nil
+}
+
+location_find_parent :: proc(kind: LocationKind, id: ID) -> ^Location {
+  loc := box.get(&w.locations, id)
+  if loc == nil do return nil
   for loc.kind != kind {
     if loc.parent_id == none {
       return nil

@@ -1,8 +1,6 @@
 #+private file
 package game
 
-import "core:slice"
-import "core:strings"
 import "deps:box"
 import rl "vendor:raylib"
 
@@ -76,7 +74,7 @@ process_input :: proc() {
   }
 
   if is_go_back {
-    if current_location != nil && current_location.kind != .None {
+    if current_location != nil && current_location.kind != .World {
       location := box.get(&w.locations, current_location.parent_id)
       if location != nil {
         g.location_view_id = location.id
@@ -93,6 +91,7 @@ debug_mode :: proc() {
   if rl.IsKeyPressed(.SLASH) do g.debug_mode = !g.debug_mode
   if g.debug_mode {
     draw_shape(.DebugGrid, Vec3{100, 1, 0})
+    draw_sprite(.DebugFps, Vec2{0, 0})
 
     if rl.IsKeyPressed(.R) {
       start_new_game()

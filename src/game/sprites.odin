@@ -17,6 +17,7 @@ SpriteKind :: enum {
   Planet,
   City,
   Ship,
+  DebugFps,
 }
 
 @(private = "file")
@@ -43,6 +44,9 @@ sprites_end :: proc() {
     case .Ship:
       source.x = 128
       source.y = 32
+    case .DebugFps:
+      rl.DrawFPS(i32(sprite.position.x), i32(sprite.position.y))
+      continue
     }
     rl.DrawTexturePro(
       assets.textures.icons,
