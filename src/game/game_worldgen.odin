@@ -6,7 +6,7 @@ import "core:slice"
 import "deps:box"
 
 @(private)
-world_GenerateNewWorld :: proc() {
+generate_new_world :: proc() {
   // Generate factions
   for i := 0; i < FACTION_COUNT; i += 1 {
     box.append(&world.factions, Faction{name = make_faction_name()})

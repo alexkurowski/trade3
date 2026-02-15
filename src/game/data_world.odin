@@ -15,7 +15,7 @@ world: struct {
   entity_by_kind: [EntityKind]box.Pool(ID, 1024),
 }
 
-world_Clear :: proc() {
+world_clear :: proc() {
   for &f in world.factions.items {
     if box.skip(&f) do continue
     delete(f.name)

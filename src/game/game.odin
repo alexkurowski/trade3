@@ -1,3 +1,4 @@
+#+private file
 package game
 
 import "core:slice"
@@ -5,11 +6,13 @@ import "core:strings"
 import "deps:box"
 import rl "vendor:raylib"
 
+@(private)
 start_new_game :: proc() {
-  world_Clear()
-  world_GenerateNewWorld()
+  world_clear()
+  generate_new_world()
 }
 
+@(private)
 game_update :: proc() {
   reset_input()
   camera_controls()
