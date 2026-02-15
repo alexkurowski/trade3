@@ -53,7 +53,7 @@ world_update :: proc() {
 
     for &location in w.locations.items {
       if box.skip(location) do continue
-      if g.location_view_id != location.parent_id do continue
+      if g.location_view_id != location.parent_id && g.location_view_id != location.id do continue
 
       #partial switch location.kind {
       case .System:
@@ -73,7 +73,7 @@ world_update :: proc() {
       }
 
       // Draw connection routes
-      if location.kind == .System {
+      if current_location == nil && location.kind == .System {
         for conn_id in box.every(&location.connection_ids) {
           if location.id.idx > conn_id.idx do continue
 
@@ -94,7 +94,7 @@ world_update :: proc() {
     // Draw current location parent (star or planet)
     if current_location != nil {
       if current_location.kind == .System {
-        draw_sprite(.Star, current_location.position)
+        // draw_sprite(.Star, current_location.position)
       } else if current_location.kind == .Planet {
         draw_shape(.SphereWires, current_location.position, current_location.size)
       }

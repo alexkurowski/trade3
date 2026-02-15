@@ -22,7 +22,7 @@ game_update :: proc() {
   process_input()
   camera_controls()
 
-  draw_ui_location_breadcrumb()
+  draw_ui()
 
   debug_mode()
 }
@@ -96,26 +96,6 @@ debug_mode :: proc() {
 
     if rl.IsKeyPressed(.R) {
       start_new_game()
-    }
-  }
-}
-
-draw_ui_location_breadcrumb :: proc() {
-  location := box.get(&w.locations, g.location_view_id)
-  if location == nil do return
-
-  path: box.Pool(string, 4)
-
-  for location != nil {
-    box.append(&path, location.name)
-    location = box.get(&w.locations, location.parent_id)
-  }
-
-  slice.reverse(box.every(&path))
-
-  if !box.is_empty(&path) {
-    if UI()({}) {
-      ui_text(strings.join(box.every(&path), " > ", context.temp_allocator))
     }
   }
 }
