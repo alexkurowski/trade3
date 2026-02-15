@@ -1,4 +1,3 @@
-#+private file
 package game
 
 import "core:slice"
@@ -6,18 +5,17 @@ import "core:strings"
 import "deps:box"
 import rl "vendor:raylib"
 
-@(private)
 start_new_game :: proc() {
-  clear_world()
-  generate_new_world()
+  world_Clear()
+  world_GenerateNewWorld()
 }
 
-@(private)
-scene_update_and_render :: proc() {
+game_update :: proc() {
   reset_input()
   camera_controls()
 
   // TODO: scene switch
+  update_companies()
   update_and_draw_locations()
   update_and_draw_entities()
 
@@ -154,6 +152,11 @@ draw_ui_location_breadcrumb :: proc() {
     if UI()({}) {
       ui_text(strings.join(box.every(&path), " > ", context.temp_allocator))
     }
+  }
+}
+
+update_companies :: proc() {
+  for &company in world.companies.items {
   }
 }
 

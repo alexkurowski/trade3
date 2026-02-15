@@ -47,15 +47,14 @@ draw_sprites :: proc() {
   }
 }
 
-
-draw_sprite :: proc {
-  draw_sprite_vec2,
-  draw_sprite_vec3,
+add_sprite :: proc {
+  add_sprite_vec2,
+  add_sprite_vec3,
 }
-draw_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2) {
+add_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2) {
   box.append(&sprite_queue, Sprite{kind, position})
 }
-draw_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3) {
+add_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3) {
   if is_on_screen(position) {
     box.append(&sprite_queue, Sprite{kind, to_screen_position(position)})
   }

@@ -4,17 +4,18 @@ package game
 import "deps:box"
 
 Entity :: struct {
-  id:          ID,
-  cache_id:    i32,
-  kind:        EntityKind,
-  trait:       bit_set[EntityTrait],
-  location_id: ID,
-  parent_id:   ID,
-  next_id:     ID,
-  target_id:   ID,
-  name:        string,
-  position:    Vec3,
-  velocity:    Vec3,
+  id:              ID,
+  cache_id:        i32,
+  kind:            EntityKind,
+  trait:           bit_set[EntityTrait],
+  company_id:      ID,
+  location_id:     ID,
+  parent_id:       ID,
+  sibling_id:      ID,
+  target_id:       ID,
+  name:            string,
+  position:        Vec3,
+  target_position: Vec3,
 }
 
 EntityKind :: enum u8 {

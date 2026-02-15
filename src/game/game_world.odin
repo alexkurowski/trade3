@@ -3,26 +3,6 @@ package game
 
 import "deps:box"
 
-Location :: struct {
-  id:             ID,
-  kind:           LocationKind,
-  name:           string,
-  parent_id:      ID,
-  connection_ids: box.Pool(ID, 4),
-  faction_id:     ID,
-  position:       Vec3,
-  size:           f32,
-}
-
-LocationKind :: enum u8 {
-  None,
-  System,
-  Planet,
-  Facility,
-  City,
-  Station,
-}
-
 COMPANY_COUNT :: 64
 FACTION_COUNT :: 3
 SYSTEM_COUNT :: 32
@@ -35,7 +15,7 @@ world: struct {
   entity_by_kind: [EntityKind]box.Pool(ID, 1024),
 }
 
-clear_world :: proc() {
+world_Clear :: proc() {
   for &f in world.factions.items {
     if box.skip(&f) do continue
     delete(f.name)

@@ -30,13 +30,13 @@ unload :: proc() {
 }
 
 update :: proc() {
-  render_begin_frame()
   time_step()
+  render_step()
 
   ui_begin()
 
   render_begin_3d()
-  scene_update_and_render()
+  game_update()
   render_end_3d()
 
   render_begin_2d()

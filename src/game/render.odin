@@ -61,7 +61,7 @@ render_load :: proc() {
   camera.c3d.up = Vec3{0, 1, 0}
 }
 
-render_begin_frame :: proc() {
+render_step :: proc() {
   // Camera
   camera.distance = math.clamp(camera.distance, CAMERA_CLOSEST, CAMERA_FARTHEST)
   camera.angle.y = math.clamp(camera.angle.y, CAMERA_MIN_PITCH, CAMERA_MAX_PITCH)
