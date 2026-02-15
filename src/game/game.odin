@@ -8,34 +8,34 @@ import rl "vendor:raylib"
 
 @(private)
 start_new_game :: proc() {
-  world_clear()
+  world_cleanup()
   generate_new_world()
 }
 
 @(private)
 game_update :: proc() {
   reset_input()
-  camera_controls()
+  camera_step(&g.camera)
 
   // TODO: scene switch
   update_companies()
   update_and_draw_locations()
   update_and_draw_entities()
+  update_input()
 
   draw_ui_location_breadcrumb()
 
-  camera_controls()
+  camera_controls(&g.camera)
 
+  if rl.IsKeyPressed(.SLASH) do g.debug_mode = !g.debug_mode
   if g.debug_mode {
     rl.DrawGrid(20, 1)
-    rl.DrawCircle3D(camera.target, 0.1, {1, 0, 0}, 90, rl.WHITE)
+    rl.DrawCircle3D(g.camera.target, 0.1, {1, 0, 0}, 90, rl.WHITE)
 
     if rl.IsKeyPressed(.R) {
       start_new_game()
     }
   }
-
-  if rl.IsKeyPressed(.SLASH) do g.debug_mode = !g.debug_mode
 }
 
 reset_input :: proc() {
@@ -44,46 +44,25 @@ reset_input :: proc() {
   g.entity_hover_id = none
 }
 
-camera_controls :: proc() {
-  if g.debug_mode {
-    move: Vec3
-    speed :: 5
-    if rl.IsKeyDown(.A) do move.x = +speed
-    if rl.IsKeyDown(.D) do move.x = -speed
-    if rl.IsKeyDown(.Q) do move.y = -speed
-    if rl.IsKeyDown(.E) do move.y = +speed
-    if rl.IsKeyDown(.W) do move.z = +speed
-    if rl.IsKeyDown(.S) do move.z = -speed
-    move_by := camera.ground_right * move.x + {0, move.y, 0} + camera.ground_forward * move.z
-    move_by *= time.dt
-    camera.target += move_by
-  }
-  {
-    rotate: Vec2
-    zoom: f32
-    if rl.IsKeyDown(.LEFT_SHIFT) {
-      zoom = -rl.GetMouseWheelMoveV().y
-    } else {
-      rotate = rl.GetMouseWheelMoveV() * 2.5
-    }
-    camera.angle.x += rotate.x
-    camera.angle.y -= rotate.y
-    camera.distance += zoom
-  }
-}
-
 update_and_draw_locations :: proc() {
-  current_location := box.get(&w.locations, g.location_view_id)
+  current_location := get_current_location()
 
   for &location in w.locations.items {
     if box.skip(location) do continue
     if g.location_view_id != location.parent_id do continue
 
-    rl.DrawSphere(location.position, 0.5, rl.WHITE)
+    #partial switch location.kind {
+    case .System:
+      add_sprite(.Star, location.position)
+    case .Planet:
+      add_sprite(.Planet, location.position)
+    case .City:
+      add_sprite(.City, location.position)
+    }
 
     // Hover
     screen_position, on_screen := to_screen_position(location.position)
-    if on_screen && distance(g.mouse_position, screen_position) < 5 {
+    if on_screen && distance(g.mouse_position, screen_position) < 10 {
       g.location_hover_id = location.id
       ui.tooltip = location.name
       rl.DrawSphereWires(location.position, 0.75, 6, 6, rl.GRAY)
@@ -109,31 +88,9 @@ update_and_draw_locations :: proc() {
   // Draw current location parent (star or planet)
   if current_location != nil {
     if current_location.kind == .System {
-      rl.DrawSphere(current_location.position, 2, rl.YELLOW)
+      add_sprite(.Star, current_location.position)
     } else if current_location.kind == .Planet {
       rl.DrawSphereWires(current_location.position, current_location.size, 6, 12, rl.GREEN)
-    }
-  }
-
-  // Location selection
-  if rl.IsMouseButtonPressed(.LEFT) && g.location_hover_id != none {
-    if current_location == nil || current_location.kind != .Planet {
-      location := box.get(&w.locations, g.location_hover_id)
-      if location != nil {
-        g.location_view_id = location.id
-        camera.target = location.position
-      }
-    }
-  } else if rl.IsMouseButtonPressed(.RIGHT) {
-    if current_location != nil && current_location.kind != .None {
-      location := box.get(&w.locations, current_location.parent_id)
-      if location != nil {
-        g.location_view_id = location.id
-        camera.target = location.position
-      } else {
-        g.location_view_id = none
-        camera.target = current_location.position
-      }
     }
   }
 }
@@ -160,12 +117,107 @@ draw_ui_location_breadcrumb :: proc() {
 
 update_companies :: proc() {
   for &company in w.companies.items {
-    if box.skip(company) do continue
+    if box.skip(&company) do continue
   }
 }
 
 update_and_draw_entities :: proc() {
+  current_location := get_current_location()
+
   for &entity in w.entities.items {
-    if box.skip(entity) do continue
+    if box.skip(&entity) do continue
+
+    location := box.get(&w.locations, entity.location_id)
+    if location == nil do continue
+
+    if current_location == nil {
+      // Looking for system
+      location = location_find_parent(location, .System)
+    } else if current_location.kind == .System {
+      // Looking for planet/station
+      location = location_find_parent(location, .Planet)
+    } else if current_location.kind == .Planet {
+      // Looking for city
+      location = location_find_parent(location, .City)
+    }
+
+    if location == nil do continue
+    location_screen_position, on_screen := to_screen_position(location.position)
+    entity_screen_position := location_screen_position + Vec2{12, -12}
+
+    if on_screen {
+      add_sprite(.Ship, entity_screen_position)
+    }
+
+    if on_screen && distance(g.mouse_position, entity_screen_position) < 10 {
+      g.location_hover_id = none
+      g.entity_hover_id = entity.id
+      ui.tooltip = entity.name
+      add_sprite(.Planet, entity_screen_position)
+    }
+
+    if entity.id == g.entity_selected_id {
+      for i := -2; i <= 2; i += 4 {
+        for j := -2; j <= 2; j += 4 {
+          add_sprite(.Planet, entity_screen_position + Vec2{f32(i), f32(j)})
+        }
+      }
+    }
+  }
+}
+
+update_input :: proc() {
+  current_location := get_current_location()
+  is_left_click := rl.IsMouseButtonPressed(.LEFT)
+  is_submit_command := rl.IsMouseButtonPressed(.RIGHT) && g.entity_selected_id != none
+  is_go_back := rl.IsKeyPressed(.BACKSPACE)
+
+  if is_left_click {
+    if g.entity_hover_id != none {
+      entity := box.get(&w.entities, g.entity_hover_id)
+      if entity != nil {
+        g.entity_selected_id = entity.id
+      }
+    } else if g.location_hover_id != none {
+      if current_location == nil || current_location.kind != .Planet {
+        location := box.get(&w.locations, g.location_hover_id)
+        if location != nil {
+          g.location_view_id = location.id
+          g.camera.target = location.position
+        }
+      }
+    } else {
+      g.entity_selected_id = none
+    }
+  }
+
+  if is_submit_command {
+    if g.location_hover_id != none {
+      entity := box.get(&w.entities, g.entity_selected_id)
+      location := box.get(&w.locations, g.location_hover_id)
+      if entity != nil && location != nil {
+        prev_location := box.get(&w.locations, entity.location_id)
+        is_same_location := prev_location.id == location.id
+        if !is_same_location {
+          // NOTE: compose a path for the flight here
+          entity.position = prev_location.position
+          entity.location_id = prev_location.parent_id
+          entity.target_id = location.id
+        }
+      }
+    }
+  }
+
+  if is_go_back {
+    if current_location != nil && current_location.kind != .None {
+      location := box.get(&w.locations, current_location.parent_id)
+      if location != nil {
+        g.location_view_id = location.id
+        g.camera.target = location.position
+      } else {
+        g.location_view_id = none
+        g.camera.target = current_location.position
+      }
+    }
   }
 }

@@ -113,6 +113,7 @@ generate_new_world :: proc() {
   }
 
   // Generate planets
+  debug_location_id: ID
   for i := 0; i < SYSTEM_COUNT; i += 1 {
     system_id := system_ids[i]
     parent_position := box.get(&w.locations, system_id).position
@@ -145,7 +146,7 @@ generate_new_world :: proc() {
         city_position *= planet_size
         city_position += planet_position
 
-        box.append(
+        debug_location_id = box.append(
           &w.locations,
           Location {
             kind = .City,
@@ -157,4 +158,13 @@ generate_new_world :: proc() {
       }
     }
   }
+
+  spawn(
+    .Vehicle,
+    Entity {
+      company_id = g.player_company_id,
+      location_id = debug_location_id,
+      name = make_ship_callsign(),
+    },
+  )
 }

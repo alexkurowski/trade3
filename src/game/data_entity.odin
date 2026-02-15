@@ -28,7 +28,7 @@ EntityTrait :: enum u8 {
   None,
 }
 
-spawn :: proc(entity: Entity, kind: EntityKind) -> ID {
+spawn :: proc(kind: EntityKind, entity: Entity) -> ID {
   e := entity
   e.kind = kind
   id := box.append(&w.entities, e)

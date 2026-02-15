@@ -7,7 +7,7 @@ COMPANY_COUNT :: 64
 FACTION_COUNT :: 3
 SYSTEM_COUNT :: 32
 
-world_clear :: proc() {
+world_cleanup :: proc() {
   for &f in w.factions.items {
     if box.skip(&f) do continue
     delete(f.name)

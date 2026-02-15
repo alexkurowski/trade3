@@ -8,14 +8,33 @@ SpriteKind :: enum {
   Star,
   Station,
   Planet,
-  Asteroid,
+  City,
   Ship,
 }
 Sprite :: struct {
   kind:     SpriteKind,
   position: Vec2,
 }
+
+@(private = "file")
 sprite_queue: box.Pool(Sprite, 256)
+
+clear_sprites :: proc() {
+  box.clear(&sprite_queue)
+}
+
+add_sprite :: proc {
+  add_sprite_vec2,
+  add_sprite_vec3,
+}
+add_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2) {
+  box.append(&sprite_queue, Sprite{kind, position})
+}
+add_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3) {
+  if is_on_screen(position) {
+    box.append(&sprite_queue, Sprite{kind, to_screen_position(position)})
+  }
+}
 
 draw_sprites :: proc() {
   for sprite in box.every(&sprite_queue) {
@@ -29,9 +48,8 @@ draw_sprites :: proc() {
       source.x = 64
     case .Planet:
       source.x = 32
-    case .Asteroid:
+    case .City:
       source.x = 96
-      size /= 2
     case .Ship:
       source.x = 128
       source.y = 32
@@ -44,19 +62,6 @@ draw_sprites :: proc() {
       0,
       rl.WHITE,
     )
-  }
-}
-
-add_sprite :: proc {
-  add_sprite_vec2,
-  add_sprite_vec3,
-}
-add_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2) {
-  box.append(&sprite_queue, Sprite{kind, position})
-}
-add_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3) {
-  if is_on_screen(position) {
-    box.append(&sprite_queue, Sprite{kind, to_screen_position(position)})
   }
 }
 

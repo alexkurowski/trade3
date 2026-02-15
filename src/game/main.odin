@@ -7,6 +7,7 @@ INITIAL_WINDOW_HEIGHT :: 600
 
 // Global game state
 g: struct {
+  camera:             Camera,
   player_company_id:  ID,
   mouse_position:     Vec2,
   debug_mode:         bool,
@@ -29,23 +30,28 @@ w: struct {
 
 load :: proc() {
   text_load()
-  render_load()
+  assets_load()
   ui_load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
+
+  g.camera = new_camera()
 
   start_new_game()
 }
 
 unload :: proc() {
   ui_unload()
+  assets_unload()
+  world_cleanup()
 }
 
 update :: proc() {
   time_step()
-  render_step()
+  camera_step(&g.camera)
+  clear_sprites()
 
   ui_begin()
 
-  render_begin_3d()
+  render_begin_3d(g.camera.c3d)
   game_update()
   render_end_3d()
 

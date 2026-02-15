@@ -22,3 +22,18 @@ LocationKind :: enum u8 {
   City,
   Station,
 }
+
+get_current_location :: proc() -> ^Location {
+  return box.get(&w.locations, g.location_view_id)
+}
+
+location_find_parent :: proc(l: ^Location, kind: LocationKind) -> ^Location {
+  loc := l
+  for loc.kind != kind {
+    if loc.parent_id == none {
+      return nil
+    }
+    loc = box.get(&w.locations, loc.parent_id)
+  }
+  return loc
+}
