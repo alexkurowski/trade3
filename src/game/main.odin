@@ -20,13 +20,7 @@ g: struct {
 }
 
 // World state
-w: struct {
-  factions:       box.Array(Faction, ID, FACTION_COUNT),
-  companies:      box.Array(Company, ID, COMPANY_COUNT),
-  locations:      box.Array(Location, ID, 1024),
-  entities:       box.Array(Entity, ID, 102400),
-  entity_by_kind: [EntityKind]box.Pool(ID, 1024),
-}
+w: World
 
 load :: proc() {
   text_load()

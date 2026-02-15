@@ -7,6 +7,7 @@ import rl "vendor:raylib"
 Sprite :: struct {
   kind:     SpriteKind,
   position: Vec2,
+  size:     f32,
   color:    rl.Color,
 }
 
@@ -28,7 +29,7 @@ sprites_begin :: proc() {
 sprites_end :: proc() {
   for sprite in box.every(&sprite_queue) {
     source := Rect{0, 0, 32, 32}
-    size := Vec2{16, 16}
+    size := Vec2{16, 16} * sprite.size
     switch sprite.kind {
     case .Star:
       source.x = 32
@@ -55,14 +56,34 @@ sprites_end :: proc() {
 }
 
 add_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2, color: rl.Color = rl.WHITE) {
-  box.append(&sprite_queue, Sprite{kind, position, color})
+  box.append(&sprite_queue, Sprite{kind, position, 1, color})
+}
+add_sprite_vec2_size :: proc(
+  kind: SpriteKind,
+  position: Vec2,
+  size: f32 = 1,
+  color: rl.Color = rl.WHITE,
+) {
+  box.append(&sprite_queue, Sprite{kind, position, size, color})
 }
 add_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3, color: rl.Color = rl.WHITE) {
   if is_on_screen(position) {
-    box.append(&sprite_queue, Sprite{kind, to_screen_position(position), color})
+    box.append(&sprite_queue, Sprite{kind, to_screen_position(position), 1, color})
+  }
+}
+add_sprite_vec3_size :: proc(
+  kind: SpriteKind,
+  position: Vec3,
+  size: f32 = 1,
+  color: rl.Color = rl.WHITE,
+) {
+  if is_on_screen(position) {
+    box.append(&sprite_queue, Sprite{kind, to_screen_position(position), size, color})
   }
 }
 draw_sprite :: proc {
   add_sprite_vec2,
+  add_sprite_vec2_size,
   add_sprite_vec3,
+  add_sprite_vec3_size,
 }
