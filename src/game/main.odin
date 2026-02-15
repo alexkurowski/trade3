@@ -46,17 +46,20 @@ unload :: proc() {
 
 update :: proc() {
   time_step()
-  camera_step(&g.camera)
-  clear_sprites()
+  camera_step()
 
+  shapes_begin()
+  sprites_begin()
   ui_begin()
 
-  render_begin_3d(g.camera.c3d)
   game_update()
+
+  render_begin_3d()
+  shapes_end()
   render_end_3d()
 
   render_begin_2d()
-  draw_sprites()
+  sprites_end()
   ui_end()
   render_end_2d()
 

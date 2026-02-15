@@ -13,6 +13,7 @@ CAMERA_MAX_PITCH :: 80
 
 Camera :: struct {
   c3d:            rl.Camera3D,
+  m3d:            rl.Matrix,
   offset:         Vec3,
   target:         Vec3,
   forward:        Vec3,
@@ -37,7 +38,9 @@ new_camera :: proc() -> Camera {
   return c
 }
 
-camera_step :: proc(c: ^Camera) {
+camera_step :: proc() {
+  c := &g.camera
+
   // Camera
   c.distance = math.clamp(c.distance, CAMERA_CLOSEST, CAMERA_FARTHEST)
   c.angle.y = math.clamp(c.angle.y, CAMERA_MIN_PITCH, CAMERA_MAX_PITCH)
@@ -50,6 +53,8 @@ camera_step :: proc(c: ^Camera) {
   // Lerp camera
   c.c3d.target = linalg.lerp(c.c3d.target, c.target, CAMERA_SPEED * time.dt)
   c.c3d.position = linalg.lerp(c.c3d.position, c.c3d.target + c.offset, CAMERA_SPEED * time.dt * 5)
+  // Recalculate matrix
+  c.m3d = rl.GetCameraMatrix(c.c3d)
   // Recalculate camera directions
   forward := c.c3d.target - c.c3d.position
   c.forward = linalg.normalize(forward)
@@ -60,7 +65,9 @@ camera_step :: proc(c: ^Camera) {
   c.ground_right = linalg.normalize(linalg.cross(c.c3d.up, forward))
 }
 
-camera_controls :: proc(c: ^Camera) {
+camera_controls :: proc() {
+  c := &g.camera
+
   if g.debug_mode {
     move: Vec3
     speed :: 5
@@ -86,4 +93,20 @@ camera_controls :: proc(c: ^Camera) {
     c.angle.y -= rotate.y
     c.distance += zoom
   }
+}
+
+//
+// 3d to 2d helpers
+//
+is_on_screen :: #force_inline proc(position: Vec3) -> bool {
+  t := rl.Vector3Transform(position, g.camera.m3d)
+  return t.z < -0.1
+}
+
+get_screen_position :: #force_inline proc(position: Vec3) -> Vec2 {
+  return rl.GetWorldToScreen(position, g.camera.c3d)
+}
+
+to_screen_position :: #force_inline proc(position: Vec3) -> (Vec2, bool) #optional_ok {
+  return get_screen_position(position), is_on_screen(position)
 }

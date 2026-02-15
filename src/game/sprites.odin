@@ -4,6 +4,12 @@ package game
 import "deps:box"
 import rl "vendor:raylib"
 
+Sprite :: struct {
+  kind:     SpriteKind,
+  position: Vec2,
+  color:    rl.Color,
+}
+
 SpriteKind :: enum {
   Star,
   Station,
@@ -11,32 +17,15 @@ SpriteKind :: enum {
   City,
   Ship,
 }
-Sprite :: struct {
-  kind:     SpriteKind,
-  position: Vec2,
-}
 
 @(private = "file")
 sprite_queue: box.Pool(Sprite, 256)
 
-clear_sprites :: proc() {
+sprites_begin :: proc() {
   box.clear(&sprite_queue)
 }
 
-add_sprite :: proc {
-  add_sprite_vec2,
-  add_sprite_vec3,
-}
-add_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2) {
-  box.append(&sprite_queue, Sprite{kind, position})
-}
-add_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3) {
-  if is_on_screen(position) {
-    box.append(&sprite_queue, Sprite{kind, to_screen_position(position)})
-  }
-}
-
-draw_sprites :: proc() {
+sprites_end :: proc() {
   for sprite in box.every(&sprite_queue) {
     source := Rect{0, 0, 32, 32}
     size := Vec2{16, 16}
@@ -60,20 +49,20 @@ draw_sprites :: proc() {
       Rect{sprite.position.x, sprite.position.y, size.x, size.y},
       size / 2,
       0,
-      rl.WHITE,
+      sprite.color,
     )
   }
 }
 
-draw_plane_line :: proc(position: Vec3, zero_y: f32 = 0) {
-  p1 := position
-  if p1.y > zero_y + 0.3 {
-    p1.y -= 0.2
-  } else if p1.y < zero_y - 0.3 {
-    p1.y += 0.2
-  } else {
-    return
+add_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2, color: rl.Color = rl.WHITE) {
+  box.append(&sprite_queue, Sprite{kind, position, color})
+}
+add_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3, color: rl.Color = rl.WHITE) {
+  if is_on_screen(position) {
+    box.append(&sprite_queue, Sprite{kind, to_screen_position(position), color})
   }
-  p2 := Vec3{p1.x, zero_y, p1.z}
-  rl.DrawLine3D(p1, p2, rl.WHITE)
+}
+draw_sprite :: proc {
+  add_sprite_vec2,
+  add_sprite_vec3,
 }

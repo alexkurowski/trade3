@@ -15,22 +15,20 @@ start_new_game :: proc() {
 @(private)
 game_update :: proc() {
   reset_input()
-  camera_step(&g.camera)
+  camera_step()
 
   // TODO: scene switch
-  update_companies()
   update_and_draw_locations()
   update_and_draw_entities()
-  update_input()
+  update_companies()
+  process_input()
+  camera_controls()
 
   draw_ui_location_breadcrumb()
 
-  camera_controls(&g.camera)
-
   if rl.IsKeyPressed(.SLASH) do g.debug_mode = !g.debug_mode
   if g.debug_mode {
-    rl.DrawGrid(20, 1)
-    rl.DrawCircle3D(g.camera.target, 0.1, {1, 0, 0}, 90, rl.WHITE)
+    draw_shape(.DebugGrid, Vec3{100, 1, 0})
 
     if rl.IsKeyPressed(.R) {
       start_new_game()
@@ -53,11 +51,11 @@ update_and_draw_locations :: proc() {
 
     #partial switch location.kind {
     case .System:
-      add_sprite(.Star, location.position)
+      draw_sprite(.Star, location.position)
     case .Planet:
-      add_sprite(.Planet, location.position)
+      draw_sprite(.Planet, location.position)
     case .City:
-      add_sprite(.City, location.position)
+      draw_sprite(.City, location.position)
     }
 
     // Hover
@@ -65,7 +63,9 @@ update_and_draw_locations :: proc() {
     if on_screen && distance(g.mouse_position, screen_position) < 10 {
       g.location_hover_id = location.id
       ui.tooltip = location.name
-      rl.DrawSphereWires(location.position, 0.75, 6, 6, rl.GRAY)
+      // TODO: Hover effect on location
+      draw_sprite(.Planet, location.position)
+      // rl.DrawSphereWires(location.position, 0.75, 6, 6, rl.GRAY)
     }
 
     // Draw connection routes
@@ -74,23 +74,25 @@ update_and_draw_locations :: proc() {
         if location.id.idx > conn_id.idx do continue
 
         other_location := box.get(&w.locations, conn_id)
-        rl.DrawLine3D(location.position, other_location.position, rl.WHITE)
+        draw_shape(.Line, location.position, other_location.position)
+        // rl.DrawLine3D(location.position, other_location.position, rl.WHITE)
       }
     }
 
     // Draw planet orbit
     if location.kind == .Planet {
       distance := length(location.position - current_location.position)
-      rl.DrawCircle3D(current_location.position, distance, Vec3{1, 0, 0}, 90, rl.WHITE)
+      draw_shape(.CircleY, current_location.position, distance)
+      // rl.DrawCircle3D(current_location.position, distance, Vec3{1, 0, 0}, 90, rl.WHITE)
     }
   }
 
   // Draw current location parent (star or planet)
   if current_location != nil {
     if current_location.kind == .System {
-      add_sprite(.Star, current_location.position)
+      draw_sprite(.Star, current_location.position)
     } else if current_location.kind == .Planet {
-      rl.DrawSphereWires(current_location.position, current_location.size, 6, 12, rl.GREEN)
+      draw_shape(.SphereWires, current_location.position, current_location.size)
     }
   }
 }
@@ -146,27 +148,27 @@ update_and_draw_entities :: proc() {
     entity_screen_position := location_screen_position + Vec2{12, -12}
 
     if on_screen {
-      add_sprite(.Ship, entity_screen_position)
+      draw_sprite(.Ship, entity_screen_position, rl.GREEN)
     }
 
     if on_screen && distance(g.mouse_position, entity_screen_position) < 10 {
       g.location_hover_id = none
       g.entity_hover_id = entity.id
       ui.tooltip = entity.name
-      add_sprite(.Planet, entity_screen_position)
+      draw_sprite(.Planet, entity_screen_position)
     }
 
     if entity.id == g.entity_selected_id {
       for i := -2; i <= 2; i += 4 {
         for j := -2; j <= 2; j += 4 {
-          add_sprite(.Planet, entity_screen_position + Vec2{f32(i), f32(j)})
+          draw_sprite(.Planet, entity_screen_position + Vec2{f32(i), f32(j)})
         }
       }
     }
   }
 }
 
-update_input :: proc() {
+process_input :: proc() {
   current_location := get_current_location()
   is_left_click := rl.IsMouseButtonPressed(.LEFT)
   is_submit_command := rl.IsMouseButtonPressed(.RIGHT) && g.entity_selected_id != none
