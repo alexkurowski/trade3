@@ -1,6 +1,7 @@
 #+private
 package game
 
+import "./ui"
 import "core:slice"
 import "core:strings"
 import "deps:box"
@@ -21,7 +22,7 @@ draw_ui :: proc() {
 
     if !box.is_empty(&path) {
       if UI()({}) {
-        ui_text(strings.join(box.every(&path), " > ", context.temp_allocator))
+        ui.text(strings.join(box.every(&path), " > ", context.temp_allocator))
       }
     }
   }

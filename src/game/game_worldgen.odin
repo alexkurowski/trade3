@@ -1,11 +1,10 @@
-#+private file
+#+private
 package game
 
 import "core:math"
 import "core:slice"
 import "deps:box"
 
-@(private)
 generate_new_world :: proc() {
   // Generate factions
   for i := 0; i < FACTION_COUNT; i += 1 {

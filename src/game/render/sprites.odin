@@ -1,5 +1,4 @@
-#+private
-package game
+package render
 
 import "deps:box"
 import rl "vendor:raylib"
@@ -27,7 +26,7 @@ sprites_begin :: proc() {
   box.clear(&sprite_queue)
 }
 
-sprites_end :: proc() {
+sprites_end :: proc(texture: rl.Texture) {
   for sprite in box.every(&sprite_queue) {
     source := Rect{0, 0, 32, 32}
     size := Vec2{16, 16} * sprite.size
@@ -49,7 +48,7 @@ sprites_end :: proc() {
       continue
     }
     rl.DrawTexturePro(
-      assets.textures.icons,
+      texture,
       source,
       Rect{sprite.position.x, sprite.position.y, size.x, size.y},
       size / 2,
@@ -72,7 +71,7 @@ add_sprite_vec2_size :: proc(
 }
 add_sprite_vec3 :: proc(kind: SpriteKind, position: Vec3, color: rl.Color = rl.WHITE) {
   if is_on_screen(position) {
-    box.append(&sprite_queue, Sprite{kind, to_screen_position(position), 1, color})
+    box.append(&sprite_queue, Sprite{kind, get_screen_position(position), 1, color})
   }
 }
 add_sprite_vec3_size :: proc(
@@ -82,10 +81,10 @@ add_sprite_vec3_size :: proc(
   color: rl.Color = rl.WHITE,
 ) {
   if is_on_screen(position) {
-    box.append(&sprite_queue, Sprite{kind, to_screen_position(position), size, color})
+    box.append(&sprite_queue, Sprite{kind, get_screen_position(position), size, color})
   }
 }
-draw_sprite :: proc {
+sprite :: proc {
   add_sprite_vec2,
   add_sprite_vec2_size,
   add_sprite_vec3,

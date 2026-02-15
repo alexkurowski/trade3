@@ -1,6 +1,7 @@
 #+private file
 package game
 
+import "./render"
 import "deps:box"
 import rl "vendor:raylib"
 
@@ -18,7 +19,6 @@ game_update :: proc() {
   world_update()
 
   process_input()
-  camera_controls()
 
   draw_ui()
 
@@ -90,8 +90,8 @@ process_input :: proc() {
 debug_mode :: proc() {
   if rl.IsKeyPressed(.SLASH) do g.debug_mode = !g.debug_mode
   if g.debug_mode {
-    draw_shape(.DebugGrid, Vec3{100, 1, 0})
-    draw_sprite(.DebugFps, Vec2{0, 0})
+    // draw_shape(.DebugGrid, Vec3{100, 1, 0})
+    render.sprite(.DebugFps, Vec2{0, 0})
 
     if rl.IsKeyPressed(.R) {
       start_new_game()

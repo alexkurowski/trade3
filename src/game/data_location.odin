@@ -31,22 +31,6 @@ get_current_location :: proc() -> ^Location {
   }
 }
 
-get_parent_location_kind :: proc(kind: LocationKind) -> Maybe(LocationKind) {
-  if kind == .System do return nil
-  if kind == .Planet do return .System
-  if kind == .Station do return .System
-  if kind == .City do return .Planet
-  return nil
-}
-
-get_child_location_kind :: proc(kind: LocationKind) -> Maybe(LocationKind) {
-  if kind == .World do return .System
-  if kind == .System do return .Planet // or .Station
-  if kind == .Planet do return .City
-  if kind == .City do return nil
-  return nil
-}
-
 location_find_parent :: proc(kind: LocationKind, id: ID) -> ^Location {
   loc := box.get(&w.locations, id)
   if loc == nil do return nil

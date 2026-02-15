@@ -46,14 +46,16 @@ despawn :: proc(id: ID) {
 }
 
 get_entity_screen_position :: proc(view_kind: LocationKind, e: ^Entity) -> (Vec2, bool) {
-  // Get kind of the location this entity will be next to
-  // If we're looking at top map, it's a system
-  // If we're looking at a system, it's a planet
-  child_kind, child_kind_ok := get_child_location_kind(view_kind).?
-  if !child_kind_ok do return Vec2(0), false
+  parent_location_kind: LocationKind
+  if view_kind == .World do parent_location_kind = .System
+  if view_kind == .System do parent_location_kind = .Planet // or .Station ?
+  if view_kind == .Planet do parent_location_kind = .City
+
+  // World don't have position (it's everywhere)
+  if parent_location_kind == .World do return Vec2(0), false
 
   // Get parent location of the entity with correct kind
-  parent_location := location_find_parent(child_kind, e.location_id)
+  parent_location := location_find_parent(parent_location_kind, e.location_id)
   if parent_location == nil do return Vec2(0), false
 
   return to_screen_position(parent_location.position)

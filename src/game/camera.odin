@@ -38,9 +38,7 @@ new_camera :: proc() -> Camera {
   return c
 }
 
-camera_step :: proc() {
-  c := &g.camera
-
+camera_step :: proc(c: ^Camera) {
   // Camera
   c.distance = math.clamp(c.distance, CAMERA_CLOSEST, CAMERA_FARTHEST)
   c.angle.y = math.clamp(c.angle.y, CAMERA_MIN_PITCH, CAMERA_MAX_PITCH)
@@ -65,9 +63,7 @@ camera_step :: proc() {
   c.ground_right = linalg.normalize(linalg.cross(c.c3d.up, forward))
 }
 
-camera_controls :: proc() {
-  c := &g.camera
-
+camera_controls :: proc(c: ^Camera) {
   {
     move: Vec3
     speed :: 20
@@ -95,6 +91,7 @@ camera_controls :: proc() {
   }
 }
 
+
 //
 // 3d to 2d helpers
 //
@@ -107,6 +104,6 @@ get_screen_position :: #force_inline proc(position: Vec3) -> Vec2 {
   return rl.GetWorldToScreen(position, g.camera.c3d)
 }
 
-to_screen_position :: #force_inline proc(position: Vec3) -> (Vec2, bool) #optional_ok {
+to_screen_position :: proc(position: Vec3) -> (Vec2, bool) #optional_ok {
   return get_screen_position(position), is_on_screen(position)
 }

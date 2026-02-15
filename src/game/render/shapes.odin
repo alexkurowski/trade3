@@ -1,5 +1,4 @@
-#+private
-package game
+package render
 
 import "deps:box"
 import rl "vendor:raylib"
@@ -50,7 +49,7 @@ add_shape_2f :: proc(kind: ShapeKind, a: Vec3, b: f32, color: rl.Color = rl.WHIT
 add_shape_2 :: proc(kind: ShapeKind, a, b: Vec3, color: rl.Color = rl.WHITE) {
   box.append(&shape_queue, Shape{kind, a, b, color})
 }
-draw_shape :: proc {
+shape :: proc {
   add_shape_1,
   add_shape_2f,
   add_shape_2,

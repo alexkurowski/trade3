@@ -1,19 +1,9 @@
 #+private
 package game
 
+import "./render"
+import "./ui"
 import "deps:box"
-
-COMPANY_COUNT :: 64
-FACTION_COUNT :: 3
-SYSTEM_COUNT :: 32
-
-World :: struct {
-  factions:       box.Array(Faction, ID, FACTION_COUNT),
-  companies:      box.Array(Company, ID, COMPANY_COUNT),
-  locations:      box.Array(Location, ID, 1024),
-  entities:       box.Array(Entity, ID, 102400),
-  entity_by_kind: [EntityKind]box.Pool(ID, 1024),
-}
 
 world_cleanup :: proc() {
   for &f in w.factions.items {
@@ -59,15 +49,15 @@ world_update :: proc() {
       // Draw location sprite/shape
       {
         if location.kind == .System {
-          draw_sprite(.Star, location.position)
+          render.sprite(.Star, location.position)
         }
 
         if location.kind == .Planet {
           if view_kind == .Planet {
-            draw_shape(.SphereWires, location.position, location.size)
+            render.shape(.SphereWires, location.position, location.size)
           } else {
-            draw_sprite(.Planet, location.position)
-            draw_shape(
+            render.sprite(.Planet, location.position)
+            render.shape(
               .CircleY,
               view_location.position,
               length(location.position - view_location.position),
@@ -76,7 +66,7 @@ world_update :: proc() {
         }
 
         if location.kind == .City {
-          draw_sprite(.City, location.position)
+          render.sprite(.City, location.position)
         }
       }
 
@@ -85,7 +75,7 @@ world_update :: proc() {
       if on_screen && distance(g.mouse_position, screen_position) < 10 {
         g.location_hover_id = location.id
         ui.tooltip = location.name
-        draw_sprite(.Planet, location.position, 2, Color{255, 255, 255, 128})
+        render.sprite(.Planet, location.position, 2, Color{255, 255, 255, 128})
       }
 
       // Draw connection routes
@@ -94,7 +84,7 @@ world_update :: proc() {
           if location.id.idx > conn_id.idx do continue
 
           other_location := box.get(&w.locations, conn_id)
-          draw_shape(.Line, location.position, other_location.position)
+          render.shape(.Line, location.position, other_location.position)
           // rl.DrawLine3D(location.position, other_location.position, rl.WHITE)
         }
       }
@@ -112,17 +102,17 @@ world_update :: proc() {
       if !on_screen do continue
 
       screen_position += Vec2{12, -12}
-      draw_sprite(.Ship, screen_position, Color{0, 255, 0, 255})
+      render.sprite(.Ship, screen_position, Color{0, 255, 0, 255})
 
       if distance(g.mouse_position, screen_position) < 10 {
         g.location_hover_id = none
         g.entity_hover_id = entity.id
         ui.tooltip = entity.name
-        draw_sprite(.Planet, screen_position, 2, Color{255, 255, 255, 128})
+        render.sprite(.Planet, screen_position, 2, Color{255, 255, 255, 128})
       }
 
       if entity.id == g.entity_selected_id {
-        draw_sprite(.Planet, screen_position, 2, Color{255, 64, 64, 128})
+        render.sprite(.Planet, screen_position, 2, Color{255, 64, 64, 128})
       }
     }
   }
