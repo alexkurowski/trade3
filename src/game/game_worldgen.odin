@@ -6,6 +6,9 @@ import "core:slice"
 import "deps:box"
 
 generate_new_world :: proc() {
+  SPACE_BETWEEN_SYSTEMS :: f32(20)
+  SYSTEM_MAX_RADIUS :: f32(5)
+
   // Generate factions
   for i := 0; i < FACTION_COUNT; i += 1 {
     box.append(&w.factions, Faction{name = make_faction_name()})
@@ -18,17 +21,27 @@ generate_new_world :: proc() {
   g.player_company_id = w.companies.items[0].id
 
   // Generate systems
-  system_ids: [SYSTEM_COUNT]ID
-  for i := 0; i < SYSTEM_COUNT; i += 1 {
-    system_ids[i] = box.append(
-      &w.locations,
-      Location {
-        kind = .System,
-        name = make_random_name(),
-        position = to_vec3(rand_offset(10, 50), randf(-5, 5)),
-        parent_id = none,
-      },
-    )
+  system_ids: box.Pool(ID, SYSTEM_COUNT)
+  {
+    for x := -2; x <= 2; x += 1 {
+      for y := -2; y <= 2; y += 1 {
+        system_position :=
+          Vec3{f32(x) * SPACE_BETWEEN_SYSTEMS, randf(-5, 5), f32(y) * SPACE_BETWEEN_SYSTEMS} +
+          rand_vec3(randf(0, SPACE_BETWEEN_SYSTEMS / 3))
+        box.append(
+          &system_ids,
+          box.append(
+            &w.locations,
+            Location {
+              kind = .System,
+              name = make_random_name(),
+              position = system_position,
+              parent_id = none,
+            },
+          ),
+        )
+      }
+    }
   }
 
   // Generate routes between systems
@@ -61,15 +74,18 @@ generate_new_world :: proc() {
     }
     other_systems: box.Pool(OtherSystem, SYSTEM_COUNT)
     other_angles: box.Pool(f32, 4)
-    for i := 0; i < SYSTEM_COUNT; i += 1 {
-      system := box.get(&w.locations, system_ids[i])
+    for system_id in box.every(&system_ids) {
+      system := box.get(&w.locations, system_id)
       box.clear(&other_systems)
 
-      for j := 0; j < SYSTEM_COUNT; j += 1 {
-        if i == j do continue
-        other_system := box.get(&w.locations, system_ids[j])
+      max_distance :: SPACE_BETWEEN_SYSTEMS * 2
+      for other_system_id in box.every(&system_ids) {
+        if system_id == other_system_id do continue
+        other_system := box.get(&w.locations, other_system_id)
         d := distance(system.position, other_system.position)
-        box.append(&other_systems, OtherSystem{id = system_ids[j], distance = d})
+        if d < max_distance {
+          box.append(&other_systems, OtherSystem{id = other_system_id, distance = d})
+        }
       }
 
       // Sort other systems by distance
@@ -111,17 +127,17 @@ generate_new_world :: proc() {
     }
   }
 
-  // Generate planets
+  // Generate planets & cities
   debug_location_id: ID
-  for i := 0; i < SYSTEM_COUNT; i += 1 {
-    system_id := system_ids[i]
+  for system_id in box.every(&system_ids) {
     parent_position := box.get(&w.locations, system_id).position
-    planet_count := randu_bell(0, 6, 3)
+    planet_count := randu_bell(1, 6, 3)
+    planet_distance_step := SYSTEM_MAX_RADIUS / f32(planet_count)
+    planet_distance := planet_distance_step
 
-    planet_distance := f32(10)
     for j := u16(0); j < planet_count; j += 1 {
       planet_position := parent_position + at_angle(rand_angle()) * planet_distance
-      planet_size := randf_bell(5, 10, 2)
+      planet_size := randf_bell(0.5, 1, 2)
       planet_id := box.append(
         &w.locations,
         Location {
@@ -132,7 +148,7 @@ generate_new_world :: proc() {
           parent_id = system_id,
         },
       )
-      planet_distance += randf(10, 20)
+      planet_distance += planet_distance_step * randf(0.9, 1.1)
 
       city_count := randu_bell(0, 10, 2)
       for k := u16(0); k < city_count; k += 1 {
@@ -158,11 +174,13 @@ generate_new_world :: proc() {
     }
   }
 
+  debug_location := box.get(&w.locations, debug_location_id)
   spawn(
     .Vehicle,
     Entity {
       company_id = g.player_company_id,
       location_id = debug_location_id,
+      position = debug_location.position,
       name = make_ship_callsign(),
     },
   )

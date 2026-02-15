@@ -57,11 +57,8 @@ world_update :: proc() {
             render.shape(.SphereWires, location.position, location.size)
           } else {
             render.sprite(.Planet, location.position)
-            render.shape(
-              .CircleY,
-              view_location.position,
-              length(location.position - view_location.position),
-            )
+            parent := box.get(&w.locations, location.parent_id)
+            render.shape(.CircleY, parent.position, length(location.position - parent.position))
           }
         }
 
@@ -97,6 +94,20 @@ world_update :: proc() {
 
     for &entity in w.entities.items {
       if box.skip(&entity) do continue
+
+      {
+        if entity.kind == .Vehicle {
+          if entity.target_id != none {
+            target := box.get(&w.locations, entity.target_id)
+            entity.position += (target.position - entity.position) * time.wdt
+            if distance(entity.position, target.position) < 0.1 {
+              entity.position = target.position
+              entity.location_id = target.id
+              entity.target_id = none
+            }
+          }
+        }
+      }
 
       screen_position, on_screen := get_entity_screen_position(view_kind, &entity)
       if !on_screen do continue

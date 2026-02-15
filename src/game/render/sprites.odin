@@ -20,7 +20,7 @@ SpriteKind :: enum {
 }
 
 @(private = "file")
-sprite_queue: box.Pool(Sprite, 256)
+sprite_queue: box.Pool(Sprite, 1024)
 
 sprites_begin :: proc() {
   box.clear(&sprite_queue)

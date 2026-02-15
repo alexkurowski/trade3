@@ -17,43 +17,6 @@ window_width: f32
 window_height: f32
 
 
-// #region Types
-UIImageData :: struct {
-  index: int,
-}
-
-UIWindowResizableDirection :: enum {
-  None,
-  Horizontal,
-  Vertical,
-  Both,
-}
-
-UIWindowResizingOrigin :: enum {
-  None,
-  Right,
-  TopRight,
-  Top,
-  TopLeft,
-  Left,
-  BottomLeft,
-  Bottom,
-  BottomRight,
-}
-
-UIWindow :: struct {
-  should_close:    bool,
-  pressed:         bool,
-  dragging:        bool,
-  resizable:       UIWindowResizableDirection,
-  resizing_origin: UIWindowResizingOrigin,
-  hovering_origin: UIWindowResizingOrigin,
-  position:        Vec2,
-  size:            Size,
-}
-// #endregion
-
-
 // #region UI load/unload
 load :: proc(width, height: f32) {
   prepare_colors()
