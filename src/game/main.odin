@@ -2,6 +2,7 @@ package game
 
 import "./render"
 import "./ui"
+import rl "vendor:raylib"
 
 INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
