@@ -7,19 +7,19 @@ import "deps:box"
 
 world_cleanup :: proc() {
   for &f in w.factions.items {
-    if box.skip(&f) do continue
+    if box.is_none(&f) do continue
     delete(f.name)
   }
   for &c in w.companies.items {
-    if box.skip(&c) do continue
+    if box.is_none(&c) do continue
     delete(c.name)
   }
   for &l in w.locations.items {
-    if box.skip(&l) do continue
+    if box.is_none(&l) do continue
     delete(l.name)
   }
   for &e in w.entities.items {
-    if box.skip(&e) do continue
+    if box.is_none(&e) do continue
     despawn(e.id)
   }
 
@@ -43,7 +43,7 @@ world_update :: proc() {
     view_kind := view_location.kind
 
     for &location in w.locations.items {
-      if box.skip(location) do continue
+      if box.is_none(location) do continue
       if g.location_view_id != location.parent_id && g.location_view_id != location.id do continue
 
       // Draw location sprite/shape
@@ -93,7 +93,7 @@ world_update :: proc() {
     view_kind := view_location.kind
 
     for &entity in w.entities.items {
-      if box.skip(&entity) do continue
+      if box.is_none(&entity) do continue
 
       {
         if entity.kind == .Vehicle {
@@ -130,7 +130,7 @@ world_update :: proc() {
 
   update_companies :: proc() {
     for &company in w.companies.items {
-      if box.skip(&company) do continue
+      if box.is_none(&company) do continue
     }
   }
 

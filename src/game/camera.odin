@@ -25,17 +25,15 @@ Camera :: struct {
   distance:       f32,
 }
 
-new_camera :: proc() -> Camera {
-  c: Camera
-  c.target = Vec3(0)
-  c.angle = Vec2{225, 45}
-  c.distance = 100
-  c.c3d.fovy = 20
-  c.c3d.projection = .PERSPECTIVE
-  c.c3d.target = Vec3(0)
-  c.c3d.position = Vec3(10)
-  c.c3d.up = Vec3{0, 1, 0}
-  return c
+camera_init :: proc() {
+  g.camera.target = Vec3(0)
+  g.camera.angle = Vec2{225, 45}
+  g.camera.distance = 100
+  g.camera.c3d.fovy = 20
+  g.camera.c3d.projection = .PERSPECTIVE
+  g.camera.c3d.target = Vec3(0)
+  g.camera.c3d.position = Vec3(10)
+  g.camera.c3d.up = Vec3{0, 1, 0}
 }
 
 camera_step :: proc(c: ^Camera) {

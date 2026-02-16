@@ -40,7 +40,7 @@ Example (assumes this package is imported under the alias `hm`):
 
 	// Iterate. You can also use `for e in hm.items {}` and skip any item where
 	// `e.id.idx == 0`. The iterator does that automatically. There's also
-	// `skip` procedure in this package that check `e.id.idx == 0` for you.
+	// `is_none` procedure in this package that check `e.id.idx == 0` for you.
 	ent_iter := hm.make_iter(&entities)
 	for e, h in hm.iter(&ent_iter) {
 		e.pos += { 5, 1 }
@@ -221,11 +221,11 @@ iter :: proc(it: ^Handle_Map_Iterator($T, $HT, $N)) -> (val: ^T, h: HT, cond: bo
 
 // If you don't want to use iterator, you can instead do:
 // for &item in my_map.items {
-//     if hm.skip(item) {
+//     if hm.is_none(item) {
 //         continue
 //     }
 //     // do stuff
 // }
-skip :: #force_inline proc(e: $T) -> bool {
+is_none :: #force_inline proc(e: $T) -> bool {
   return e.id.idx == 0
 }

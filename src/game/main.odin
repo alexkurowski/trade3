@@ -11,7 +11,7 @@ load :: proc() {
   assets_load()
   ui.load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
 
-  g.camera = new_camera()
+  camera_init()
 
   start_new_game()
 }
@@ -27,12 +27,22 @@ update :: proc() {
   camera_step(&g.camera)
   camera_controls(&g.camera)
 
+  frame_begin()
+  game_update()
+  frame_end()
+
+  free_all(context.temp_allocator)
+}
+
+@(private = "file")
+frame_begin :: proc() {
   render.shapes_begin()
   render.sprites_begin()
   ui.begin(time.dt)
+}
 
-  game_update()
-
+@(private = "file")
+frame_end :: proc() {
   render.begin_3d(g.camera.c3d, assets.shaders.base)
   render.shapes_end()
   render.end_3d()
@@ -41,6 +51,4 @@ update :: proc() {
   render.sprites_end(assets.textures.icons)
   ui.end()
   render.end_2d()
-
-  free_all(context.temp_allocator)
 }
