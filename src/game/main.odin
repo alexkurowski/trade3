@@ -2,13 +2,14 @@ package game
 
 import "./render"
 import "./ui"
+import "./text"
 import rl "vendor:raylib"
 
 INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
 load :: proc() {
-  text_load()
+  text.load()
   assets_load()
   ui.load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
 

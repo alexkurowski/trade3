@@ -1,6 +1,7 @@
 #+private
 package game
 
+import "./text"
 import "core:math"
 import "core:slice"
 import "deps:box"
@@ -11,12 +12,12 @@ generate_new_world :: proc() {
 
   // Generate factions
   for i := 0; i < FACTION_COUNT; i += 1 {
-    box.append(&w.factions, Faction{name = make_faction_name()})
+    box.append(&w.factions, Faction{name = text.make_faction_name()})
   }
 
   // Generate companies
   for i := 0; i < COMPANY_COUNT; i += 1 {
-    box.append(&w.companies, Company{name = make_random_name()})
+    box.append(&w.companies, Company{name = text.make_random_name()})
   }
   g.player_company_id = w.companies.items[0].id
 
@@ -34,7 +35,7 @@ generate_new_world :: proc() {
             &w.locations,
             Location {
               kind = .System,
-              name = make_random_name(),
+              name = text.make_random_name(),
               position = system_position,
               parent_id = none,
             },
@@ -142,7 +143,7 @@ generate_new_world :: proc() {
         &w.locations,
         Location {
           kind = .Planet,
-          name = make_random_name(),
+          name = text.make_random_name(),
           position = planet_position,
           size = planet_size,
           parent_id = system_id,
@@ -165,7 +166,7 @@ generate_new_world :: proc() {
           &w.locations,
           Location {
             kind = .City,
-            name = make_random_name(),
+            name = text.make_random_name(),
             position = city_position,
             parent_id = planet_id,
           },
@@ -181,7 +182,7 @@ generate_new_world :: proc() {
       company_id = g.player_company_id,
       location_id = debug_location_id,
       position = debug_location.position,
-      name = make_ship_callsign(),
+      name = text.make_ship_callsign(),
     },
   )
 }
