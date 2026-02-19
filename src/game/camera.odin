@@ -102,6 +102,6 @@ get_screen_position :: #force_inline proc(position: Vec3) -> Vec2 {
   return rl.GetWorldToScreen(position, g.camera.c3d)
 }
 
-to_screen_position :: proc(position: Vec3) -> (Vec2, bool) #optional_ok {
+to_screen_position :: proc(position: Vec3) -> (Vec2, bool) {
   return get_screen_position(position), is_on_screen(position)
 }

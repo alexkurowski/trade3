@@ -74,11 +74,11 @@ clear_pool :: proc(p: ^Pool($T, $S)) {
   p.count = 0
 }
 
-is_full :: proc(p: ^Pool($T, $S)) -> bool {
+is_pool_full :: proc(p: ^Pool($T, $S)) -> bool {
   return p.count >= S
 }
 
-is_empty :: proc(p: ^Pool($T, $S)) -> bool {
+is_pool_empty :: proc(p: ^Pool($T, $S)) -> bool {
   return p.count == 0
 }
 

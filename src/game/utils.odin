@@ -246,7 +246,7 @@ ease_in_out_cubic :: proc(x: f32) -> f32 {
 
 // === Debug ===
 p :: proc(x: any, name := #caller_expression(x)) {
-  fmt.printf("%v = %#v", name, x)
+  fmt.printf("%v = %#v\n", name, x)
 }
 pp :: proc(prefix: string, v: any) {
   fmt.printf(">>> %s: %#v\n", prefix, v)
