@@ -32,7 +32,7 @@ tabs :: proc() {
   }
 }
 
-button :: proc(label: string, icon_index: int) -> bool {
+button :: proc(label: string, icon_index: i32) -> bool {
   hovered: bool
   clicked: bool
 
@@ -40,11 +40,16 @@ button :: proc(label: string, icon_index: int) -> bool {
     hovered = is_hover()
     clicked = is_clicked()
     if UI()({
-      layout = {padding = {8, 8, 4, 4}},
+      layout = {padding = {8, 8, 4, 4}, childAlignment = {.Center, .Center}, childGap = 8},
       backgroundColor = hovered ? {240, 240, 240, 255} : {0, 0, 0, 0},
     }) {
-      ui.icon(1)
-      ui.text(label, hovered ? .Regular16dim : .Regular16)
+      ui.icon(icon_index, hovered ? {0, 0, 0, 255} : {240, 240, 240, 255})
+      ui.text(
+        label,
+        font = .Regular,
+        size = 18,
+        color = hovered ? {0, 0, 0, 255} : {240, 240, 240, 255},
+      )
     }
   }
 

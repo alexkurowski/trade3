@@ -11,6 +11,7 @@ Size :: struct {
   width:  f32,
   height: f32,
 }
+Color :: clay.Color
 
 UI :: clay.UI
 UIImageData :: struct {

@@ -1,4 +1,4 @@
-#+private
+#+private file
 package ui
 
 import "base:runtime"
@@ -13,6 +13,7 @@ import gl "vendor:raylib/rlgl"
 texture: rl.Texture2D
 shader: rl.Shader
 
+@(private)
 init_raylib_implementation :: proc(width, height: f32) {
   texture = rl.LoadTexture("assets/textures/icons.png")
   shader = rl.LoadShader(nil, "assets/shaders/gl330/ui_fragment.glsl")
@@ -23,6 +24,7 @@ init_raylib_implementation :: proc(width, height: f32) {
   clay.SetMeasureTextFunction(measure_text_ascii, nil)
 }
 
+@(private)
 unload_raylib_implementation :: proc() {
   rl.UnloadTexture(texture)
   rl.UnloadShader(shader)
@@ -43,7 +45,7 @@ measure_text_unicode :: proc "c" (
 
   line_width: f32 = 0
 
-  font := fonts[FontVariant(config.fontId)].font
+  font := fonts[TextFont(config.fontId)][config.fontSize]
   text_str := string(text.chars[:text.length])
 
   // This function seems somewhat expensive, if you notice performance issues, you could assume
@@ -82,7 +84,7 @@ measure_text_ascii :: proc "c" (
 ) -> clay.Dimensions {
   line_width: f32 = 0
 
-  font := fonts[FontVariant(config.fontId)].font
+  font := fonts[TextFont(config.fontId)][config.fontSize]
   text_str := string(text.chars[:text.length])
 
   for i in 0 ..< len(text_str) {
@@ -108,6 +110,7 @@ measure_text_ascii :: proc "c" (
   return {width = line_width * scaleFactor + total_spacing, height = f32(config.fontSize)}
 }
 
+@(private)
 render :: proc(render_commands: ^clay.ClayArray(clay.RenderCommand)) {
   rl.BeginShaderMode(shader)
 
@@ -122,7 +125,7 @@ render :: proc(render_commands: ^clay.ClayArray(clay.RenderCommand)) {
 
       text := string(config.stringContents.chars[:config.stringContents.length])
       cstr := strings.clone_to_cstring(text, context.temp_allocator)
-      font := fonts[FontVariant(config.fontId)].font
+      font := fonts[TextFont(config.fontId)][config.fontSize]
       rl.DrawTextEx(
         font,
         cstr,
@@ -133,20 +136,14 @@ render :: proc(render_commands: ^clay.ClayArray(clay.RenderCommand)) {
       )
     case .Image:
       config := render_command.renderData.image
-      user_data := render_command.userData
-
-      index := i32(0)
-      if user_data != nil {
-        image_data := cast(^UIImageData)user_data
-        index = image_data.index
-      }
+      image_data := cast(^UIImageData)config.imageData
+      index := image_data.index
 
       tint := config.backgroundColor
       if tint == 0 do tint = {255, 255, 255, 255}
 
-      imageTexture := (^rl.Texture2D)(config.imageData)
       rl.DrawTexturePro(
-        imageTexture^,
+        texture,
         source = get_texture_source_rect(index),
         dest = {bounds.x, bounds.y, bounds.width, bounds.height},
         origin = {0, 0},
@@ -174,31 +171,33 @@ render :: proc(render_commands: ^clay.ClayArray(clay.RenderCommand)) {
       draw_gradient :=
         user_data != nil && (cast(^ClayUserDataType)user_data).type == .PanelGradient
 
-      if draw_gradient {
-        draw_rect_gradient(
-          bounds.x,
-          bounds.y,
-          bounds.width,
-          bounds.height,
-          [3]clay.Color {
-            color.window_background_start,
-            color.window_background_middle,
-            color.window_background_end,
-          },
-        )
-      } else if draw_rounded {
-        radius: f32 = (config.cornerRadius.topLeft * 2) / min(bounds.width, bounds.height)
-        draw_rect_rounded(
-          bounds.x,
-          bounds.y,
-          bounds.width,
-          bounds.height,
-          radius,
-          config.backgroundColor,
-        )
-      } else {
-        draw_rect(bounds.x, bounds.y, bounds.width, bounds.height, config.backgroundColor)
-      }
+      // if draw_gradient {
+      //   draw_rect_gradient(
+      //     bounds.x,
+      //     bounds.y,
+      //     bounds.width,
+      //     bounds.height,
+      //     [3]clay.Color {
+      //       color.window_background_start,
+      //       color.window_background_middle,
+      //       color.window_background_end,
+      //     },
+      //   )
+      // } else if draw_rounded {
+      //   radius: f32 = (config.cornerRadius.topLeft * 2) / min(bounds.width, bounds.height)
+      //   draw_rect_rounded(
+      //     bounds.x,
+      //     bounds.y,
+      //     bounds.width,
+      //     bounds.height,
+      //     radius,
+      //     config.backgroundColor,
+      //   )
+      // } else {
+      //   draw_rect(bounds.x, bounds.y, bounds.width, bounds.height, config.backgroundColor)
+      // }
+
+      draw_rect(bounds.x, bounds.y, bounds.width, bounds.height, config.backgroundColor)
     case .Border:
       config := render_command.renderData.border
       // Left border
@@ -357,11 +356,11 @@ draw_rect_rounded :: proc(x, y, w, h: f32, radius: f32, color: clay.Color) {
 }
 
 get_texture_source_rect :: proc(index: i32) -> rl.Rectangle {
-  sprite_size :: 32
+  size :: 32
   cols :: 32
-  x := f32((index % cols) * sprite_size)
-  y := f32((index / cols) * sprite_size)
-  return rl.Rectangle{x = x, y = y, width = f32(sprite_size), height = f32(sprite_size)}
+  x := f32((index % cols) * size)
+  y := f32((index / cols) * size)
+  return rl.Rectangle{x = x, y = y, width = f32(size), height = f32(size)}
 }
 
 clay_color_to_rl_color :: #force_inline proc(color: clay.Color) -> rl.Color {

@@ -13,9 +13,7 @@ is_hover :: clay.Hovered
 
 
 load :: proc(width, height: f32) {
-  prepare_colors()
   load_fonts_from_disk()
-  create_font_variants_for_ui()
   init_raylib_implementation(width, height)
 
   window_width = width
@@ -81,11 +79,25 @@ panel_gradient := ClayUserDataType {
 
 
 // #region Components
-text_const :: proc($str: string, variant: FontVariant = .Regular16, _: bool = true) {
-  clay.Text(str, &font_configs[variant])
+text_const :: proc(
+  $str: string,
+  color: Color = 0,
+  font: TextFont = .Regular,
+  size: u16 = 16,
+  _: bool = true,
+) {
+  ptr := new_clone(
+    clay.TextElementConfig{textColor = color, fontId = u16(font), fontSize = u16(size)},
+    context.temp_allocator,
+  )
+  clay.Text(str, ptr)
 }
-text_var :: proc(str: string, variant: FontVariant = .Regular16) {
-  clay.TextDynamic(str, &font_configs[variant])
+text_var :: proc(str: string, color: Color = 0, font: TextFont = .Regular, size: u16 = 16) {
+  ptr := new_clone(
+    clay.TextElementConfig{textColor = color, fontId = u16(font), fontSize = u16(size)},
+    context.temp_allocator,
+  )
+  clay.TextDynamic(str, ptr)
 }
 // Draw text
 text :: proc {
@@ -93,11 +105,12 @@ text :: proc {
   text_var,
 }
 
-icon :: proc(index: i32, size: f32 = 16) {
-  ptr := new_clone(UIImageData{index}, context.temp_allocator)
+icon :: proc(index: i32, color: [4]f32, size: f32 = 16) {
+  ptr := new_clone(UIImageData{index = index}, context.temp_allocator)
   clay.UI()({
     layout = {sizing = {clay.SizingFixed(size), clay.SizingFixed(size)}},
     image = {imageData = ptr},
+    backgroundColor = color,
   })
 }
 
@@ -108,8 +121,8 @@ draw_tooltip :: proc(str: string) {
       sizing = {{type = clay.SizingType.Fit}, {type = clay.SizingType.Fit}},
       padding = {8, 8, 4, 4},
     },
-    backgroundColor = color.window_background_end,
-    border = {width = {left = 1, right = 1, top = 1, bottom = 1}, color = color.window_border},
+    backgroundColor = {250, 120, 100, 255},
+    border = {width = {left = 1, right = 1, top = 1, bottom = 1}, color = {255, 0, 0, 255}},
     floating = {attachTo = .Root, offset = {mouse_position.x + 10, mouse_position.y + 10}},
   }) {
     text(str)
