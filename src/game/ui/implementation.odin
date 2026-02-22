@@ -1,5 +1,4 @@
 #+private
-
 package ui
 
 import "base:runtime"
@@ -368,3 +367,4 @@ get_texture_source_rect :: proc(index: int) -> rl.Rectangle {
 clay_color_to_rl_color :: #force_inline proc(color: clay.Color) -> rl.Color {
   return {u8(color.r), u8(color.g), u8(color.b), u8(color.a)}
 }
+

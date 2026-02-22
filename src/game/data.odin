@@ -3,29 +3,58 @@ package game
 
 import "deps:box"
 
-COMPANY_COUNT :: 64
-FACTION_COUNT :: 3
-SYSTEM_COUNT :: 32
-
-// World state
-w: struct {
-  factions:       box.Array(Faction, ID, FACTION_COUNT),
-  companies:      box.Array(Company, ID, COMPANY_COUNT),
-  locations:      box.Array(Location, ID, 1024),
-  entities:       box.Array(Entity, ID, 102400),
-  entity_by_kind: [EntityKind]box.Pool(ID, 1024),
+Entity :: struct {
+  id:              ID,
+  cache_id:        i32,
+  kind:            EntityKind,
+  trait:           bit_set[EntityTrait],
+  company_id:      ID,
+  location_id:     ID,
+  parent_id:       ID,
+  sibling_id:      ID,
+  target_id:       ID,
+  name:            string,
+  position:        Vec3,
+  target_position: Vec3,
 }
 
-// Global game state
-g: struct {
-  camera:             Camera,
-  player_company_id:  ID,
-  mouse_position:     Vec2,
-  debug_mode:         bool,
-  location_view_id:   ID,
-  location_hover_id:  ID,
-  entity_hover_id:    ID,
-  entity_selected_id: ID,
-} = {
-  debug_mode = true,
+EntityKind :: enum u8 {
+  None,
+  Location,
+  Mothership,
+  Vehicle,
+  Character,
+  Resource,
+}
+
+EntityTrait :: enum u8 {
+  None,
+  Location_Planet,
+  Location_Station,
+  Location_Asteroid,
+}
+
+spawn :: proc(kind: EntityKind, entity: Entity) -> ID {
+  e := entity
+  e.kind = kind
+  id := box.append(&g.entities, e)
+  box.append(&g.entity_by_kind[kind], id)
+  return id
+}
+
+despawn :: proc(id: ID) {
+  e := box.get(&g.entities, id)
+  if e.id == id {
+    delete(e.name)
+    box.remove(&g.entity_by_kind[e.kind], e.cache_id)
+    box.remove(&g.entities, id)
+  }
+}
+
+despawn_all :: proc() {
+  for &e in g.entities.items {
+    if box.is_none(e) do continue
+    delete(e.name)
+  }
+  box.clear(&g.entities)
 }

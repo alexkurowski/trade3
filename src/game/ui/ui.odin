@@ -9,6 +9,8 @@ tooltip: Maybe(string)
 window_width: f32
 window_height: f32
 
+is_hover :: clay.Hovered
+
 
 load :: proc(width, height: f32) {
   prepare_colors()
@@ -152,3 +154,4 @@ spacer :: proc() {
   UI()({layout = {sizing = {clay.SizingGrow(), clay.SizingFit()}}})
 }
 // #endregion
+

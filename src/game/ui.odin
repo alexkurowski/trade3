@@ -76,7 +76,7 @@ stop_propagation :: proc() {
   }
 }
 
-is_hovered :: proc() -> bool {
+is_hover :: proc() -> bool {
   return clay.Hovered()
 }
 
@@ -88,3 +88,4 @@ is_clicked :: proc() -> bool {
   // TODO: proper click
   return clay.Hovered() && rl.IsMouseButtonPressed(.LEFT)
 }
+

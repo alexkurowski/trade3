@@ -38,8 +38,8 @@ min :: math.min
 max :: math.max
 clamp :: math.clamp
 abs :: math.abs
-pow :: math.pow
 sign :: math.sign
+pow :: math.pow
 sqrt :: math.sqrt
 
 distance :: linalg.distance
@@ -263,3 +263,4 @@ bench :: proc {
   bench_first,
   bench_next,
 }
+
