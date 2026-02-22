@@ -45,7 +45,7 @@ measure_text_unicode :: proc "c" (
 
   line_width: f32 = 0
 
-  font := fonts[TextFont(config.fontId)][config.fontSize]
+  font := font_variant_by_id[config.fontId].font
   text_str := string(text.chars[:text.length])
 
   // This function seems somewhat expensive, if you notice performance issues, you could assume
@@ -84,7 +84,7 @@ measure_text_ascii :: proc "c" (
 ) -> clay.Dimensions {
   line_width: f32 = 0
 
-  font := fonts[TextFont(config.fontId)][config.fontSize]
+  font := font_variant_by_id[config.fontId].font
   text_str := string(text.chars[:text.length])
 
   for i in 0 ..< len(text_str) {
@@ -125,7 +125,7 @@ render :: proc(render_commands: ^clay.ClayArray(clay.RenderCommand)) {
 
       text := string(config.stringContents.chars[:config.stringContents.length])
       cstr := strings.clone_to_cstring(text, context.temp_allocator)
-      font := fonts[TextFont(config.fontId)][config.fontSize]
+      font := font_variant_by_id[config.fontId].font
       rl.DrawTextEx(
         font,
         cstr,
@@ -366,4 +366,3 @@ get_texture_source_rect :: proc(index: i32) -> rl.Rectangle {
 clay_color_to_rl_color :: #force_inline proc(color: clay.Color) -> rl.Color {
   return {u8(color.r), u8(color.g), u8(color.b), u8(color.a)}
 }
-

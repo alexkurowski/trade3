@@ -13,6 +13,7 @@ is_hover :: clay.Hovered
 
 
 load :: proc(width, height: f32) {
+  prepare_colors()
   load_fonts_from_disk()
   init_raylib_implementation(width, height)
 
@@ -66,7 +67,6 @@ end :: proc() {
 }
 
 
-// #region UI option structs
 UserDataType :: enum u8 {
   PanelGradient = 0,
 }
@@ -77,46 +77,10 @@ panel_gradient := ClayUserDataType {
   type = .PanelGradient,
 }
 
-
-// #region Components
-text_const :: proc(
-  $str: string,
-  color: Color = 0,
-  font: TextFont = .Regular,
-  size: u16 = 16,
-  _: bool = true,
-) {
-  ptr := new_clone(
-    clay.TextElementConfig{textColor = color, fontId = u16(font), fontSize = u16(size)},
-    context.temp_allocator,
-  )
-  clay.Text(str, ptr)
-}
-text_var :: proc(str: string, color: Color = 0, font: TextFont = .Regular, size: u16 = 16) {
-  ptr := new_clone(
-    clay.TextElementConfig{textColor = color, fontId = u16(font), fontSize = u16(size)},
-    context.temp_allocator,
-  )
-  clay.TextDynamic(str, ptr)
-}
-// Draw text
-text :: proc {
-  text_const,
-  text_var,
-}
-
-icon :: proc(index: i32, color: [4]f32, size: f32 = 16) {
-  ptr := new_clone(UIImageData{index = index}, context.temp_allocator)
-  clay.UI()({
-    layout = {sizing = {clay.SizingFixed(size), clay.SizingFixed(size)}},
-    image = {imageData = ptr},
-    backgroundColor = color,
-  })
-}
-
 draw_tooltip :: proc(str: string) {
   mouse_position := rl.GetMousePosition()
-  if UI()({
+  if UI()(
+  {
     layout = {
       sizing = {{type = clay.SizingType.Fit}, {type = clay.SizingType.Fit}},
       padding = {8, 8, 4, 4},
@@ -124,7 +88,8 @@ draw_tooltip :: proc(str: string) {
     backgroundColor = {250, 120, 100, 255},
     border = {width = {left = 1, right = 1, top = 1, bottom = 1}, color = {255, 0, 0, 255}},
     floating = {attachTo = .Root, offset = {mouse_position.x + 10, mouse_position.y + 10}},
-  }) {
+  },
+  ) {
     text(str)
   }
 }
@@ -132,5 +97,3 @@ draw_tooltip :: proc(str: string) {
 space :: proc() {
   UI()({layout = {sizing = {clay.SizingGrow(), clay.SizingFit()}}})
 }
-// #endregion
-

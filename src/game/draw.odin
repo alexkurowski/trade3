@@ -16,7 +16,7 @@ draw_screen :: proc() {
     tabs()
     ui.text("Hello, World!")
 
-    if button("Click me", 0) {
+    if button("Click me", .Panda) {
       send_event(.Some, SomeEvent{value = 69420})
     }
   }
@@ -24,35 +24,31 @@ draw_screen :: proc() {
 
 tabs :: proc() {
   if UI()({layout = {sizing = {grow(), fit()}, padding = {8, 8, 4, 4}, childGap = 8}}) {
-    button("Mothership", 1)
+    button("Mothership", .Rocket)
     ui.space()
-    button("Fleet", 2)
+    button("Fleet", .Sandwich)
     ui.space()
-    button("Crew", 3)
+    button("Crew", .Person_standing)
   }
 }
 
-button :: proc(label: string, icon_index: i32) -> bool {
+button :: proc(label: string, icon: ui.Icon) -> bool {
   hovered: bool
   clicked: bool
 
   if UI()({}) {
     hovered = is_hover()
     clicked = is_clicked()
-    if UI()({
+    if UI()(
+    {
       layout = {padding = {8, 8, 4, 4}, childAlignment = {.Center, .Center}, childGap = 8},
       backgroundColor = hovered ? {240, 240, 240, 255} : {0, 0, 0, 0},
-    }) {
-      ui.icon(icon_index, hovered ? {0, 0, 0, 255} : {240, 240, 240, 255})
-      ui.text(
-        label,
-        font = .Regular,
-        size = 18,
-        color = hovered ? {0, 0, 0, 255} : {240, 240, 240, 255},
-      )
+    },
+    ) {
+      ui.icon(icon, hovered ? {0, 0, 0, 255} : {240, 240, 240, 255})
+      ui.text(label, font = .Regular, size = 18, color = hovered ? .Black : .White)
     }
   }
 
   return clicked
 }
-
