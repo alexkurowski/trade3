@@ -14,7 +14,7 @@ Size :: struct {
 
 UI :: clay.UI
 UIImageData :: struct {
-  index: int,
+  index: i32,
 }
 
 UIWindowResizableDirection :: enum {
@@ -46,3 +46,4 @@ UIWindow :: struct {
   position:        Vec2,
   size:            Size,
 }
+

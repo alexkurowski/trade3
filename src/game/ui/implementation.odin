@@ -14,7 +14,7 @@ texture: rl.Texture2D
 shader: rl.Shader
 
 init_raylib_implementation :: proc(width, height: f32) {
-  texture = rl.LoadTexture("assets/textures/ui.png")
+  texture = rl.LoadTexture("assets/textures/icons.png")
   shader = rl.LoadShader(nil, "assets/shaders/gl330/ui_fragment.glsl")
   min_memory_size := clay.MinMemorySize()
   memory := make([^]u8, min_memory_size)
@@ -135,10 +135,10 @@ render :: proc(render_commands: ^clay.ClayArray(clay.RenderCommand)) {
       config := render_command.renderData.image
       user_data := render_command.userData
 
-      index := 0
+      index := i32(0)
       if user_data != nil {
-        sprite := cast(^UserDataSprite)user_data
-        index = sprite.index
+        image_data := cast(^UIImageData)user_data
+        index = image_data.index
       }
 
       tint := config.backgroundColor
@@ -356,9 +356,9 @@ draw_rect_rounded :: proc(x, y, w, h: f32, radius: f32, color: clay.Color) {
   rl.DrawRectangleRounded({x, y, w, h}, radius, 8, clay_color_to_rl_color(color))
 }
 
-get_texture_source_rect :: proc(index: int) -> rl.Rectangle {
-  sprite_size :: 64
-  cols :: 16
+get_texture_source_rect :: proc(index: i32) -> rl.Rectangle {
+  sprite_size :: 32
+  cols :: 32
   x := f32((index % cols) * sprite_size)
   y := f32((index / cols) * sprite_size)
   return rl.Rectangle{x = x, y = y, width = f32(sprite_size), height = f32(sprite_size)}

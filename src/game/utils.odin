@@ -244,6 +244,12 @@ ease_in_out_cubic :: proc(x: f32) -> f32 {
 }
 
 
+// === Memory ===
+temp :: proc(v: $T) -> rawptr {
+  return new_clone(v, context.temp_allocator)
+}
+
+
 // === Debug ===
 p :: proc(x: any, name := #caller_expression(x)) {
   fmt.printf("%v = %#v\n", name, x)
@@ -263,4 +269,3 @@ bench :: proc {
   bench_first,
   bench_next,
 }
-

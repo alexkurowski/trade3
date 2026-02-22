@@ -14,7 +14,6 @@ is_hover :: clay.Hovered
 
 load :: proc(width, height: f32) {
   prepare_colors()
-  prepare_sprites()
   load_fonts_from_disk()
   create_font_variants_for_ui()
   init_raylib_implementation(width, height)
@@ -81,47 +80,6 @@ panel_gradient := ClayUserDataType {
 }
 
 
-// ## UI sprites
-SpriteType :: enum u8 {
-  Close,
-  Cog,
-  Play,
-  FFPlay,
-  FFFPlay,
-  Pause,
-  Dropdown,
-  CaretLeft,
-  CaretRight,
-  DoubleCaretLeft,
-  DoubleCaretRight,
-  Skip01,
-  Skip02,
-  Skip03,
-  Skip04,
-  Skip05,
-  WindowHoverRight,
-  WindowHoverTopRight,
-  WindowHoverTop,
-  WindowHoverTopLeft,
-  WindowHoverLeft,
-  WindowHoverBottomLeft,
-  WindowHoverBottom,
-  WindowHoverBottomRight,
-}
-UserDataSprite :: struct {
-  index: int,
-}
-ui_sprite := map[SpriteType]UserDataSprite{}
-prepare_sprites :: proc() {
-  for sprite in SpriteType {
-    ui_sprite[sprite] = UserDataSprite {
-      index = int(sprite),
-    }
-  }
-}
-// #endregion
-
-
 // #region Components
 text_const :: proc($str: string, variant: FontVariant = .Regular16, _: bool = true) {
   clay.Text(str, &font_configs[variant])
@@ -133,6 +91,14 @@ text_var :: proc(str: string, variant: FontVariant = .Regular16) {
 text :: proc {
   text_const,
   text_var,
+}
+
+icon :: proc(index: i32, size: f32 = 16) {
+  ptr := new_clone(UIImageData{index}, context.temp_allocator)
+  clay.UI()({
+    layout = {sizing = {clay.SizingFixed(size), clay.SizingFixed(size)}},
+    image = {imageData = ptr},
+  })
 }
 
 draw_tooltip :: proc(str: string) {
@@ -150,7 +116,7 @@ draw_tooltip :: proc(str: string) {
   }
 }
 
-spacer :: proc() {
+space :: proc() {
   UI()({layout = {sizing = {clay.SizingGrow(), clay.SizingFit()}}})
 }
 // #endregion

@@ -5,20 +5,34 @@ import "./ui"
 
 @(private)
 draw_screen :: proc() {
-  root_style :: Style {
-    layout = {layoutDirection = .TopToBottom, padding = {16, 16, 12, 12}},
+  root_style := Style {
+    layout = {
+      sizing = {grow(), grow()},
+      layoutDirection = .TopToBottom,
+      padding = {16, 16, 12, 12},
+    },
   }
   if UI()(root_style) {
+    tabs()
     ui.text("Hello, World!")
 
-    if button("Click me") {
+    if button("Click me", 0) {
       send_event(.Some, SomeEvent{value = 69420})
     }
   }
 }
 
+tabs :: proc() {
+  if UI()({layout = {sizing = {grow(), fit()}, padding = {8, 8, 4, 4}, childGap = 8}}) {
+    button("Mothership", 1)
+    ui.space()
+    button("Fleet", 2)
+    ui.space()
+    button("Crew", 3)
+  }
+}
 
-button :: proc(label: string) -> bool {
+button :: proc(label: string, icon_index: int) -> bool {
   hovered: bool
   clicked: bool
 
@@ -27,8 +41,9 @@ button :: proc(label: string) -> bool {
     clicked = is_clicked()
     if UI()({
       layout = {padding = {8, 8, 4, 4}},
-      backgroundColor = hovered ? {240, 240, 240, 255} : {40, 45, 50, 255},
+      backgroundColor = hovered ? {240, 240, 240, 255} : {0, 0, 0, 0},
     }) {
+      ui.icon(1)
       ui.text(label, hovered ? .Regular16dim : .Regular16)
     }
   }
