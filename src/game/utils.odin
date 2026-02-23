@@ -243,6 +243,10 @@ ease_in_out_cubic :: proc(x: f32) -> f32 {
   return x < 0.5 ? 4 * x * x * x : 1 - math.pow(-2 * x + 2, 3) / 2
 }
 
+lerp_u8 :: proc(x, y: u8, t: f32) -> u8 {
+  return u8(math.round(clamp(f32(x) * (1 - t) + f32(y) * t, 0, 255)))
+}
+
 
 // === Memory ===
 temp :: proc(v: $T) -> rawptr {

@@ -37,21 +37,21 @@ camera_init :: proc() {
 }
 
 camera_step :: proc(c: ^Camera) {
-  // Camera
+  // Clamp camera movement
   c.distance = math.clamp(c.distance, CAMERA_CLOSEST, CAMERA_FARTHEST)
   c.angle.y = math.clamp(c.angle.y, CAMERA_MIN_PITCH, CAMERA_MAX_PITCH)
-  // Recalculate c offset
+  // Recalculate camera offset
   a := c.angle
   c.offset.x = math.cos(a.y * DEG_TO_RAD) * math.sin(a.x * DEG_TO_RAD)
   c.offset.y = math.sin(a.y * DEG_TO_RAD)
   c.offset.z = math.cos(a.y * DEG_TO_RAD) * math.cos(a.x * DEG_TO_RAD)
   c.offset *= c.distance
-  // Lerp camera
+  // Lerp camera positions
   c.c3d.target = linalg.lerp(c.c3d.target, c.target, CAMERA_SPEED * time.dt)
   c.c3d.position = linalg.lerp(c.c3d.position, c.c3d.target + c.offset, CAMERA_SPEED * time.dt * 5)
-  // Recalculate matrix
+  // Recalculate camera matrix
   c.m3d = rl.GetCameraMatrix(c.c3d)
-  // Recalculate camera directions
+  // Recalculate camera-relative directions
   forward := c.c3d.target - c.c3d.position
   c.forward = linalg.normalize(forward)
   c.right = linalg.normalize(linalg.cross(c.c3d.up, c.forward))
