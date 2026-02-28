@@ -1,92 +1,38 @@
 #+private
 package game
 
-import "core:math"
 import "core:math/linalg"
 import rl "vendor:raylib"
 
-CAMERA_CLOSEST :: 5
-CAMERA_FARTHEST :: 250
-CAMERA_SPEED :: 4
-CAMERA_MIN_PITCH :: -80
-CAMERA_MAX_PITCH :: 80
+CAMERA_SPEED :: 2
 
 Camera :: struct {
-  c3d:            rl.Camera3D,
-  m3d:            rl.Matrix,
-  offset:         Vec3,
-  target:         Vec3,
-  forward:        Vec3,
-  right:          Vec3,
-  up:             Vec3,
-  ground_forward: Vec3,
-  ground_right:   Vec3,
-  angle:          Vec2,
-  distance:       f32,
+  c3d:    rl.Camera3D,
+  m3d:    rl.Matrix,
+  offset: Vec3,
+  target: Vec3,
 }
 
 camera_init :: proc() {
+  g.camera.offset = Vec3{0, 0, 10}
   g.camera.target = Vec3(0)
-  g.camera.angle = Vec2{225, 45}
-  g.camera.distance = 100
-  g.camera.c3d.fovy = 20
-  g.camera.c3d.projection = .PERSPECTIVE
+  g.camera.c3d.fovy = 30
+  g.camera.c3d.projection = .ORTHOGRAPHIC
   g.camera.c3d.target = Vec3(0)
-  g.camera.c3d.position = Vec3(10)
+  g.camera.c3d.position = g.camera.offset
   g.camera.c3d.up = Vec3{0, 1, 0}
 }
 
-camera_step :: proc(c: ^Camera) {
-  // Clamp camera movement
-  c.distance = math.clamp(c.distance, CAMERA_CLOSEST, CAMERA_FARTHEST)
-  c.angle.y = math.clamp(c.angle.y, CAMERA_MIN_PITCH, CAMERA_MAX_PITCH)
-  // Recalculate camera offset
-  a := c.angle
-  c.offset.x = math.cos(a.y * DEG_TO_RAD) * math.sin(a.x * DEG_TO_RAD)
-  c.offset.y = math.sin(a.y * DEG_TO_RAD)
-  c.offset.z = math.cos(a.y * DEG_TO_RAD) * math.cos(a.x * DEG_TO_RAD)
-  c.offset *= c.distance
+camera_step :: proc() {
   // Lerp camera positions
-  c.c3d.target = linalg.lerp(c.c3d.target, c.target, CAMERA_SPEED * time.dt)
-  c.c3d.position = linalg.lerp(c.c3d.position, c.c3d.target + c.offset, CAMERA_SPEED * time.dt * 5)
-  // Recalculate camera matrix
-  c.m3d = rl.GetCameraMatrix(c.c3d)
-  // Recalculate camera-relative directions
-  forward := c.c3d.target - c.c3d.position
-  c.forward = linalg.normalize(forward)
-  c.right = linalg.normalize(linalg.cross(c.c3d.up, c.forward))
-  c.up = linalg.normalize(linalg.cross(c.forward, c.right))
-  forward.y = 0
-  c.ground_forward = linalg.normalize(forward)
-  c.ground_right = linalg.normalize(linalg.cross(c.c3d.up, forward))
-}
-
-camera_controls :: proc(c: ^Camera) {
-  {
-    move: Vec3
-    speed :: 20
-    if rl.IsKeyDown(.A) do move.x = +speed
-    if rl.IsKeyDown(.D) do move.x = -speed
-    if rl.IsKeyDown(.Q) do move.y = -speed
-    if rl.IsKeyDown(.E) do move.y = +speed
-    if rl.IsKeyDown(.W) do move.z = +speed
-    if rl.IsKeyDown(.S) do move.z = -speed
-    move_by := c.ground_right * move.x + {0, move.y, 0} + c.ground_forward * move.z
-    move_by *= time.dt
-    c.target += move_by
-  }
-  {
-    rotate: Vec2
-    zoom: f32
-    if rl.IsKeyDown(.LEFT_SHIFT) {
-      zoom = -rl.GetMouseWheelMoveV().y
-    } else {
-      rotate = rl.GetMouseWheelMoveV() * 2.5
-    }
-    c.angle.x += rotate.x
-    c.angle.y -= rotate.y
-    c.distance += zoom
-  }
+  g.camera.c3d.target = linalg.lerp(g.camera.c3d.target, g.camera.target, CAMERA_SPEED * time.dt)
+  g.camera.c3d.position = linalg.lerp(
+    g.camera.c3d.position,
+    g.camera.c3d.target + g.camera.offset,
+    CAMERA_SPEED * 5 * time.dt,
+  )
+  // Recalculate camera
+  g.camera.m3d = rl.GetCameraMatrix(g.camera.c3d)
 }
 
 

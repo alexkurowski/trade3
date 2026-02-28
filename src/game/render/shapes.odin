@@ -15,10 +15,12 @@ ShapeKind :: enum {
   Line,
   CircleY,
   SphereWires,
+  Sphere,
+  Cube,
 }
 
 @(private = "file")
-shape_queue: box.Pool(Shape, 256)
+shape_queue: box.Pool(Shape, 1024)
 
 shapes_begin :: proc() {
   box.clear(&shape_queue)
@@ -34,7 +36,11 @@ shapes_end :: proc() {
     case .CircleY:
       rl.DrawCircle3D(shape.position_a, shape.position_b.x, Vec3{1, 0, 0}, 90, shape.color)
     case .SphereWires:
-      rl.DrawSphereWires(shape.position_a, shape.position_b.x, 8, 10, rl.GREEN)
+      rl.DrawSphereWires(shape.position_a, shape.position_b.x, 8, 10, shape.color)
+    case .Sphere:
+      rl.DrawSphere(shape.position_a, shape.position_b.x, shape.color)
+    case .Cube:
+      rl.DrawCubeV(shape.position_a, shape.position_b, shape.color)
     }
   }
 

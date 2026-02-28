@@ -161,15 +161,15 @@ render :: proc(render_commands: ^clay.ClayArray(clay.RenderCommand)) {
       rl.EndScissorMode()
     case .Rectangle:
       config := render_command.renderData.rectangle
-      user_data := render_command.userData
+      // user_data := render_command.userData
 
-      draw_rounded :=
-        config.cornerRadius.topLeft > 0 ||
-        config.cornerRadius.topRight > 0 ||
-        config.cornerRadius.bottomLeft > 0 ||
-        config.cornerRadius.bottomRight > 0
-      draw_gradient :=
-        user_data != nil && (cast(^ClayUserDataType)user_data).type == .PanelGradient
+      // draw_rounded :=
+      //   config.cornerRadius.topLeft > 0 ||
+      //   config.cornerRadius.topRight > 0 ||
+      //   config.cornerRadius.bottomLeft > 0 ||
+      //   config.cornerRadius.bottomRight > 0
+      // draw_gradient :=
+      //   user_data != nil && (cast(^ClayUserDataType)user_data).type == .PanelGradient
 
       // if draw_gradient {
       //   draw_rect_gradient(

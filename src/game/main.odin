@@ -3,12 +3,13 @@ package game
 import "./render"
 import "./text"
 import "./ui"
-import "core:strings"
-import rl "vendor:raylib"
+// import "core:strings"
+// import rl "vendor:raylib"
 
 INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
+@(export)
 load :: proc() {
   text.load()
   assets_load()
@@ -20,22 +21,22 @@ load :: proc() {
   start_new_game()
 }
 
+@(export)
 unload :: proc() {
   ui.unload()
   assets_unload()
 }
 
+@(export)
 start_new_game :: proc() {
   despawn_all()
-  spawn(.Mothership, Entity{name = strings.clone("Mothership")})
-  spawn(.Character, Entity{name = text.make_random_full_name()})
-  spawn(.Character, Entity{name = text.make_random_full_name()})
+  spawn_world()
 }
 
+@(export)
 update :: proc() {
   time_step()
-  camera_step(&g.camera)
-  camera_controls(&g.camera)
+  camera_step()
   reset_input()
 
   frame_begin()
@@ -57,8 +58,6 @@ frame_begin :: proc() {
 
 @(private = "file")
 reset_input :: proc() {
-  g.mouse_position = rl.GetMousePosition()
-  g.entity_hover_id = none
 }
 
 @(private = "file")
@@ -72,4 +71,3 @@ frame_end :: proc() {
   ui.end()
   render.end_2d()
 }
-

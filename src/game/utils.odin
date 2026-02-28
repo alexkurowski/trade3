@@ -38,6 +38,8 @@ min :: math.min
 max :: math.max
 clamp :: math.clamp
 abs :: math.abs
+sin :: math.sin
+cos :: math.cos
 sign :: math.sign
 pow :: math.pow
 sqrt :: math.sqrt
@@ -119,10 +121,10 @@ normalize :: proc {
 }
 
 to_vec2 :: proc(v: Vec3) -> Vec2 {
-  return Vec2{v.x, v.z}
+  return Vec2{v.x, v.y}
 }
-to_vec3 :: proc(v: Vec2, y: f32 = 0) -> Vec3 {
-  return Vec3{v.x, y, v.y}
+to_vec3 :: proc(v: Vec2, z: f32 = 0) -> Vec3 {
+  return Vec3{v.x, v.y, z}
 }
 
 angle_between_vec2 :: proc(a: Vec2, b: Vec2) -> f32 {
@@ -202,8 +204,8 @@ randb :: proc(chance: f32 = 0.5) -> bool {
 rand_angle :: proc() -> f32 {
   return rand.float32_range(0, math.TAU)
 }
-at_angle :: proc(angle: f32, y: f32 = 0) -> Vec3 {
-  return Vec3{math.cos(angle), y, math.sin(angle)}
+at_angle :: proc(angle: f32) -> Vec2 {
+  return Vec2{math.cos(angle), math.sin(angle)}
 }
 rand_vec2 :: proc(distance: f32) -> Vec2 {
   angle := rand_angle()
@@ -216,6 +218,14 @@ rand_vec3 :: proc(distance: f32) -> Vec3 {
 rand_offset :: proc(min, max: f32) -> Vec2 {
   angle := rand_angle()
   return Vec2{math.cos(angle), math.sin(angle)} * randf(min, max)
+}
+
+rand_side :: proc() -> f32 {
+  if rand.float32() < 0.5 {
+    return -1
+  } else {
+    return 1
+  }
 }
 
 rand_choice_any :: proc(arr: []$T) -> T {

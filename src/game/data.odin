@@ -4,48 +4,42 @@ package game
 import "deps:box"
 
 Entity :: struct {
-  id:              ID,
-  cache_id:        i32,
-  kind:            EntityKind,
-  trait:           bit_set[EntityTrait],
-  company_id:      ID,
-  location_id:     ID,
-  parent_id:       ID,
-  sibling_id:      ID,
-  target_id:       ID,
-  name:            string,
-  position:        Vec3,
-  target_position: Vec3,
+  id:        ID,
+  kind:      EntityKind,
+  traits:    bit_set[EntityTrait],
+  cache_id:  i32,
+  position:  Vec2,
+  velocity:  Vec2,
+  rotation:  f32,
+  direction: f32, // -1 left to 1 right
 }
 
 EntityKind :: enum u8 {
   None,
-  Location,
-  Mothership,
-  Vehicle,
-  Character,
-  Resource,
+  Aircraft,
+  Watercraft,
 }
 
-EntityTrait :: enum u8 {
+EntityTrait :: enum {
   None,
-  Location_Planet,
-  Location_Station,
-  Location_Asteroid,
+  Player,
 }
 
 spawn :: proc(kind: EntityKind, entity: Entity) -> ID {
   e := entity
   e.kind = kind
-  id := box.append(&g.entities, e)
-  box.append(&g.entity_by_kind[kind], id)
-  return id
+  id, ok := box.append(&g.entities, e)
+  if ok {
+    box.append(&g.entity_by_kind[kind], id)
+    return id
+  } else {
+    return none
+  }
 }
 
 despawn :: proc(id: ID) {
   e := box.get(&g.entities, id)
   if e.id == id {
-    delete(e.name)
     box.remove(&g.entity_by_kind[e.kind], e.cache_id)
     box.remove(&g.entities, id)
   }
@@ -54,7 +48,43 @@ despawn :: proc(id: ID) {
 despawn_all :: proc() {
   for &e in g.entities.items {
     if box.is_none(e) do continue
-    delete(e.name)
   }
   box.clear(&g.entities)
+}
+
+//
+//
+//
+
+Bullet :: struct {
+  kind:         BulletKind,
+  position:     Vec2,
+  velocity:     Vec2,
+  acceleration: Vec2,
+}
+
+BulletKind :: enum {
+  None,
+  Small,
+}
+
+spawn_bullet :: proc(kind: BulletKind, position: Vec2, velocity: Vec2) {
+  box.append(&g.bullets, Bullet{kind = kind, position = position, velocity = velocity})
+}
+
+//
+//
+//
+
+Particle :: struct {
+  kind:         ParticleKind,
+  position:     Vec2,
+  velocity:     Vec2,
+  acceleration: Vec2,
+  size:         f32,
+}
+
+ParticleKind :: enum {
+  None,
+  Cloud,
 }
