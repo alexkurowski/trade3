@@ -36,25 +36,16 @@ spawn_cloud :: proc(x: f32 = 0) {
 update_world :: proc() {
   player = box.get(&g.entities, g.player_id)
 
-  update_player()
   update_entities()
   update_bullets()
   update_particles()
+  update_waterline()
+  update_camera()
 
-  // Draw waterline
-  render.shape(
-    .Cube,
-    Vec3{player.position.x, -0.1 + sin(time.wt * 2) * 0.1, 0},
-    Vec3{100, 0.2, 1},
-    rl.WHITE,
-  )
-  render.shape(.Cube, Vec3{0, 0, 1}, Vec3(1), rl.GRAY)
-
+  // Some debug ui
   if UI()({layout = {padding = {0, 0, 32, 32}}}) {
     ui.text(fmt.tprintf("%.1f %.1f", player.position.x, player.position.y))
   }
-
-  update_camera()
 }
 
 update_entities :: proc() {
@@ -65,6 +56,11 @@ update_entities :: proc() {
     e.position += e.velocity * time.dt
 
     if e.kind == .Aircraft {
+      if .Player in e.traits {
+        update_player_controlled_aircraft(&e)
+      } else {
+        update_ai_controlled_aircraft(&e)
+      }
       orientation := abs(sin(e.rotation)) // 0 - horizontal, 1 - vertical
       e.velocity.y -= 1 * orientation * time.dt // gravity
 
@@ -142,7 +138,7 @@ update_particles :: proc() {
   }
 }
 
-update_player :: proc() {
+update_player_controlled_aircraft :: proc(e: ^Entity) {
   input: struct {
     thrust: bool,
     left:   bool,
@@ -156,22 +152,22 @@ update_player :: proc() {
   }
 
   if input.thrust {
-    player.velocity += at_angle(player.rotation) * 2 * time.dt
+    e.velocity += at_angle(e.rotation) * 2 * time.dt
   } else {
-    orientation := abs(sin(player.rotation)) // 0 - horizontal, 1 - vertical
+    orientation := abs(sin(e.rotation)) // 0 - horizontal, 1 - vertical
     glide_factor := 0.98 + 0.02 * (1.0 - orientation) // less velocity reduction in horizontal position
-    player.velocity *= glide_factor
+    e.velocity *= glide_factor
 
     // TODO: Gravity - increase when velocity drops (stall)
-    // player.velocity.y = prev_y - 9.8 * (orientation) * time.dt
+    // e.velocity.y = prev_y - 9.8 * (orientation) * time.dt
   }
-  clamp_vec(&player.velocity, 2)
+  clamp_vec(&e.velocity, 2)
 
   if input.left {
-    player.rotation += 4 * time.dt
+    e.rotation += 4 * time.dt
   }
   if input.right {
-    player.rotation -= 4 * time.dt
+    e.rotation -= 4 * time.dt
   }
 
   @(static) shoot_timeout := f32(0)
@@ -180,10 +176,24 @@ update_player :: proc() {
     shoot_timeout = 0.1
     spawn_bullet(
       .None,
-      player.position + at_angle(player.rotation) * 0.5,
-      player.velocity + at_angle(player.rotation) * 5,
+      e.position + at_angle(e.rotation) * 0.5,
+      e.velocity + at_angle(e.rotation) * 5,
     )
   }
+}
+
+update_ai_controlled_aircraft :: proc(e: ^Entity) {
+  // TODO
+}
+
+update_waterline :: proc() {
+  render.shape(
+    .Cube,
+    Vec3{player.position.x, -0.1 + sin(PI * time.wt) * 0.1, 0},
+    Vec3{100, 0.2, 1},
+    rl.WHITE,
+  )
+  render.shape(.Cube, Vec3{0, 0, 1}, Vec3(1), rl.GRAY)
 }
 
 update_camera :: proc() {
