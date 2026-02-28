@@ -24,6 +24,8 @@ EntityKind :: enum u8 {
 EntityTrait :: enum {
   None,
   Player,
+  Hostile,
+  Fleeing,
 }
 
 spawn :: proc(kind: EntityKind, entity: Entity) -> ID {
@@ -51,6 +53,8 @@ despawn_all :: proc() {
     if box.is_none(e) do continue
   }
   box.clear(&g.entities)
+  box.clear(&g.bullets)
+  box.clear(&g.particles)
 }
 
 //

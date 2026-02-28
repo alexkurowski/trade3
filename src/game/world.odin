@@ -61,8 +61,8 @@ update_entities :: proc() {
       } else {
         update_ai_controlled_aircraft(&e)
       }
-      orientation := abs(sin(e.rotation)) // 0 - horizontal, 1 - vertical
-      e.velocity.y -= 1 * orientation * time.dt // gravity
+      orientation := get_orientation(&e) // 0 - horizontal, 1 - vertical
+      e.velocity.y -= 1 * clamp(orientation, 0.2, 0.8) * time.dt // gravity
 
       if e.age > 0.05 {
         e.age = 0
@@ -70,7 +70,7 @@ update_entities :: proc() {
           .AircraftTrail,
           position = e.position + rand_offset(0.01, 0.1),
           velocity = Vec2(0),
-          size = randf(0.01, 0.1),
+          size = randf(0.05, 0.1),
           lifetime = 2,
         )
       }
@@ -114,11 +114,12 @@ update_particles :: proc() {
         box.remove(&g.particles, i32(idx))
       }
     } else if p.kind == .AircraftTrail {
+      f := p.lifetime / 2
       render.shape(
         .Sphere,
         to_vec3(p.position),
-        p.size,
-        rl.Color{200, 200, 200, u8(255 * p.lifetime / 2)},
+        p.size * f,
+        rl.Color{200, 200, 200, u8(255 * f)},
       )
 
       if abs(p.position.x - player.position.x) > 100 || p.lifetime <= 0 {
@@ -154,7 +155,7 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
   if input.thrust {
     e.velocity += at_angle(e.rotation) * 2 * time.dt
   } else {
-    orientation := abs(sin(e.rotation)) // 0 - horizontal, 1 - vertical
+    orientation := get_orientation(e) // 0 - horizontal, 1 - vertical
     glide_factor := 0.98 + 0.02 * (1.0 - orientation) // less velocity reduction in horizontal position
     e.velocity *= glide_factor
 
