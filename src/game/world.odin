@@ -7,9 +7,13 @@ import "core:fmt"
 import "deps:box"
 import rl "vendor:raylib"
 
+player: ^Entity
+
 @(private)
 spawn_world :: proc() {
   g.player_id = spawn(.Aircraft, Entity{position = Vec2{0, 10}, traits = {.Player}})
+
+  spawn(.Watercraft, Entity{position = Vec2{20, 0}, velocity = Vec2{0.5, 0}})
 
   for i := 0; i < 50; i += 1 {
     spawn_cloud(-20)
@@ -30,15 +34,18 @@ spawn_cloud :: proc(x: f32 = 0) {
 
 @(private)
 update_world :: proc() {
+  player = box.get(&g.entities, g.player_id)
+
   update_player()
   update_entities()
   update_bullets()
   update_particles()
 
   // Draw waterline
-  render.shape(.Cube, Vec3{0, -0.1, 0}, Vec3{100, 0.2, 1}, rl.WHITE)
+  render.shape(.Cube, Vec3{player.position.x, -0.1, 0}, Vec3{100, 0.2, 1}, rl.WHITE)
+  render.shape(.Cube, Vec3{player.position.x, 0, 1}, Vec3(1), rl.GRAY)
+
   if UI()({layout = {padding = {0, 0, 32, 32}}}) {
-    player := box.get(&g.entities, g.player_id)
     ui.text(fmt.tprintf("%.1f %.1f", player.position.x, player.position.y))
   }
 
@@ -49,14 +56,32 @@ update_entities :: proc() {
   for &e in g.entities.items {
     if box.is_none(e) do continue
 
+    e.age += time.dt
     e.position += e.velocity * time.dt
 
     if e.kind == .Aircraft {
-      e.velocity.y -= 0.5 * time.dt // gravity
-    }
+      orientation := abs(sin(e.rotation)) // 0 - horizontal, 1 - vertical
+      e.velocity.y -= 1 * orientation * time.dt // gravity
 
-    render.shape(.SphereWires, to_vec3(e.position), 0.1, rl.WHITE)
-    render.shape(.SphereWires, to_vec3(e.position + at_angle(e.rotation)), 0.01, rl.WHITE)
+      if e.age > 0.05 {
+        e.age = 0
+        spawn_particle(
+          .AircraftTrail,
+          position = e.position + rand_offset(0.01, 0.1),
+          velocity = Vec2(0),
+          size = randf(0.01, 0.1),
+          lifetime = 2,
+        )
+      }
+
+      render.shape(.SphereWires, to_vec3(e.position), 0.1, rl.WHITE)
+
+      if .Player in e.traits {
+        render.shape(.SphereWires, to_vec3(e.position + at_angle(e.rotation)), 0.01, rl.WHITE)
+      }
+    } else if e.kind == .Watercraft {
+      render.shape(.Cube, to_vec3(e.position) + Vec3{0, 0.25, 0}, Vec3{2, 0.5, 0.5}, rl.BLUE)
+    }
   }
 }
 
@@ -74,17 +99,28 @@ update_bullets :: proc() {
 }
 
 update_particles :: proc() {
-  player := box.get(&g.entities, g.player_id)
-  if box.is_none(player) do return
-
   cloud_count := 0
 
   #reverse for &p, idx in box.every(&g.particles) {
+    p.position += p.velocity * time.dt
+    p.lifetime -= time.dt
+
     if p.kind == .Cloud {
-      p.position += p.velocity * time.dt
       cloud_count += 1
       render.shape(.SphereWires, to_vec3(p.position), p.size, rl.Color{255, 255, 255, 64})
+
       if abs(p.position.x - player.position.x) > 100 {
+        box.remove(&g.particles, i32(idx))
+      }
+    } else if p.kind == .AircraftTrail {
+      render.shape(
+        .Sphere,
+        to_vec3(p.position),
+        p.size,
+        rl.Color{200, 200, 200, u8(255 * p.lifetime / 2)},
+      )
+
+      if abs(p.position.x - player.position.x) > 100 || p.lifetime <= 0 {
         box.remove(&g.particles, i32(idx))
       }
     }
@@ -102,9 +138,6 @@ update_particles :: proc() {
 }
 
 update_player :: proc() {
-  player := box.get(&g.entities, g.player_id)
-  if box.is_none(player) do return
-
   input: struct {
     thrust: bool,
     left:   bool,
@@ -149,10 +182,15 @@ update_player :: proc() {
 }
 
 update_camera :: proc() {
-  player := box.get(&g.entities, g.player_id)
-  if box.is_none(player) do return
-
   g.camera.target = to_vec3(
     player.position + at_angle(player.rotation) * length(player.velocity) * 0.25,
   )
+
+  // Zoom in when closer to ground
+  if player.position.y < 5 {
+    f := max(0, (5 - player.position.y) * 0.2)
+    g.camera.fovy = 30 - f * 10
+  } else {
+    g.camera.fovy = 30
+  }
 }
