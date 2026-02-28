@@ -13,7 +13,7 @@ player: ^Entity
 spawn_world :: proc() {
   g.player_id = spawn(.Aircraft, Entity{position = Vec2{0, 10}, traits = {.Player}})
 
-  spawn(.Watercraft, Entity{position = Vec2{20, 0}, velocity = Vec2{0.5, 0}})
+  spawn(.Watercraft, Entity{position = Vec2{20, 0}})
 
   for i := 0; i < 50; i += 1 {
     spawn_cloud(-20)
@@ -42,8 +42,13 @@ update_world :: proc() {
   update_particles()
 
   // Draw waterline
-  render.shape(.Cube, Vec3{player.position.x, -0.1, 0}, Vec3{100, 0.2, 1}, rl.WHITE)
-  render.shape(.Cube, Vec3{player.position.x, 0, 1}, Vec3(1), rl.GRAY)
+  render.shape(
+    .Cube,
+    Vec3{player.position.x, -0.1 + sin(time.wt * 2) * 0.1, 0},
+    Vec3{100, 0.2, 1},
+    rl.WHITE,
+  )
+  render.shape(.Cube, Vec3{0, 0, 1}, Vec3(1), rl.GRAY)
 
   if UI()({layout = {padding = {0, 0, 32, 32}}}) {
     ui.text(fmt.tprintf("%.1f %.1f", player.position.x, player.position.y))
