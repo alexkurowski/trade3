@@ -33,7 +33,7 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
 
   // Dampening of velocity
   @(static) MIN_DAMP := f32(0.15)
-  @(static) MAX_DAMP := f32(0.5)
+  @(static) MAX_DAMP := f32(0.35)
 
   // Gravity factor calculated based on aircraft speed
   //        -----           <- gravity_factor = 1
@@ -64,13 +64,13 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
   // - Slower turns
   // - Lower thrust
   // - More fuel consumed (maybe)
-  mass := f32(1)
+  mass_factor := f32(1)
 
   forward := at_angle(e.rotation)
 
   // Engine thrust
   if input.thrust {
-    e.velocity += forward * THRUST * time.wdt
+    e.velocity += forward * THRUST * mass_factor * time.wdt
   }
 
   // Gravity
@@ -94,9 +94,9 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
 
   // Rotation
   if input.left {
-    e.rotation += TURN * time.wdt
+    e.rotation += TURN * mass_factor * time.wdt
   } else if input.right {
-    e.rotation -= TURN * time.wdt
+    e.rotation -= TURN * mass_factor * time.wdt
   }
 
   // Keep rotation between [0, 2pi)
@@ -176,5 +176,27 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
 }
 
 update_ai_controlled_aircraft :: proc(e: ^Entity) {
-  // TODO
+  @(static) THRUST := f32(5)
+  @(static) TURN := f32(PI * 2)
+  @(static) MAX_SPEED := f32(4)
+
+  angle := angle_between(g.player.position, e.position)
+  if angle > PI {
+    angle -= TAU
+  } else if angle < -PI {
+    angle += TAU
+  }
+  angle_diff := angle - e.rotation
+  e.rotation += clamp(angle_diff, -TURN * time.wdt, TURN * time.wdt)
+
+  forward := at_angle(e.rotation)
+  e.velocity += forward * THRUST * time.wdt
+
+  if length(e.velocity) > MAX_SPEED {
+    e.velocity = normalize(e.velocity) * MAX_SPEED
+  }
+
+  if e.position.y < 0 {
+    e.velocity.y += 10 * time.wdt
+  }
 }

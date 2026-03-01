@@ -8,6 +8,7 @@ g: struct {
   debug_mode:     bool,
   camera:         Camera,
   player_id:      ID,
+  player:         ^Entity,
   entities:       box.Array(Entity, ID, 1024),
   entity_by_kind: [EntityKind]box.Pool(ID, 512),
   bullets:        box.Pool(Bullet, 4096),
