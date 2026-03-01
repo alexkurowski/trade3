@@ -41,11 +41,7 @@ update_world :: proc() {
   update_particles()
   update_waterline()
   update_camera()
-
-  // Some debug ui
-  if UI()({layout = {padding = {0, 0, 32, 32}}}) {
-    ui.text(fmt.tprintf("%.1f %.1f", player.position.x, player.position.y))
-  }
+  draw_debug_ui()
 }
 
 update_entities :: proc() {
@@ -61,18 +57,27 @@ update_entities :: proc() {
       } else {
         update_ai_controlled_aircraft(&e)
       }
+
       orientation := get_orientation(&e) // 0 - horizontal, 1 - vertical
       e.velocity.y -= 1 * clamp(orientation, 0.2, 0.8) * time.dt // gravity
+      if e.position.y < 0 {
+        e.position.y = 0
+        e.velocity.y = 0
+      }
 
       if e.age > 0.05 {
         e.age = 0
-        spawn_particle(
-          .AircraftTrail,
-          position = e.position + rand_offset(0.01, 0.1),
-          velocity = Vec2(0),
-          size = randf(0.05, 0.1),
-          lifetime = 2,
-        )
+
+        speed := abs(e.velocity.x)
+        if speed > 0.3 {
+          spawn_particle(
+            .AircraftTrail,
+            position = e.position + rand_offset(0.01, 0.1),
+            velocity = Vec2(0),
+            size = speed > 1 ? randf(0.05, 0.1) : randf(0.01, 0.03),
+            lifetime = speed > 1 ? 2 : 1.5,
+          )
+        }
       }
 
       render.shape(.SphereWires, to_vec3(e.position), 0.1, rl.WHITE)
@@ -115,12 +120,7 @@ update_particles :: proc() {
       }
     } else if p.kind == .AircraftTrail {
       f := p.lifetime / 2
-      render.shape(
-        .Sphere,
-        to_vec3(p.position),
-        p.size * f,
-        rl.Color{200, 200, 200, u8(255 * f)},
-      )
+      render.shape(.Sphere, to_vec3(p.position), p.size * f, rl.Color{200, 200, 200, u8(255 * f)})
 
       if abs(p.position.x - player.position.x) > 100 || p.lifetime <= 0 {
         box.remove(&g.particles, i32(idx))
@@ -202,11 +202,34 @@ update_camera :: proc() {
     player.position + at_angle(player.rotation) * length(player.velocity) * 0.25,
   )
 
+  if g.debug_mode {
+    if rl.IsKeyDown(.M) {
+      g.camera.fovy -= 10 * time.dt
+    }
+    if rl.IsKeyDown(.N) {
+      g.camera.fovy += 10 * time.dt
+    }
+    return
+  }
+
   // Zoom in when closer to ground
   if player.position.y < 5 {
     f := max(0, (5 - player.position.y) * 0.2)
     g.camera.fovy = 30 - f * 10
   } else {
     g.camera.fovy = 30
+  }
+}
+
+draw_debug_ui :: proc() {
+  if !g.debug_mode {
+    return
+  }
+
+  // Some debug ui
+  if UI()({layout = {layoutDirection = .TopToBottom, padding = {0, 0, 32, 32}}}) {
+    ui.text(fmt.tprintf("x:%.1f y:%.1f", player.position.x, player.position.y))
+    ui.text(fmt.tprintf("vx:%.1f vy:%.1f", player.velocity.x, player.position.y))
+    ui.text(fmt.tprintf("fov:%.1f", g.camera.fovy))
   }
 }

@@ -16,12 +16,13 @@ Camera :: struct {
 }
 
 camera_init :: proc() {
+  g.camera.offset = CAMERA_OFFSET
   g.camera.target = Vec3(0)
   g.camera.fovy = 30
-  g.camera.c3d.fovy = g.camera.fovy
   g.camera.c3d.projection = .ORTHOGRAPHIC
   g.camera.c3d.target = Vec3(0)
-  g.camera.c3d.position = CAMERA_OFFSET
+  g.camera.c3d.position = g.camera.offset
+  g.camera.c3d.fovy = g.camera.fovy
   g.camera.c3d.up = Vec3{0, 1, 0}
 }
 
@@ -30,7 +31,7 @@ camera_step :: proc() {
   g.camera.c3d.target = linalg.lerp(g.camera.c3d.target, g.camera.target, CAMERA_SPEED * time.dt)
   g.camera.c3d.position = linalg.lerp(
     g.camera.c3d.position,
-    g.camera.c3d.target + CAMERA_OFFSET,
+    g.camera.c3d.target + g.camera.offset,
     CAMERA_SPEED * 5 * time.dt,
   )
   g.camera.c3d.fovy = linalg.lerp(g.camera.c3d.fovy, g.camera.fovy, CAMERA_SPEED * time.dt)
