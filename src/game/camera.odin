@@ -18,7 +18,7 @@ Camera :: struct {
 camera_init :: proc() {
   g.camera.offset = CAMERA_OFFSET
   g.camera.target = Vec3(0)
-  g.camera.fovy = 30
+  g.camera.fovy = 15
   g.camera.c3d.projection = .ORTHOGRAPHIC
   g.camera.c3d.target = Vec3(0)
   g.camera.c3d.position = g.camera.offset

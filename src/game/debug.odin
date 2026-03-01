@@ -16,7 +16,9 @@ debug_init :: proc() {
 
 @(private)
 debug_update :: proc() {
-  if rl.IsKeyPressed(.SLASH) do g.debug_mode = !g.debug_mode
+  if rl.IsKeyDown(.RIGHT_SHIFT) && rl.IsKeyPressed(.SLASH) {
+    g.debug_mode = !g.debug_mode
+  }
   if g.debug_mode {
     // render.shape(.DebugGrid, Vec3{100, 1, 0})
     render.sprite(.DebugFps, Vec2{0, 0})
@@ -26,4 +28,3 @@ debug_update :: proc() {
     }
   }
 }
-

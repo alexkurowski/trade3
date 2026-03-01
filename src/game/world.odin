@@ -11,9 +11,9 @@ player: ^Entity
 
 @(private)
 spawn_world :: proc() {
-  g.player_id = spawn(.Aircraft, Entity{position = Vec2{0, 10}, traits = {.Player}})
+  g.player_id = spawn(.Aircraft, Entity{traits = {.Player}, position = Vec2{0, 10}, size = 0.5})
 
-  spawn(.Watercraft, Entity{position = Vec2{20, 0}})
+  spawn(.Watercraft, Entity{position = Vec2{20, 0}, size = 1})
 
   for i := 0; i < 50; i += 1 {
     spawn_cloud(-20)
@@ -41,53 +41,38 @@ update_world :: proc() {
   update_particles()
   update_waterline()
   update_camera()
-  draw_debug_ui()
 }
 
 update_entities :: proc() {
   for &e in g.entities.items {
     if box.is_none(e) do continue
 
-    e.age += time.dt
-    e.position += e.velocity * time.dt
+    e.age += time.wdt
+    e.position += e.velocity * time.wdt
 
-    if e.kind == .Aircraft {
-      if .Player in e.traits {
-        update_player_controlled_aircraft(&e)
-      } else {
-        update_ai_controlled_aircraft(&e)
-      }
-
-      orientation := get_orientation(&e) // 0 - horizontal, 1 - vertical
-      e.velocity.y -= 1 * clamp(orientation, 0.2, 0.8) * time.dt // gravity
-      if e.position.y < 0 {
-        e.position.y = 0
-        e.velocity.y = 0
-      }
-
-      if e.age > 0.05 {
-        e.age = 0
-
-        speed := abs(e.velocity.x)
-        if speed > 0.3 {
-          spawn_particle(
-            .AircraftTrail,
-            position = e.position + rand_offset(0.01, 0.1),
-            velocity = Vec2(0),
-            size = speed > 1 ? randf(0.05, 0.1) : randf(0.01, 0.03),
-            lifetime = speed > 1 ? 2 : 1.5,
-          )
-        }
-      }
-
-      render.shape(.SphereWires, to_vec3(e.position), 0.1, rl.WHITE)
-
-      if .Player in e.traits {
-        render.shape(.SphereWires, to_vec3(e.position + at_angle(e.rotation)), 0.01, rl.WHITE)
-      }
-    } else if e.kind == .Watercraft {
-      render.shape(.Cube, to_vec3(e.position) + Vec3{0, 0.25, 0}, Vec3{2, 0.5, 0.5}, rl.BLUE)
+    switch e.kind {
+    case .Aircraft:
+      update_aircraft(&e)
+      draw_aircraft(&e)
+    case .Watercraft:
+      update_watercraft(&e)
+      draw_watercraft(&e)
     }
+
+    // if e.age > 0.05 {
+    //   e.age = 0
+
+    //   speed := abs(e.velocity.x)
+    //   if speed > 0.3 {
+    //     spawn_particle(
+    //       .AircraftTrail,
+    //       position = e.position + rand_offset(0.01, 0.1),
+    //       velocity = Vec2(0),
+    //       size = speed > 1 ? randf(0.05, 0.1) : randf(0.01, 0.03),
+    //       lifetime = speed > 1 ? 2 : 1.5,
+    //     )
+    //   }
+    // }
   }
 }
 
@@ -139,58 +124,10 @@ update_particles :: proc() {
   }
 }
 
-update_player_controlled_aircraft :: proc(e: ^Entity) {
-  input: struct {
-    thrust: bool,
-    left:   bool,
-    right:  bool,
-    shoot:  bool,
-  } = {
-    thrust = rl.IsKeyDown(.UP) || rl.IsKeyDown(.W),
-    left   = rl.IsKeyDown(.LEFT) || rl.IsKeyDown(.A),
-    right  = rl.IsKeyDown(.RIGHT) || rl.IsKeyDown(.D),
-    shoot  = rl.IsKeyDown(.SPACE),
-  }
-
-  if input.thrust {
-    e.velocity += at_angle(e.rotation) * 2 * time.dt
-  } else {
-    orientation := get_orientation(e) // 0 - horizontal, 1 - vertical
-    glide_factor := 0.98 + 0.02 * (1.0 - orientation) // less velocity reduction in horizontal position
-    e.velocity *= glide_factor
-
-    // TODO: Gravity - increase when velocity drops (stall)
-    // e.velocity.y = prev_y - 9.8 * (orientation) * time.dt
-  }
-  clamp_vec(&e.velocity, 2)
-
-  if input.left {
-    e.rotation += 4 * time.dt
-  }
-  if input.right {
-    e.rotation -= 4 * time.dt
-  }
-
-  @(static) shoot_timeout := f32(0)
-  shoot_timeout -= time.dt
-  if input.shoot && shoot_timeout <= 0 {
-    shoot_timeout = 0.1
-    spawn_bullet(
-      .None,
-      e.position + at_angle(e.rotation) * 0.5,
-      e.velocity + at_angle(e.rotation) * 5,
-    )
-  }
-}
-
-update_ai_controlled_aircraft :: proc(e: ^Entity) {
-  // TODO
-}
-
 update_waterline :: proc() {
   render.shape(
     .Cube,
-    Vec3{player.position.x, -0.1 + sin(PI * time.wt) * 0.1, 0},
+    Vec3{player.position.x, sin(PI * time.wt) * 0.1, 0},
     Vec3{100, 0.2, 1},
     rl.WHITE,
   )
@@ -218,18 +155,5 @@ update_camera :: proc() {
     g.camera.fovy = 30 - f * 10
   } else {
     g.camera.fovy = 30
-  }
-}
-
-draw_debug_ui :: proc() {
-  if !g.debug_mode {
-    return
-  }
-
-  // Some debug ui
-  if UI()({layout = {layoutDirection = .TopToBottom, padding = {0, 0, 32, 32}}}) {
-    ui.text(fmt.tprintf("x:%.1f y:%.1f", player.position.x, player.position.y))
-    ui.text(fmt.tprintf("vx:%.1f vy:%.1f", player.velocity.x, player.position.y))
-    ui.text(fmt.tprintf("fov:%.1f", g.camera.fovy))
   }
 }

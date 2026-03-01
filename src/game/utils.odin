@@ -46,6 +46,7 @@ sqrt :: math.sqrt
 
 distance :: linalg.distance
 length :: linalg.length
+dot :: linalg.dot
 
 shuffle :: rand.shuffle
 
@@ -255,6 +256,12 @@ ease_in_out_cubic :: proc(x: f32) -> f32 {
 
 lerp_u8 :: proc(x, y: u8, t: f32) -> u8 {
   return u8(math.round(clamp(f32(x) * (1 - t) + f32(y) * t, 0, 255)))
+}
+
+scale :: proc(value, from_min, from_max, to_min, to_max: f32) -> f32 {
+  if value < from_min do return to_min
+  if value > from_max do return to_max
+  return (value - from_min) / (from_max - from_min) * (to_max - to_min) + to_min
 }
 
 
