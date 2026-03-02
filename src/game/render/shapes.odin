@@ -27,6 +27,9 @@ shapes_begin :: proc() {
 }
 
 shapes_end :: proc() {
+  rl.BeginShaderMode(shaders.base)
+  defer rl.EndShaderMode()
+
   for shape in box.every(&shape_queue) {
     switch shape.kind {
     case .DebugGrid:

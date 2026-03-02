@@ -26,7 +26,9 @@ sprites_begin :: proc() {
   box.clear(&sprite_queue)
 }
 
-sprites_end :: proc(texture: rl.Texture) {
+sprites_end :: proc() {
+  texture: rl.Texture = textures.sprites
+
   for sprite in box.every(&sprite_queue) {
     source := Rect{0, 0, 32, 32}
     size := Vec2{16, 16} * sprite.size

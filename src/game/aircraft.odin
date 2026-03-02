@@ -6,10 +6,6 @@ import "./ui"
 import "core:fmt"
 import rl "vendor:raylib"
 
-get_orientation :: proc(e: ^Entity) -> f32 {
-  return clamp(abs(sin(e.rotation)), 0.2, 1)
-}
-
 update_aircraft :: proc(e: ^Entity) {
   if .Player in e.traits {
     update_player_controlled_aircraft(e)
@@ -21,7 +17,15 @@ update_aircraft :: proc(e: ^Entity) {
 }
 
 draw_aircraft :: proc(e: ^Entity) {
-  render.shape(.SphereWires, to_vec3(e.position), e.size, rl.WHITE)
+  // render.shape(.SphereWires, to_vec3(e.position), e.size, rl.WHITE)
+  a := PI / 2 + e.rotation
+  render.model(
+    .Test,
+    to_vec3(e.position),
+    rl.QuaternionFromEuler(a, a, a),
+    scale = Vec3(1),
+    color = {255, 255, 255, 255},
+  )
   if .Player in e.traits {
     render.shape(.SphereWires, to_vec3(e.position + at_angle(e.rotation)), 0.01, rl.WHITE)
   }

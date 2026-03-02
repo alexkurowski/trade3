@@ -2,8 +2,6 @@
 package game
 
 import "./render"
-import "./ui"
-import "core:fmt"
 import "deps:box"
 import rl "vendor:raylib"
 
@@ -12,7 +10,10 @@ spawn_world :: proc() {
   g.player_id = spawn(.Aircraft, Entity{traits = {.Player}, position = Vec2{0, 10}, size = 0.5})
 
   for i := 0; i < 10; i += 1 {
-    spawn(.Aircraft, Entity{position = Vec2{0, 10} + rand_vec2(10), size = 0.25})
+    spawn(
+      .Aircraft,
+      Entity{age = randf(0, 10), position = Vec2{0, 10} + rand_vec2(10), size = 0.25},
+    )
   }
 
   spawn(.Watercraft, Entity{position = Vec2{20, 0}, size = 1})

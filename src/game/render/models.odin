@@ -1,5 +1,6 @@
 package render
 
+import "core:fmt"
 import "deps:box"
 import rl "vendor:raylib"
 
@@ -23,17 +24,21 @@ models_begin :: proc() {
 }
 
 models_end :: proc() {
+  rl.BeginShaderMode(shaders.lighting)
+  defer rl.EndShaderMode()
+
   for model in box.every(&model_queue) {
     m := get_mesh(model.kind)
-    i := m.meshCount
 
     scale := rl.MatrixScale(model.scale.x, model.scale.y, model.scale.z)
     rotate := rl.QuaternionToMatrix(model.rotation)
     translate := rl.MatrixTranslate(model.position.x, model.position.y, model.position.z)
     transform := translate * rotate * scale * m.transform
 
-    m.materials[m.meshMaterial[i]].maps[rl.MaterialMapIndex.ALBEDO].color = model.color
-    rl.DrawMesh(m.meshes[i], m.materials[m.meshMaterial[i]], transform)
+    for i := i32(0); i < m.meshCount; i += 1 {
+      m.materials[m.meshMaterial[i]].maps[rl.MaterialMapIndex.ALBEDO].color = model.color
+      rl.DrawMesh(m.meshes[i], m.materials[m.meshMaterial[i]], transform)
+    }
   }
 }
 
@@ -46,7 +51,7 @@ model :: proc(
 ) {
   box.append(
     &model_queue,
-    Model{kind = kind, position = position, rotation = rotation, scale = scale},
+    Model{kind = kind, position = position, rotation = rotation, scale = scale, color = color},
   )
 }
 

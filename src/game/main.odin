@@ -10,7 +10,6 @@ INITIAL_WINDOW_HEIGHT :: 600
 @(export)
 load :: proc() {
   text.load()
-  assets_load()
   render.load()
   ui.load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
 
@@ -24,7 +23,6 @@ load :: proc() {
 unload :: proc() {
   ui.unload()
   render.unload()
-  assets_unload()
 }
 
 @(export)
@@ -41,7 +39,6 @@ update :: proc() {
 
   frame_begin()
   update_world()
-  draw_screen()
   process_events()
   debug_update()
   frame_end()
@@ -52,6 +49,7 @@ update :: proc() {
 @(private = "file")
 frame_begin :: proc() {
   render.shapes_begin()
+  render.models_begin()
   render.sprites_begin()
   ui.begin(time.dt)
 }
@@ -62,12 +60,13 @@ reset_input :: proc() {
 
 @(private = "file")
 frame_end :: proc() {
-  render.begin_3d(g.camera.c3d, assets.shaders.base)
+  render.begin_3d(g.camera.c3d)
   render.shapes_end()
+  render.models_end()
   render.end_3d()
 
   render.begin_2d()
-  render.sprites_end(assets.textures.icons)
+  render.sprites_end()
   ui.end()
   render.end_2d()
 }
