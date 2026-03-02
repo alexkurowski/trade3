@@ -7,6 +7,16 @@ camera3d: rl.Camera
 @(private = "file")
 camera_matrix: rl.Matrix
 
+load :: proc() {
+  load_shaders()
+  load_models()
+}
+
+unload :: proc() {
+  unload_models()
+  unload_shaders()
+}
+
 begin_3d :: proc(camera: rl.Camera, shader: rl.Shader) {
   camera3d = camera
   camera_matrix = rl.GetCameraMatrix(camera)

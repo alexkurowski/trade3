@@ -3,8 +3,6 @@ package game
 import "./render"
 import "./text"
 import "./ui"
-// import "core:strings"
-// import rl "vendor:raylib"
 
 INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
@@ -13,6 +11,7 @@ INITIAL_WINDOW_HEIGHT :: 600
 load :: proc() {
   text.load()
   assets_load()
+  render.load()
   ui.load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
 
   camera_init()
@@ -24,6 +23,7 @@ load :: proc() {
 @(export)
 unload :: proc() {
   ui.unload()
+  render.unload()
   assets_unload()
 }
 

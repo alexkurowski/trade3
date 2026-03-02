@@ -55,10 +55,8 @@ update_entities :: proc() {
     switch e.kind {
     case .Aircraft:
       update_aircraft(&e)
-      draw_aircraft(&e)
     case .Watercraft:
       update_watercraft(&e)
-      draw_watercraft(&e)
     }
 
     // if e.age > 0.05 {

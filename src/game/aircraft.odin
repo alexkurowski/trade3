@@ -17,6 +17,7 @@ update_aircraft :: proc(e: ^Entity) {
     update_ai_controlled_aircraft(e)
   }
 
+  draw_aircraft(e)
 }
 
 draw_aircraft :: proc(e: ^Entity) {
@@ -50,11 +51,13 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
 
   input: struct {
     thrust: bool,
+    stop:   bool,
     left:   bool,
     right:  bool,
     shoot:  bool,
   } = {
     thrust = rl.IsKeyDown(.UP) || rl.IsKeyDown(.W),
+    stop   = rl.IsKeyDown(.DOWN) || rl.IsKeyDown(.S),
     left   = rl.IsKeyDown(.LEFT) || rl.IsKeyDown(.A),
     right  = rl.IsKeyDown(.RIGHT) || rl.IsKeyDown(.D),
     shoot  = rl.IsKeyDown(.SPACE),
@@ -83,7 +86,11 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
   pre_damp_y := e.velocity.y
   orientation := abs(cos(e.rotation)) // 0 - horizontal, 1 - vertical
   orientation *= dot(normalize(e.velocity), at_angle(e.rotation))
-  orientation = clamp(orientation, 0, 1)
+  if input.stop {
+    orientation = clamp(orientation, 0, 0.1)
+  } else {
+    orientation = clamp(orientation, 0, 1)
+  }
   damp_factor := scale(orientation, 0, 1, MAX_DAMP, MIN_DAMP)
   e.velocity *= 1 - damp_factor * time.wdt
   if pre_damp_y < 0 do e.velocity.y = pre_damp_y // Keep y if going down
@@ -178,15 +185,17 @@ update_player_controlled_aircraft :: proc(e: ^Entity) {
 update_ai_controlled_aircraft :: proc(e: ^Entity) {
   @(static) THRUST := f32(5)
   @(static) TURN := f32(PI * 2)
-  @(static) MAX_SPEED := f32(4)
+  @(static) MAX_SPEED := f32(2)
 
-  angle := angle_between(g.player.position, e.position)
-  if angle > PI {
-    angle -= TAU
-  } else if angle < -PI {
-    angle += TAU
+  target_position := g.player.position
+  target_position += at_angle(sin(e.age * 0.1))
+  target_angle := angle_between(target_position, e.position)
+  if target_angle > PI {
+    target_angle -= TAU
+  } else if target_angle < -PI {
+    target_angle += TAU
   }
-  angle_diff := angle - e.rotation
+  angle_diff := target_angle - e.rotation
   e.rotation += clamp(angle_diff, -TURN * time.wdt, TURN * time.wdt)
 
   forward := at_angle(e.rotation)
