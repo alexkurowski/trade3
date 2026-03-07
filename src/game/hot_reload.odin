@@ -2,6 +2,9 @@ package game
 
 import rl "vendor:raylib"
 
+// NOTE:
+// Doesn't work, probably because of all the static variables
+
 @(export)
 force_reload :: proc() -> bool {
   return rl.IsKeyPressed(.F5)
@@ -29,3 +32,4 @@ hot_reloaded :: proc(mem: rawptr) {
   // Here you can also set your own global variables. A good idea is to make
   // your global variables into pointers that point to something inside `g`.
 }
+

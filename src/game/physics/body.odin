@@ -81,8 +81,8 @@ get_position :: proc(body: Body) -> Vec2 {
   return b2.Body_GetPosition(body.bid)
 }
 
-set_position :: proc(body: Body, position: Vec2) {
-  b2.Body_SetTransform(body.bid, position, b2.MakeRot(0))
+set_position :: proc(body: Body, position: Vec2, rotation: f32 = 0) {
+  b2.Body_SetTransform(body.bid, position, b2.MakeRot(rotation))
 }
 
 push :: proc(body: Body, force: Vec2) {

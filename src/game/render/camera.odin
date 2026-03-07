@@ -31,8 +31,8 @@ camera_step :: proc(dt: f32) {
   camera.c3d.target = linalg.lerp(camera.c3d.target, camera.target, CAMERA_SPEED * dt)
   camera.c3d.position = linalg.lerp(
     camera.c3d.position,
-    camera.c3d.target + camera.offset,
-    CAMERA_SPEED * 5 * dt,
+    camera.target + camera.offset,
+    CAMERA_SPEED * dt,
   )
   camera.c3d.fovy = linalg.lerp(camera.c3d.fovy, camera.fovy, CAMERA_SPEED * dt)
   // Recalculate camera

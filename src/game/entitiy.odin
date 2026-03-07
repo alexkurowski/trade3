@@ -6,7 +6,7 @@ import "physics"
 
 Entity :: struct {
   id:       ID,
-  kind:     EntityKind,
+  kind:     bit_set[EntityKind],
   body:     physics.Body,
   position: Vec3,
   rotation: f32,
@@ -25,7 +25,7 @@ spawn :: proc(entity: Entity) -> ^Entity {
 
   e := box.get(&g.entities, id)
   e.body = physics.create_body()
-  physics.set_position(e.body, to_vec2(e.position))
+  physics.set_position(e.body, to_vec2(e.position), e.rotation)
   return e
 }
 

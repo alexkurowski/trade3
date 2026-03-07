@@ -15,7 +15,7 @@ process_systems :: proc() {
   for &e in g.entities.items {
     if box.is_none(e) do continue
 
-    if e.kind == .Player {
+    if .Player in e.kind {
       player_input(&e)
     }
 
