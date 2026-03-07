@@ -1,6 +1,5 @@
 package render
 
-import "core:fmt"
 import "deps:box"
 import rl "vendor:raylib"
 
@@ -63,3 +62,4 @@ get_mesh :: proc(kind: ModelKind) -> rl.Model {
   }
   return models.test
 }
+

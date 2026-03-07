@@ -1,13 +1,15 @@
-#+private
+#+private file
 package game
 
 import "physics"
 
+@(private)
 state_game :: proc() {
   process_systems()
   process_events()
 }
 
+@(private)
 start_new_game :: proc() {
   despawn_all_entities()
   spawn_player()
@@ -30,10 +32,9 @@ start_new_game :: proc() {
 }
 
 
-@(private = "file")
 spawn_player :: proc() {
   player := spawn(Entity{kind = .Player})
-  physics.set_body_shape(&player.body, .Circle, 0.6, mass = 4)
+  physics.set_body_shape(&player.body, .Circle, 0.6, mass = 6)
   g.player_id = player.id
 }
 

@@ -4,7 +4,7 @@ package render
 import "core:math/linalg"
 import rl "vendor:raylib"
 
-CAMERA_SPEED :: 2
+CAMERA_SPEED :: 4
 CAMERA_OFFSET :: Vec3{10, 10, 10}
 
 camera: struct {

@@ -46,6 +46,13 @@ end_2d :: proc() {
 }
 
 //
+// Camera interactions
+//
+move_camera_to :: proc(position: Vec3) {
+  camera.target = position
+}
+
+//
 // 3d to 2d helpers
 //
 is_on_screen :: #force_inline proc(position: Vec3) -> bool {
