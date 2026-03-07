@@ -1,8 +1,8 @@
 #+private
 package game
 
-import "./ui"
 import clay "deps:clay-odin"
+import "ui"
 import rl "vendor:raylib"
 
 UI :: clay.UI
@@ -88,3 +88,4 @@ is_clicked :: proc() -> bool {
   // TODO: proper click
   return clay.Hovered() && rl.IsMouseButtonPressed(.LEFT)
 }
+

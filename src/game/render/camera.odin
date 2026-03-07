@@ -39,20 +39,3 @@ camera_step :: proc(dt: f32) {
   camera.m3d = rl.GetCameraMatrix(camera.c3d)
 }
 
-
-//
-// 3d to 2d helpers
-//
-is_on_screen :: #force_inline proc(position: Vec3) -> bool {
-  t := rl.Vector3Transform(position, camera.m3d)
-  return t.z < -0.1
-}
-
-get_screen_position :: #force_inline proc(position: Vec3) -> Vec2 {
-  return rl.GetWorldToScreen(position, camera.c3d)
-}
-
-to_screen_position :: proc(position: Vec3) -> (Vec2, bool) {
-  return get_screen_position(position), is_on_screen(position)
-}
-

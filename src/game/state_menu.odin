@@ -1,7 +1,7 @@
 #+private
 package game
 
-import "./ui"
+import "ui"
 
 state_menu :: proc() {
   if g.debug {

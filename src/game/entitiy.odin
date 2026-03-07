@@ -1,17 +1,19 @@
 #+private
 package game
 
-import "./physics"
 import "deps:box"
+import "physics"
 
 Entity :: struct {
   id:       ID,
+  kind:     EntityKind,
   body:     physics.Body,
   position: Vec3,
   rotation: f32,
 }
 
 EntityKind :: enum {
+  None,
   Player,
   Enemy,
 }
@@ -23,6 +25,7 @@ spawn :: proc(entity: Entity) -> ^Entity {
 
   e := box.get(&g.entities, id)
   e.body = physics.create_body()
+  physics.set_position(e.body, to_vec2(e.position))
   return e
 }
 
@@ -36,12 +39,5 @@ despawn :: proc(id: ID) {
 
 despawn_all_entities :: proc() {
   box.clear(&g.entities)
-}
-
-
-spawn_player :: proc() {
-  player := spawn(Entity{})
-  physics.set_body_shape(&player.body, .Circle, 0.6, mass = 1)
-  g.player_id = player.id
 }
 

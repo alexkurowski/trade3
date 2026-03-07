@@ -1,5 +1,6 @@
 package render
 
+import "core:math/linalg"
 import rl "vendor:raylib"
 
 @(private)
@@ -42,5 +43,28 @@ begin_2d :: proc() {
 end_2d :: proc() {
   // rl.EndShaderMode()
   // rl.EndMode2D()
+}
+
+//
+// 3d to 2d helpers
+//
+is_on_screen :: #force_inline proc(position: Vec3) -> bool {
+  t := rl.Vector3Transform(position, camera.m3d)
+  return t.z < -0.1
+}
+
+get_screen_position :: #force_inline proc(position: Vec3) -> Vec2 {
+  return rl.GetWorldToScreen(position, camera.c3d)
+}
+
+to_screen_position :: proc(position: Vec3) -> (Vec2, bool) {
+  return get_screen_position(position), is_on_screen(position)
+}
+
+to_camera_relative :: proc(v: Vec2) -> Vec2 {
+  direction := linalg.normalize(camera.c3d.target - camera.c3d.position)
+  forward := Vec2{direction.x, direction.z}
+  right := Vec2{-direction.z, direction.x}
+  return Vec2{linalg.dot(v, right), linalg.dot(v, forward)}
 }
 

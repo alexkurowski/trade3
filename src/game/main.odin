@@ -1,10 +1,10 @@
 package game
 
-import "./physics"
-import "./render"
-import "./text"
-import "./ui"
 import "deps:box"
+import "physics"
+import "render"
+import "text"
+import "ui"
 import rl "vendor:raylib"
 import gl "vendor:raylib/rlgl"
 
@@ -105,11 +105,20 @@ frame_end :: proc() {
   render.begin_3d()
   render.shapes_end()
   render.models_end()
+
+  if g.debug {
+    physics.draw_debug()
+  }
+
   render.end_3d()
 
   render.begin_2d()
   render.sprites_end()
   ui.end()
-  physics.draw_debug()
   render.end_2d()
+
+  if g.debug {
+    rl.DrawFPS(0, 0)
+  }
 }
+
