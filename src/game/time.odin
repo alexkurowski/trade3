@@ -4,6 +4,9 @@ package game
 import "core:math"
 import rl "vendor:raylib"
 
+MAX_DELTA_TIME :: 0.07
+FACTOR_SMOOTHNESS :: 2.5
+
 time: struct {
   t:      f32, // Player total time
   wt:     f32, // World total time
@@ -17,8 +20,8 @@ time: struct {
 }
 
 time_step :: proc() {
-  time.dt = math.min(rl.GetFrameTime(), 0.07)
-  time.factor += (time.target - time.factor) * 2.5 * time.dt
+  time.dt = math.min(rl.GetFrameTime(), MAX_DELTA_TIME)
+  time.factor += (time.target - time.factor) * FACTOR_SMOOTHNESS * time.dt
   time.wdt = time.dt * time.factor
   time.t += time.dt
   time.wt += time.wdt

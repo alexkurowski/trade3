@@ -5,7 +5,7 @@ import "core:math/linalg"
 import rl "vendor:raylib"
 
 CAMERA_SPEED :: 2
-CAMERA_OFFSET :: Vec3{0, 0, 10}
+CAMERA_OFFSET :: Vec3{10, 10, 10}
 
 camera: struct {
   c3d:    rl.Camera3D,

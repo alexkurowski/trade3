@@ -1,28 +1,15 @@
 #+private
-package game
+package physics
 
 import b2 "vendor:box2d"
 import rl "vendor:raylib"
 
-world: b2.WorldId
+Vec2 :: [2]f32
+Vec3 :: [3]f32
 
-
-init_physics :: proc() {
-  init_physics_debug_draw()
-}
-
-update_physics :: proc(dt: f32) {
-  b2.World_Step(world, dt, 4)
-
-  if g.debug {
-    b2.World_Draw(world, &physics_world_debug)
-  }
-}
-
-@(private = "file")
 physics_world_debug: b2.DebugDraw
-@(private = "file")
-init_physics_debug_draw :: proc() {
+
+init_debug_draw :: proc() {
   physics_world_debug = b2.DefaultDebugDraw()
   physics_world_debug.drawShapes = true
   physics_world_debug.DrawSolidCircleFcn = proc "c" (

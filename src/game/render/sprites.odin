@@ -60,6 +60,19 @@ sprites_end :: proc() {
   }
 }
 
+// TODO:
+// rl.DrawBillboardPro(
+// 	ctx.camera.camera3d,
+// 	ctx.assets.bullet_texture,
+// 	rect,
+// 	position + sprite.offset + forward * 0.5,
+// 	ctx.camera.up,
+// 	sprite.size,
+// 	rl.Vector2{sprite.size.x / 2, sprite.size.y / 2},
+// 	sprite.angle,
+// 	rl.Color{255, 255, 255, u8(sprite.alpha * 255)},
+// )
+
 add_sprite_vec2 :: proc(kind: SpriteKind, position: Vec2, color: rl.Color = rl.WHITE) {
   box.append(&sprite_queue, Sprite{kind, position, 1, color})
 }
@@ -92,3 +105,4 @@ sprite :: proc {
   add_sprite_vec3,
   add_sprite_vec3_size,
 }
+

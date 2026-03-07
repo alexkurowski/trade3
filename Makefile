@@ -15,9 +15,12 @@ default: run
 run:
 	odin run src/main_desktop ${COLLECTION_OPT}
 
-hot:
+hot_exec:
 	mkdir -p out
 	odin build src/main_hot_reload -debug -out:game ${COLLECTION_OPT}
+
+hot:
+	mkdir -p out
 	odin build src/game -debug ${HOT_TMP_OUT_OPT} ${COLLECTION_OPT} ${HOT_OPTS}
 	mv ${HOT_TMP_OUT_PATH} ${HOT_OUT_PATH}
 

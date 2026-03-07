@@ -1,8 +1,10 @@
 package game
 
+import "./physics"
 import "./render"
 import "./text"
 import "./ui"
+import "deps:box"
 import rl "vendor:raylib"
 import gl "vendor:raylib/rlgl"
 
@@ -10,7 +12,17 @@ INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
 GameMemory :: struct {
-  debug: bool,
+  state:     GameState,
+  player_id: ID,
+  entities:  box.Array(Entity, ID, 1024),
+  debug:     bool,
+}
+
+GameState :: enum {
+  Menu,
+  Game,
+  Pause,
+  Quit,
 }
 
 g: ^GameMemory
@@ -34,6 +46,11 @@ close_window :: proc() {
 }
 
 @(export)
+is_running :: proc() -> bool {
+  return !rl.WindowShouldClose() && g.state != .Quit
+}
+
+@(export)
 load :: proc() {
   g = new(GameMemory)
   g.debug = true
@@ -41,14 +58,12 @@ load :: proc() {
   text.load()
   render.load()
   ui.load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
-
-  // debug_init()
-
-  start_new_game()
+  physics.load()
 }
 
 @(export)
 unload :: proc() {
+  physics.unload()
   ui.unload()
   render.unload()
   text.unload()
@@ -57,28 +72,24 @@ unload :: proc() {
 }
 
 @(export)
-is_running :: proc() -> bool {
-  return !rl.WindowShouldClose()
-}
-
-@(export)
 update :: proc() {
   rl.BeginDrawing()
   defer rl.EndDrawing()
 
   frame_begin()
-  process_systems()
-  process_events()
-  // debug_update()
+  switch g.state {
+  case .Menu:
+    state_menu()
+  case .Game:
+    state_game()
+  case .Pause:
+    state_pause()
+  case .Quit:
+    break
+  }
   frame_end()
 
   free_all(context.temp_allocator)
-}
-
-@(private)
-start_new_game :: proc() {
-  // despawn_all()
-  // spawn_world()
 }
 
 @(private = "file")
@@ -99,5 +110,6 @@ frame_end :: proc() {
   render.begin_2d()
   render.sprites_end()
   ui.end()
+  physics.draw_debug()
   render.end_2d()
 }

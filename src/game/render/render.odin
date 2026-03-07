@@ -9,6 +9,8 @@ load :: proc() {
   load_shaders()
   load_textures()
   load_models()
+
+  camera_init()
 }
 
 unload :: proc() {
@@ -41,3 +43,4 @@ end_2d :: proc() {
   // rl.EndShaderMode()
   // rl.EndMode2D()
 }
+

@@ -49,4 +49,3 @@ process_events :: proc() {
     box.clear(&events[kind])
   }
 }
-
