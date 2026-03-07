@@ -2,10 +2,8 @@ package render
 
 import rl "vendor:raylib"
 
-@(private = "file")
-camera3d: rl.Camera
-@(private = "file")
-camera_matrix: rl.Matrix
+@(private)
+dt: f32
 
 load :: proc() {
   load_shaders()
@@ -19,10 +17,16 @@ unload :: proc() {
   unload_shaders()
 }
 
-begin_3d :: proc(camera: rl.Camera) {
-  camera3d = camera
-  camera_matrix = rl.GetCameraMatrix(camera)
-  rl.BeginMode3D(camera)
+begin :: proc(delta_time: f32) {
+  dt = delta_time
+  camera_step(dt)
+  shapes_begin()
+  models_begin()
+  sprites_begin()
+}
+
+begin_3d :: proc() {
+  rl.BeginMode3D(camera.c3d)
 }
 
 end_3d :: proc() {
@@ -36,13 +40,4 @@ begin_2d :: proc() {
 end_2d :: proc() {
   // rl.EndShaderMode()
   // rl.EndMode2D()
-}
-
-is_on_screen :: #force_inline proc(position: Vec3) -> bool {
-  t := rl.Vector3Transform(position, camera_matrix)
-  return t.z < -0.1
-}
-
-get_screen_position :: #force_inline proc(position: Vec3) -> Vec2 {
-  return rl.GetWorldToScreen(position, camera3d)
 }

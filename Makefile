@@ -1,32 +1,25 @@
+ODIN_ROOT = $(shell odin root)
+
 COLLECTION_OPT = -collection:deps=./deps/
 OUT_OPT = -out:out/game
 
-ODIN_ROOT = $(shell odin root)
-EXTRA_LINKER_FLAGS = -extra-linker-flags:"-Wl,-rpath ${ODIN_ROOT}vendor/raylib/macos"
+HOT_OPTS = -define:RAYLIB_SHARED=true -build-mode:dll -extra-linker-flags:"-Wl,-rpath ${ODIN_ROOT}vendor/raylib/macos"
+HOT_TMP_OUT_OPT = -out:out/game_tmp.dylib
+HOT_TMP_OUT_PATH = $(subst -out:,,$(HOT_TMP_OUT_OPT))
+HOT_OUT_PATH = out/game.dylib
 
-.PHONY: default run build_debug build_production test
 
+.PHONY: default run hot build_debug build_production test
 default: run
 
 run:
 	odin run src/main_desktop ${COLLECTION_OPT}
 
 hot:
-	odin build src/main_desktop -define:RAYLIB_SHARED=true -build-mode:dll ${OUT_OPT}.dylib -strict-style -debug ${COLLECTION_OPT} ${EXTRA_LINKER_FLAGS}
-	odin build src/main_hot_reload -debug ${OUT_OPT} ${COLLECTION_OPT}
-
-# hot_build:
-# if pgrep -f $EXE > /dev/null; then
-#     echo "Hot reloading..."
-#     exit 0
-# fi
-
-# echo "Building $EXE"
-
-# if [ $# -ge 1 ] && [ $1 == "run" ]; then
-#     echo "Running $EXE"
-#     ./$EXE &
-# fi
+	mkdir -p out
+	odin build src/main_hot_reload -debug -out:game ${COLLECTION_OPT}
+	odin build src/game -debug ${HOT_TMP_OUT_OPT} ${COLLECTION_OPT} ${HOT_OPTS}
+	mv ${HOT_TMP_OUT_PATH} ${HOT_OUT_PATH}
 
 b: build_vet
 check: build_vet

@@ -10,6 +10,7 @@ import clay "deps:clay-odin"
 import rl "vendor:raylib"
 import gl "vendor:raylib/rlgl"
 
+memory: [^]u8
 texture: rl.Texture2D
 shader: rl.Shader
 
@@ -18,7 +19,7 @@ init_raylib_implementation :: proc(width, height: f32) {
   texture = rl.LoadTexture("assets/textures/icons.png")
   shader = rl.LoadShader(nil, "assets/shaders/gl330/ui_fragment.glsl")
   min_memory_size := clay.MinMemorySize()
-  memory := make([^]u8, min_memory_size)
+  memory = make([^]u8, min_memory_size)
   arena: clay.Arena = clay.CreateArenaWithCapacityAndMemory(uint(min_memory_size), memory)
   clay.Initialize(arena, {width, height}, {handler = error_handler})
   clay.SetMeasureTextFunction(measure_text_ascii, nil)
@@ -28,6 +29,7 @@ init_raylib_implementation :: proc(width, height: f32) {
 unload_raylib_implementation :: proc() {
   rl.UnloadTexture(texture)
   rl.UnloadShader(shader)
+  free(memory)
 }
 
 error_handler :: proc "c" (errorData: clay.ErrorData) {
@@ -366,3 +368,4 @@ get_texture_source_rect :: proc(index: i32) -> rl.Rectangle {
 clay_color_to_rl_color :: #force_inline proc(color: clay.Color) -> rl.Color {
   return {u8(color.r), u8(color.g), u8(color.b), u8(color.a)}
 }
+

@@ -16,6 +16,10 @@ load :: proc() {
   b = strings.builder_make(0xFF)
 }
 
+unload :: proc() {
+  strings.builder_destroy(&b)
+}
+
 make_random_name :: proc() -> string {
   strings.builder_reset(&b)
   build_random_name()
@@ -87,3 +91,4 @@ format_money :: proc(amount: $T) -> string where IS_NUMERIC(T) {
     return fmt.tprintf("$%.0f", math.floor(amount))
   }
 }
+

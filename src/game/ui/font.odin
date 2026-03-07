@@ -69,6 +69,11 @@ unload_fonts :: proc() {
       }
     }
   }
+  for font in TextFont {
+    for color in TextColor {
+      delete(font_variants[font][color])
+    }
+  }
 }
 
 text_const :: proc(
@@ -94,3 +99,4 @@ text :: proc {
   text_const,
   text_var,
 }
+

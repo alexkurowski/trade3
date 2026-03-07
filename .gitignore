@@ -1,5 +1,6 @@
 *.prof
 /game
+./game.*
 /out/*
 !/out/.keep
 /extra/*
