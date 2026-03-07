@@ -122,10 +122,10 @@ normalize :: proc {
 }
 
 to_vec2 :: proc(v: Vec3) -> Vec2 {
-  return Vec2{v.x, v.y}
+  return Vec2{v.x, v.z}
 }
-to_vec3 :: proc(v: Vec2, z: f32 = 0) -> Vec3 {
-  return Vec3{v.x, v.y, z}
+to_vec3 :: proc(v: Vec2, y: f32 = 0) -> Vec3 {
+  return Vec3{v.x, y, v.y}
 }
 
 angle_between_vec2 :: proc(a: Vec2, b: Vec2) -> f32 {
@@ -290,3 +290,4 @@ bench :: proc {
   bench_first,
   bench_next,
 }
+

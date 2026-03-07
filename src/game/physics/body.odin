@@ -36,7 +36,7 @@ set_body_shape :: proc(
   shape: BodyShape,
   size_a: f32 = 1,
   size_b: f32 = 1,
-  mass: f32 = 4,
+  mass: f32 = 1,
   is_sensor: bool = false,
 ) {
   // NOTE: Perhaps Body don't need SID (shape id)
@@ -75,5 +75,13 @@ set_body_shape :: proc(
 
   density := mass / area
   b2.Shape_SetDensity(body.sid, density, true)
+}
+
+get_position :: proc(body: Body) -> Vec2 {
+  return b2.Body_GetPosition(body.bid)
+}
+
+push :: proc(body: Body, force: Vec2) {
+  b2.Body_ApplyForceToCenter(body.bid, force, true)
 }
 
