@@ -20,6 +20,7 @@ process_systems :: proc() {
     }
 
     e.position = to_vec3(physics.get_position(e.body), e.position.y)
+    render.sprite(.Character, e.position)
     // render.shape(.Sphere, e.position, e.body.size, {255, 255, 255, 255})
   }
 

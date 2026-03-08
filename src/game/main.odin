@@ -103,8 +103,7 @@ frame_begin :: proc() {
 @(private = "file")
 frame_end :: proc() {
   render.begin_3d()
-  render.shapes_end()
-  render.models_end()
+  render.draw_3d()
 
   if g.debug {
     physics.draw_debug()
@@ -113,7 +112,7 @@ frame_end :: proc() {
   render.end_3d()
 
   render.begin_2d()
-  render.sprites_end()
+  render.draw_2d()
   ui.end()
   render.end_2d()
 

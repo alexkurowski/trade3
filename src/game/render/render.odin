@@ -26,10 +26,17 @@ begin :: proc(delta_time: f32) {
   shapes_begin()
   models_begin()
   sprites_begin()
+  icons_begin()
 }
 
 begin_3d :: proc() {
   rl.BeginMode3D(camera.c3d)
+}
+
+draw_3d :: proc() {
+  shapes_end()
+  models_end()
+  sprites_end()
 }
 
 end_3d :: proc() {
@@ -38,6 +45,10 @@ end_3d :: proc() {
 
 begin_2d :: proc() {
   // rl.BeginShaderMode(assets.shaders.base)
+}
+
+draw_2d :: proc() {
+  icons_end()
 }
 
 end_2d :: proc() {

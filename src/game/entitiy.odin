@@ -10,12 +10,18 @@ Entity :: struct {
   body:     physics.Body,
   position: Vec3,
   rotation: f32,
+  health:   EntityValue,
 }
 
 EntityKind :: enum {
   None,
   Player,
   Enemy,
+}
+
+EntityValue :: struct {
+  current: f32,
+  max:     f32,
 }
 
 

@@ -6,12 +6,14 @@ import rl "vendor:raylib"
 shaders: struct {
   base:     rl.Shader,
   lighting: rl.Shader,
+  sprites:  rl.Shader,
 }
 models: struct {
   test: rl.Model,
 }
 textures: struct {
   sprites: rl.Texture,
+  icons:   rl.Texture,
 }
 
 load_shaders :: proc() {
@@ -34,11 +36,15 @@ load_shaders :: proc() {
       .VEC4,
     )
   }
+  {
+    shaders.sprites = rl.LoadShader(nil, "assets/shaders/gl330/sprites_fragment.glsl")
+  }
 }
 
 unload_shaders :: proc() {
   rl.UnloadShader(shaders.base)
   rl.UnloadShader(shaders.lighting)
+  rl.UnloadShader(shaders.sprites)
 }
 
 load_models :: proc() {
@@ -59,9 +65,11 @@ load_and_set_shader :: proc(path: cstring, shader: ^rl.Shader) -> rl.Model {
 }
 
 load_textures :: proc() {
-  textures.sprites = rl.LoadTexture("assets/textures/icons.png")
+  textures.sprites = rl.LoadTexture("assets/textures/sprites.png")
+  textures.icons = rl.LoadTexture("assets/textures/icons.png")
 }
 
 unload_textures :: proc() {
   rl.UnloadTexture(textures.sprites)
+  rl.UnloadTexture(textures.icons)
 }

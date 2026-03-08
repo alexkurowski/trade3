@@ -12,6 +12,7 @@ camera: struct {
   m3d:    rl.Matrix,
   offset: Vec3,
   target: Vec3,
+  up:     Vec3,
   fovy:   f32,
 }
 
@@ -37,5 +38,9 @@ camera_step :: proc(dt: f32) {
   camera.c3d.fovy = linalg.lerp(camera.c3d.fovy, camera.fovy, CAMERA_SPEED * dt)
   // Recalculate camera
   camera.m3d = rl.GetCameraMatrix(camera.c3d)
+  // Recalculate camera up
+  forward := linalg.normalize(camera.c3d.target - camera.c3d.position)
+  right := linalg.normalize(linalg.cross(camera.c3d.up, forward))
+  camera.up = linalg.normalize(linalg.cross(forward, right))
 }
 

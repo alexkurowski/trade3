@@ -6,7 +6,7 @@ import "physics"
 spawn_player :: proc() {
   player := spawn(Entity{})
   player.kind |= {.Player}
-  physics.set_body_shape(&player.body, .Circle, 0.6, mass = 6)
+  physics.set_body_shape(&player.body, .Circle, 0.3, mass = 6)
   g.player_id = player.id
 }
 
