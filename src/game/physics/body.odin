@@ -19,6 +19,12 @@ BodyShape :: enum {
   Circle,
 }
 
+BodyTransform :: struct {
+  position: Vec2,
+  velocity: Vec2,
+  rotation: f32,
+}
+
 create_body :: proc() -> Body {
   body_def := b2.DefaultBodyDef()
   body_def.type = .dynamicBody
@@ -83,6 +89,15 @@ get_position :: proc(body: Body) -> Vec2 {
 
 get_velocity :: proc(body: Body) -> Vec2 {
   return b2.Body_GetLinearVelocity(body.bid)
+}
+
+get_angle :: proc(body: Body) -> f32 {
+  rot := b2.Body_GetRotation(body.bid)
+  return math.atan2(rot.s, rot.c)
+}
+
+get_transform :: proc(body: Body) -> BodyTransform {
+  return {position = get_position(body), velocity = get_velocity(body), rotation = get_angle(body)}
 }
 
 set_position :: proc(body: Body, position: Vec2, rotation: f32 = 0) {

@@ -11,18 +11,11 @@ process_systems :: proc() {
   time_step()
 
   draw_map()
-
-  for &e in g.entities.items {
-    if box.is_none(e) do continue
-
-    if .Player in e.kind do player_input(&e)
-    update_transform(&e)
-    // fall(&e)
-    draw(&e)
-  }
+  update_entities()
 
   physics.update(time.dt)
 }
+
 
 draw_map :: proc() {
   // Debug
@@ -37,6 +30,16 @@ draw_map :: proc() {
         {40, 200, 100, 255},
       )
     }
+  }
+}
+
+update_entities :: proc() {
+  for &e in g.entities.items {
+    if box.is_none(e) do continue
+
+    if .Player in e.kind do player_input(&e)
+    update_transform(&e)
+    draw(&e)
   }
 }
 
@@ -58,28 +61,18 @@ player_input :: proc(e: ^Entity) {
   }
   physics.push(e.body, render.to_camera_relative(input) * 100)
 
-  render.move_camera_to(e.position)
+  render.move_camera_to(e.transform.position)
 }
 
 update_transform :: proc(e: ^Entity) {
-  e.position = to_vec3(physics.get_position(e.body), e.position.y)
-  e.velocity = to_vec3(physics.get_velocity(e.body), e.velocity.y)
+  t := physics.get_transform(e.body)
+  e.transform.position = to_vec3(t.position, e.transform.position.y)
+  e.transform.velocity = to_vec3(t.velocity, e.transform.velocity.y)
+  e.transform.rotation = t.rotation
 }
-
-// fall :: proc(e: ^Entity) {
-//   if e.position.y <= 0 && e.velocity.y == 0 do return
-
-//   e.position.y += e.velocity.y * time.dt
-//   e.velocity.y -= 9.8 * time.dt
-
-//   if e.position.y <= 0 {
-//     e.position.y = 0
-//     e.velocity.y = 0
-//   }
-// }
 
 draw :: proc(e: ^Entity) {
   if e.sprite.kind != .None {
-    render.sprite(e.sprite.kind, e.position, e.sprite.size, e.sprite.flip)
+    render.sprite(e.sprite.kind, e.transform.position, e.sprite.size, e.sprite.flip)
   }
 }

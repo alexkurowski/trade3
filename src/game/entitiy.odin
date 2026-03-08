@@ -6,14 +6,16 @@ import "physics"
 import "render"
 
 Entity :: struct {
-  id:       ID,
-  kind:     bit_set[EntityKind],
-  body:     physics.Body,
-  position: Vec3,
-  velocity: Vec3,
-  rotation: f32,
-  health:   EntityValue,
-  sprite:   struct {
+  id:        ID,
+  kind:      bit_set[EntityKind],
+  body:      physics.Body,
+  transform: struct {
+    position: Vec3, // cached value from box2d
+    velocity: Vec3, // cached value from box2d
+    rotation: f32, // cached value from box2d
+  },
+  health:    EntityValue,
+  sprite:    struct {
     kind: render.SpriteKind,
     size: f32,
     flip: bool,
@@ -38,7 +40,7 @@ spawn :: proc(entity: Entity) -> ^Entity {
 
   e := box.get(&g.entities, id)
   e.body = physics.create_body()
-  physics.set_position(e.body, to_vec2(e.position), e.rotation)
+  physics.set_position(e.body, to_vec2(e.transform.position), e.transform.rotation)
   return e
 }
 

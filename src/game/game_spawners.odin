@@ -15,7 +15,7 @@ spawn_player :: proc() {
 }
 
 spawn_circle_at :: proc(position: Vec3, size, mass: f32) {
-  e := spawn(Entity{position = position})
+  e := spawn(Entity{transform = {position = position}})
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -24,6 +24,6 @@ spawn_circle_at :: proc(position: Vec3, size, mass: f32) {
 }
 
 spawn_box_at :: proc(position: Vec3, rotation, width, height, mass: f32) {
-  e := spawn(Entity{position = position, rotation = rotation})
+  e := spawn(Entity{transform = {position = position, rotation = rotation}})
   physics.set_body_shape(&e.body, .Box, width, height, mass = mass)
 }
