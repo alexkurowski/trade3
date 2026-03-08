@@ -116,8 +116,10 @@ frame_end :: proc() {
   ui.end()
   render.end_2d()
 
+  if rl.IsKeyPressed(.SLASH) {
+    g.debug = !g.debug
+  }
   if g.debug {
     rl.DrawFPS(0, 0)
   }
 }
-

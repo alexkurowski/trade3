@@ -3,14 +3,21 @@ package game
 
 import "deps:box"
 import "physics"
+import "render"
 
 Entity :: struct {
   id:       ID,
   kind:     bit_set[EntityKind],
   body:     physics.Body,
   position: Vec3,
+  velocity: Vec3,
   rotation: f32,
   health:   EntityValue,
+  sprite:   struct {
+    kind: render.SpriteKind,
+    size: f32,
+    flip: bool,
+  },
 }
 
 EntityKind :: enum {
@@ -46,4 +53,3 @@ despawn :: proc(id: ID) {
 despawn_all_entities :: proc() {
   box.clear(&g.entities)
 }
-

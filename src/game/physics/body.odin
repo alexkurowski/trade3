@@ -81,6 +81,10 @@ get_position :: proc(body: Body) -> Vec2 {
   return b2.Body_GetPosition(body.bid)
 }
 
+get_velocity :: proc(body: Body) -> Vec2 {
+  return b2.Body_GetLinearVelocity(body.bid)
+}
+
 set_position :: proc(body: Body, position: Vec2, rotation: f32 = 0) {
   b2.Body_SetTransform(body.bid, position, b2.MakeRot(rotation))
 }
@@ -88,4 +92,3 @@ set_position :: proc(body: Body, position: Vec2, rotation: f32 = 0) {
 push :: proc(body: Body, force: Vec2) {
   b2.Body_ApplyForceToCenter(body.bid, force, true)
 }
-

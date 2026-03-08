@@ -15,13 +15,10 @@ process_systems :: proc() {
   for &e in g.entities.items {
     if box.is_none(e) do continue
 
-    if .Player in e.kind {
-      player_input(&e)
-    }
-
-    e.position = to_vec3(physics.get_position(e.body), e.position.y)
-    render.sprite(.Character, e.position)
-    // render.shape(.Sphere, e.position, e.body.size, {255, 255, 255, 255})
+    if .Player in e.kind do player_input(&e)
+    update_transform(&e)
+    // fall(&e)
+    draw(&e)
   }
 
   physics.update(time.dt)
@@ -47,9 +44,11 @@ player_input :: proc(e: ^Entity) {
   input: Vec2
   if rl.IsKeyDown(.A) {
     input.x = -1
+    e.sprite.flip = true
   }
   if rl.IsKeyDown(.D) {
     input.x = 1
+    e.sprite.flip = false
   }
   if rl.IsKeyDown(.W) {
     input.y = 1
@@ -62,3 +61,25 @@ player_input :: proc(e: ^Entity) {
   render.move_camera_to(e.position)
 }
 
+update_transform :: proc(e: ^Entity) {
+  e.position = to_vec3(physics.get_position(e.body), e.position.y)
+  e.velocity = to_vec3(physics.get_velocity(e.body), e.velocity.y)
+}
+
+// fall :: proc(e: ^Entity) {
+//   if e.position.y <= 0 && e.velocity.y == 0 do return
+
+//   e.position.y += e.velocity.y * time.dt
+//   e.velocity.y -= 9.8 * time.dt
+
+//   if e.position.y <= 0 {
+//     e.position.y = 0
+//     e.velocity.y = 0
+//   }
+// }
+
+draw :: proc(e: ^Entity) {
+  if e.sprite.kind != .None {
+    render.sprite(e.sprite.kind, e.position, e.sprite.size, e.sprite.flip)
+  }
+}
