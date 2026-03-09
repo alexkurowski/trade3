@@ -18,13 +18,6 @@ GameMemory :: struct {
   debug:     bool,
 }
 
-GameState :: enum {
-  Menu,
-  Game,
-  Pause,
-  Quit,
-}
-
 g: ^GameMemory
 
 @(export)
@@ -38,6 +31,8 @@ open_window :: proc() {
   gl.EnableDepthTest()
   gl.EnableColorBlend()
   gl.SetClipPlanes(0.5, 500)
+
+  // TODO: draw static loading screen
 }
 
 @(export)
@@ -80,13 +75,16 @@ update :: proc() {
   switch g.state {
   case .Menu:
     state_menu()
-  case .Game:
-    state_game()
+  case .Map:
+    state_map()
+  case .Mission:
+    state_mission()
   case .Pause:
     state_pause()
   case .Quit:
     break
   }
+  state_transition()
   frame_end()
 
   free_all(context.temp_allocator)
