@@ -94,6 +94,14 @@ generate_tilemap :: proc(l: ^Location) {
     kind  = .Wall,
     color = {75, 75, 75, 255},
   }
+  l.tiles[5][4] = {
+    kind  = .Wall,
+    color = {140, 140, 140, 255},
+  }
+  l.tiles[4][5] = {
+    kind  = .Wall,
+    color = {140, 140, 140, 255},
+  }
 }
 
 generate_physics :: proc(l: ^Location) {
@@ -101,7 +109,7 @@ generate_physics :: proc(l: ^Location) {
   b2.Body_SetType(l.body, .staticBody)
 
   size := i32(l.size)
-  tile_size :: TILE_SIZE / 2 * 1.25
+  tile_size :: TILE_SIZE / 2
 
   for i := i32(0); i < size; i += 1 {
     for j := i32(0); j < size; j += 1 {
@@ -110,7 +118,7 @@ generate_physics :: proc(l: ^Location) {
         polygon := b2.MakeOffsetBox(
           tile_size,
           tile_size,
-          Vec2{f32(i * TILE_SIZE), f32(j * TILE_SIZE)},
+          Vec2{f32(i * TILE_SIZE) + 0.5, f32(j * TILE_SIZE)},
           b2.Rot{1, 0},
         )
         _ = b2.CreatePolygonShape(l.body, shape_def, polygon)

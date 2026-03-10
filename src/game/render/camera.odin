@@ -6,8 +6,8 @@ import "core:math/linalg"
 import rl "vendor:raylib"
 
 CAMERA_SPEED :: 4
-CAMERA_PITCH :: 35.264
-CAMERA_YAW :: 45
+CAMERA_PITCH :: 35 // 35.264
+CAMERA_YAW :: 0 // 45
 CAMERA_DISTANCE :: 20
 CAMERA_FOV :: 24
 

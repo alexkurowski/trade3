@@ -15,7 +15,7 @@ start_new_game :: proc() {
 }
 
 spawn_player :: proc() {
-  player := spawn(Entity{})
+  player := spawn(Entity{transform = {position = {6, 0, 6}}})
   player.kind |= {.Player}
   player.sprite = {
     kind = .Character,
