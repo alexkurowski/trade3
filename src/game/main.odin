@@ -80,8 +80,8 @@ update :: proc() {
     state_menu()
   case .Map:
     state_map()
-  case .Mission:
-    state_mission()
+  case .Location:
+    state_location()
   case .Pause:
     state_pause()
   case .Quit:

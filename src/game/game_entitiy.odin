@@ -20,6 +20,9 @@ Entity :: struct {
     size: f32,
     flip: bool,
   },
+  ai:        struct {
+    state: AiState,
+  },
 }
 
 EntityKind :: enum {

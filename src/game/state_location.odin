@@ -1,7 +1,7 @@
 #+private
 package game
 
-state_mission :: proc() {
+state_location :: proc() {
   process_systems()
   process_events()
 }

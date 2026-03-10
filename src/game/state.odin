@@ -4,7 +4,7 @@ package game
 GameState :: enum {
   Menu,
   Map,
-  Mission,
+  Location,
   Pause,
   Quit,
 }

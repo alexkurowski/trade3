@@ -53,33 +53,13 @@ update_entities :: proc() {
   for &e in g.entities.items {
     if box.is_none(e) do continue
 
-    if .Player in e.kind do player_input(&e)
+    if .Player in e.kind {
+      player_controls(&e)
+      player_camera_follow(&e)
+    }
     update_transform(&e)
     draw(&e)
   }
-}
-
-player_input :: proc(e: ^Entity) {
-  PLAYER_SPEED :: 200
-
-  input: Vec2
-  if rl.IsKeyDown(.A) {
-    input.x = -1
-    e.sprite.flip = true
-  }
-  if rl.IsKeyDown(.D) {
-    input.x = 1
-    e.sprite.flip = false
-  }
-  if rl.IsKeyDown(.W) {
-    input.y = 1
-  }
-  if rl.IsKeyDown(.S) {
-    input.y = -1
-  }
-  physics.push(e.body, render.to_camera_relative(input) * PLAYER_SPEED)
-
-  render.move_camera_to(e.transform.position)
 }
 
 update_transform :: proc(e: ^Entity) {

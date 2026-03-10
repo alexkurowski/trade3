@@ -6,7 +6,7 @@ import "ui"
 state_menu :: proc() {
   if g.debug {
     start_new_game()
-    set_state(.Mission)
+    set_state(.Location)
     return
   }
 
@@ -31,7 +31,7 @@ state_menu :: proc() {
   if UI()({layout = {layoutDirection = .TopToBottom, padding = {8, 8, 8, 8}, childGap = 8}}) {
     if btn("Start Game") {
       start_new_game()
-      set_state(.Mission)
+      set_state(.Location)
     }
     if btn("Exit") {
       set_state(.Quit)
