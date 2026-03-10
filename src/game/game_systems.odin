@@ -22,8 +22,8 @@ draw_map :: proc() {
   TILE_SIZE :: 2
 
   tile: Tile
-  for i := 0; i <= int(g.current_location.size); i += 1 {
-    for j := 0; j <= int(g.current_location.size); j += 1 {
+  for i := 0; i < int(g.current_location.size); i += 1 {
+    for j := 0; j < int(g.current_location.size); j += 1 {
       tile = g.current_location.tiles[i][j]
       switch tile.kind {
       case .None:
@@ -60,6 +60,8 @@ update_entities :: proc() {
 }
 
 player_input :: proc(e: ^Entity) {
+  PLAYER_SPEED :: 200
+
   input: Vec2
   if rl.IsKeyDown(.A) {
     input.x = -1
@@ -75,7 +77,7 @@ player_input :: proc(e: ^Entity) {
   if rl.IsKeyDown(.S) {
     input.y = -1
   }
-  physics.push(e.body, render.to_camera_relative(input) * 100)
+  physics.push(e.body, render.to_camera_relative(input) * PLAYER_SPEED)
 
   render.move_camera_to(e.transform.position)
 }

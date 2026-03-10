@@ -35,7 +35,7 @@ generate_location :: proc() -> Location {
 }
 
 generate_tilemap :: proc(l: ^Location) {
-  size := randi(8, 16)
+  size :: 16 // randi(8, 32)
   l.size = u8(size)
 
   // Place floor

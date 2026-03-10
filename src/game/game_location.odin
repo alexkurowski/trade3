@@ -13,7 +13,7 @@ Location :: struct {
 
   // Mission map
   size:        u8,
-  tiles:       [16][16]Tile,
+  tiles:       [32][32]Tile,
 }
 
 Tile :: struct {
