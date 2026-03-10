@@ -6,7 +6,7 @@ import "ui"
 state_menu :: proc() {
   if g.debug {
     start_new_game()
-    set_state(.Map)
+    set_state(.Mission)
     return
   }
 

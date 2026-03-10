@@ -16,4 +16,13 @@ Location :: struct {
   tiles:       [16][16]Tile,
 }
 
-Tile :: struct {}
+Tile :: struct {
+  kind:  TileKind,
+  color: Color,
+}
+
+TileKind :: enum {
+  None,
+  Floor,
+  Wall,
+}

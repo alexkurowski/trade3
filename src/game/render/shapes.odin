@@ -27,7 +27,7 @@ shapes_begin :: proc() {
 }
 
 shapes_end :: proc() {
-  rl.BeginShaderMode(shaders.base)
+  rl.BeginShaderMode(shaders.lighting)
   defer rl.EndShaderMode()
 
   for shape in box.every(&shape_queue) {

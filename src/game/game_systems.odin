@@ -21,14 +21,30 @@ draw_map :: proc() {
   // Debug
   TILE_SIZE :: 2
 
-  for i := -5; i <= 5; i += 1 {
-    for j := -5; j <= 5; j += 1 {
-      render.shape(
-        .Cube,
-        Vec3{f32(i * TILE_SIZE), -0.5, f32(j * TILE_SIZE)},
-        Vec3{0.7 * TILE_SIZE, 0.5, 0.7 * TILE_SIZE},
-        {40, 200, 100, 255},
-      )
+  tile: Tile
+  for i := 0; i <= int(g.current_location.size); i += 1 {
+    for j := 0; j <= int(g.current_location.size); j += 1 {
+      tile = g.current_location.tiles[i][j]
+      switch tile.kind {
+      case .None:
+      // NOP
+      case .Floor:
+        height := f32(0.5)
+        render.shape(
+          .Cube,
+          Vec3{f32(i * TILE_SIZE), -height / 2, f32(j * TILE_SIZE)},
+          Vec3{1 * TILE_SIZE, height, 1 * TILE_SIZE},
+          tile.color,
+        )
+      case .Wall:
+        height := f32(2)
+        render.shape(
+          .Cube,
+          Vec3{f32(i * TILE_SIZE), height / 2, f32(j * TILE_SIZE)},
+          Vec3{1 * TILE_SIZE, height, 1 * TILE_SIZE},
+          tile.color,
+        )
+      }
     }
   }
 }

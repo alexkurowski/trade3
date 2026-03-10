@@ -12,10 +12,13 @@ INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
 GameMemory :: struct {
-  state:     GameState,
-  player_id: ID,
-  entities:  box.Array(Entity, ID, 1024),
-  debug:     bool,
+  state:            GameState,
+  entities:         box.Array(Entity, ID, 1024),
+  locations:        box.Array(Location, ID, 64),
+  player_id:        ID,
+  location_id:      ID,
+  current_location: ^Location,
+  debug:            bool,
 }
 
 g: ^GameMemory
