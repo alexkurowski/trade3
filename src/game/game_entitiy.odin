@@ -58,3 +58,14 @@ despawn :: proc(id: ID) {
 despawn_all_entities :: proc() {
   box.clear(&g.entities)
 }
+
+hurt :: proc(e: ^Entity, value: f32) {
+  if value > 0 {
+    e.health.current -= value
+    if e.health.current <= 0 {
+      send_event(.GotKilled, e)
+    } else {
+      send_event(.GotHurt, e)
+    }
+  }
+}

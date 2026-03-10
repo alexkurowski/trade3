@@ -1,11 +1,14 @@
 #+private
 package render
 
+import "core:math"
 import "core:math/linalg"
 import rl "vendor:raylib"
 
 CAMERA_SPEED :: 4
-CAMERA_OFFSET :: Vec3{2.5, 10, 4}
+CAMERA_PITCH :: 35.264
+CAMERA_YAW :: 45
+CAMERA_DISTANCE :: 20
 CAMERA_FOV :: 24
 
 camera: struct {
@@ -20,7 +23,7 @@ camera: struct {
 
 camera_init :: proc() {
   camera.speed = CAMERA_SPEED
-  camera.offset = CAMERA_OFFSET
+  camera.offset = calculate_camera_offset(CAMERA_PITCH, CAMERA_YAW, CAMERA_DISTANCE)
   camera.target = Vec3(0)
   camera.fovy = CAMERA_FOV
   camera.c3d.projection = .ORTHOGRAPHIC
@@ -45,4 +48,15 @@ camera_step :: proc(dt: f32) {
   forward := linalg.normalize(camera.c3d.target - camera.c3d.position)
   right := linalg.normalize(linalg.cross(camera.c3d.up, forward))
   camera.up = linalg.normalize(linalg.cross(forward, right))
+}
+
+calculate_camera_offset :: proc(pitch, yaw, distance: f32) -> Vec3 {
+  pitch_rad := pitch * math.RAD_PER_DEG
+  yaw_rad := yaw * math.RAD_PER_DEG
+  vec := Vec3 {
+    CAMERA_DISTANCE * math.cos(pitch_rad) * math.cos(yaw_rad),
+    CAMERA_DISTANCE * math.sin(pitch_rad),
+    CAMERA_DISTANCE * math.cos(pitch_rad) * math.sin(yaw_rad),
+  }
+  return vec * distance
 }

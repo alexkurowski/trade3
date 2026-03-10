@@ -13,7 +13,8 @@ EventSubscriber :: struct {
 
 EventKind :: enum {
   None,
-  Some,
+  GotHurt,
+  GotKilled,
 }
 
 SomeEvent :: struct {

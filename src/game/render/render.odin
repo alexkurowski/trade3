@@ -85,4 +85,3 @@ to_camera_relative :: proc(v: Vec2) -> Vec2 {
   right := Vec2{-direction.z, direction.x}
   return Vec2{linalg.dot(v, right), linalg.dot(v, forward)}
 }
-

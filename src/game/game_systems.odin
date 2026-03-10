@@ -18,8 +18,10 @@ process_systems :: proc() {
 
 
 draw_map :: proc() {
+  if 2>1 {
+    // return
+  }
   // Debug
-  TILE_SIZE :: 2
 
   tile: Tile
   for i := 0; i < int(g.current_location.size); i += 1 {
