@@ -18,7 +18,7 @@ process_systems :: proc() {
 
 
 draw_map :: proc() {
-  if 2>1 {
+  if 2 > 1 {
     // return
   }
   // Debug
@@ -34,15 +34,15 @@ draw_map :: proc() {
         height := f32(0.5)
         render.shape(
           .Cube,
-          Vec3{f32(i * TILE_SIZE), -height / 2, f32(j * TILE_SIZE)},
+          Vec3{f32(i) * TILE_SIZE, -height / 2, f32(j) * TILE_SIZE},
           Vec3{1 * TILE_SIZE, height, 1 * TILE_SIZE},
           tile.color,
         )
       case .Wall:
-        height := f32(2)
+        height := f32(1)
         render.shape(
           .Cube,
-          Vec3{f32(i * TILE_SIZE), height / 2, f32(j * TILE_SIZE)},
+          Vec3{f32(i) * TILE_SIZE, height / 2, f32(j) * TILE_SIZE},
           Vec3{1 * TILE_SIZE, height, 1 * TILE_SIZE},
           tile.color,
         )

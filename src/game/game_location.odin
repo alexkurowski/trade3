@@ -5,7 +5,7 @@ import "deps:box"
 import "physics"
 import b2 "vendor:box2d"
 
-TILE_SIZE :: 2
+TILE_SIZE :: f32(1)
 
 Location :: struct {
   id:          ID,
@@ -109,16 +109,18 @@ generate_physics :: proc(l: ^Location) {
   b2.Body_SetType(l.body, .staticBody)
 
   size := i32(l.size)
-  tile_size :: TILE_SIZE / 2
+  wall_width :: TILE_SIZE / 2
+  wall_height :: TILE_SIZE * 1.1
+  wall_offset :: wall_height * 0.3
 
   for i := i32(0); i < size; i += 1 {
     for j := i32(0); j < size; j += 1 {
       if l.tiles[i][j].kind == .Wall {
         shape_def := b2.DefaultShapeDef()
         polygon := b2.MakeOffsetBox(
-          tile_size,
-          tile_size,
-          Vec2{f32(i * TILE_SIZE) + 0.5, f32(j * TILE_SIZE)},
+          wall_width,
+          wall_height,
+          Vec2{f32(i) * TILE_SIZE, f32(j) * TILE_SIZE - wall_offset},
           b2.Rot{1, 0},
         )
         _ = b2.CreatePolygonShape(l.body, shape_def, polygon)
