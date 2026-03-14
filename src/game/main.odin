@@ -12,13 +12,11 @@ INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
 GameMemory :: struct {
-  state:            GameState,
-  entities:         box.Array(Entity, ID, 1024),
-  locations:        box.Array(Location, ID, 64),
-  player_id:        ID,
-  location_id:      ID,
-  current_location: ^Location,
-  debug:            bool,
+  state:     GameState,
+  entities:  box.Array(Entity, ID, 2048),
+  player_id: ID,
+  player: ^Entity,
+  debug:     bool,
 }
 
 g: ^GameMemory
@@ -80,8 +78,8 @@ update :: proc() {
     state_menu()
   case .Map:
     state_map()
-  case .Location:
-    state_location()
+  case .Run:
+    state_run()
   case .Pause:
     state_pause()
   case .Quit:

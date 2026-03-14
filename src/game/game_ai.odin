@@ -1,22 +1,11 @@
 #+private
 package game
 
-AiState :: enum {
-  Idle,
-  Roam,
-  Hostile,
-  Flee,
-}
+import "physics"
 
 ai_controls :: proc(e: ^Entity) {
-  switch e.ai.state {
-  case .Idle:
-  // NOP
-  case .Roam:
-  // TODO
-  case .Hostile:
-  // TODO
-  case .Flee:
-  // TODO
-  }
+  if g.player == nil do return
+
+  dir := normalize(g.player.transform.position - e.transform.position)
+  physics.push(e.body, to_vec2(dir) * 50)
 }

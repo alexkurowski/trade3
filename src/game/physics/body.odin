@@ -108,3 +108,12 @@ push :: proc(body: Body, force: Vec2) {
   b2.Body_ApplyForceToCenter(body.bid, force, true)
 }
 
+move :: proc(body: Body, direction: Vec2) {
+  b2.Body_ApplyLinearImpulseToCenter(body.bid, direction, true)
+}
+
+launch_bullet :: proc(body: Body, velocity: Vec2) {
+  b2.Body_SetLinearDamping(body.bid, 0)
+  b2.Body_SetLinearVelocity(body.bid, velocity)
+}
+

@@ -23,6 +23,7 @@ unload :: proc() {
 begin :: proc(delta_time: f32) {
   dt = delta_time
   camera_step(dt)
+  input_step()
   shapes_begin()
   models_begin()
   sprites_begin()
@@ -85,3 +86,8 @@ to_camera_relative :: proc(v: Vec2) -> Vec2 {
   right := Vec2{-direction.z, direction.x}
   return Vec2{linalg.dot(v, right), linalg.dot(v, forward)}
 }
+
+get_mouse_world_position :: proc() -> Vec3 {
+  return mouse_world_position
+}
+

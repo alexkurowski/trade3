@@ -32,4 +32,3 @@ hot_reloaded :: proc(mem: rawptr) {
   // Here you can also set your own global variables. A good idea is to make
   // your global variables into pointers that point to something inside `g`.
 }
-

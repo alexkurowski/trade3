@@ -7,7 +7,7 @@ import rl "vendor:raylib"
 
 CAMERA_SPEED :: 4
 CAMERA_PITCH :: 90 - 35.264
-CAMERA_YAW :: 90 // 45
+CAMERA_YAW :: 90
 CAMERA_DISTANCE :: 7
 CAMERA_FOV :: 24
 
@@ -60,4 +60,3 @@ calculate_camera_offset :: proc(pitch, yaw, distance: f32) -> Vec3 {
   }
   return vec * distance
 }
-

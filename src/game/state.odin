@@ -4,7 +4,7 @@ package game
 GameState :: enum {
   Menu,
   Map,
-  Location,
+  Run,
   Pause,
   Quit,
 }
@@ -17,6 +17,10 @@ transition: struct {
 
 set_state :: proc(state: GameState, immediate: bool = false) {
   g.state = state
+  #partial switch state {
+  case .Run:
+    state_run_ready()
+  }
 }
 
 state_transition :: proc() {

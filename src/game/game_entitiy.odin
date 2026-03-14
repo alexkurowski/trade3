@@ -20,22 +20,22 @@ Entity :: struct {
     size: f32,
     flip: bool,
   },
-  ai:        struct {
-    state: AiState,
-  },
+  // ai:        struct {
+  //   state: AiState,
+  // },
 }
 
 EntityKind :: enum {
   None,
   Player,
   Enemy,
+  Bullet,
 }
 
 EntityValue :: struct {
   current: f32,
   max:     f32,
 }
-
 
 spawn :: proc(entity: Entity) -> ^Entity {
   id, ok := box.append(&g.entities, entity)
@@ -56,6 +56,10 @@ despawn :: proc(id: ID) {
 }
 
 despawn_all_entities :: proc() {
+  for &e in g.entities.items {
+    if box.is_none(e) do continue
+    physics.destroy_body(e.body)
+  }
   box.clear(&g.entities)
 }
 
@@ -69,3 +73,46 @@ hurt :: proc(e: ^Entity, value: f32) {
     }
   }
 }
+
+spawn_player :: proc() {
+  player := spawn(Entity{transform = {position = {6, 0, 6}}})
+  player.kind |= {.Player}
+  player.sprite = {
+    kind = .Character,
+    size = 1,
+  }
+  physics.set_body_shape(&player.body, .Circle, 0.3, mass = 6)
+  g.player_id = player.id
+}
+
+spawn_enemy :: proc() {
+  enemy := spawn(Entity{transform = {position = to_vec3(at_random_angle(25))}})
+  enemy.kind |= {.Enemy}
+  enemy.sprite = {
+    kind = .Character,
+    size = 1,
+  }
+  physics.set_body_shape(&enemy.body, .Circle, 0.3, mass = 6)
+}
+
+spawn_bullet :: proc(position, direction: Vec3) {
+  bullet := spawn(Entity{transform = {position = position + direction, velocity = direction}})
+  bullet.kind |= {.Bullet}
+  physics.set_body_shape(&bullet.body, .Circle, 0.5, mass = 10, is_sensor = true)
+  physics.launch_bullet(bullet.body, to_vec2(direction) * 25)
+}
+
+spawn_circle_at :: proc(position: Vec3, size, mass: f32) {
+  e := spawn(Entity{transform = {position = position}})
+  e.sprite = {
+    kind = .Character,
+    size = 1,
+  }
+  physics.set_body_shape(&e.body, .Circle, size, mass = mass)
+}
+
+spawn_box_at :: proc(position: Vec3, rotation, width, height, mass: f32) {
+  e := spawn(Entity{transform = {position = position, rotation = rotation}})
+  physics.set_body_shape(&e.body, .Box, width, height, mass = mass)
+}
+

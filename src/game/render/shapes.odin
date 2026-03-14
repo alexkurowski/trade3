@@ -1,7 +1,9 @@
 package render
 
+import "core:math/linalg"
 import "deps:box"
 import rl "vendor:raylib"
+import gl "vendor:raylib/rlgl"
 
 Shape :: struct {
   kind:       ShapeKind,
@@ -14,6 +16,7 @@ ShapeKind :: enum {
   DebugGrid,
   Line,
   CircleY,
+  Plane,
   SphereWires,
   Sphere,
   Cube,
@@ -38,6 +41,8 @@ shapes_end :: proc() {
       rl.DrawLine3D(shape.position_a, shape.position_b, shape.color)
     case .CircleY:
       rl.DrawCircle3D(shape.position_a, shape.position_b.x, Vec3{1, 0, 0}, 90, shape.color)
+    case .Plane:
+      rl.DrawPlane(shape.position_a, shape.position_b.xz, shape.color)
     case .SphereWires:
       rl.DrawSphereWires(shape.position_a, shape.position_b.x, 8, 10, shape.color)
     case .Sphere:
@@ -46,7 +51,6 @@ shapes_end :: proc() {
       rl.DrawCubeV(shape.position_a, shape.position_b, shape.color)
     }
   }
-
 }
 
 add_shape_1 :: proc(kind: ShapeKind, a: Vec3, color: rl.Color = rl.WHITE) {
@@ -55,11 +59,16 @@ add_shape_1 :: proc(kind: ShapeKind, a: Vec3, color: rl.Color = rl.WHITE) {
 add_shape_2f :: proc(kind: ShapeKind, a: Vec3, b: f32, color: rl.Color = rl.WHITE) {
   box.append(&shape_queue, Shape{kind, a, Vec3(b), color})
 }
+add_shape_2v :: proc(kind: ShapeKind, a: Vec3, b: Vec2, color: rl.Color = rl.WHITE) {
+  box.append(&shape_queue, Shape{kind, a, {b.x, 0, b.y}, color})
+}
 add_shape_2 :: proc(kind: ShapeKind, a, b: Vec3, color: rl.Color = rl.WHITE) {
   box.append(&shape_queue, Shape{kind, a, b, color})
 }
 shape :: proc {
   add_shape_1,
   add_shape_2f,
+  add_shape_2v,
   add_shape_2,
 }
+
