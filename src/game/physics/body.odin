@@ -56,9 +56,9 @@ set_body_shape :: proc(
 
   shape_def := b2.DefaultShapeDef()
   shape_def.material.friction = 10
-  shape_def.material.restitution = 0.1
-  shape_def.material.rollingResistance = 0.2
-  shape_def.material.tangentSpeed = 0
+  shape_def.material.restitution = 0.2
+  shape_def.material.rollingResistance = 0.1
+  shape_def.material.tangentSpeed = 0.1
   shape_def.isSensor = is_sensor
 
   area: f32
@@ -107,3 +107,4 @@ set_position :: proc(body: Body, position: Vec2, rotation: f32 = 0) {
 push :: proc(body: Body, force: Vec2) {
   b2.Body_ApplyForceToCenter(body.bid, force, true)
 }
+

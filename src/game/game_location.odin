@@ -102,6 +102,10 @@ generate_tilemap :: proc(l: ^Location) {
     kind  = .Wall,
     color = {140, 140, 140, 255},
   }
+  l.tiles[4][size - 2] = {
+    kind  = .Wall,
+    color = {140, 140, 140, 255},
+  }
 }
 
 generate_physics :: proc(l: ^Location) {
@@ -110,8 +114,8 @@ generate_physics :: proc(l: ^Location) {
 
   size := i32(l.size)
   wall_width :: TILE_SIZE / 2
-  wall_height :: TILE_SIZE * 1.1
-  wall_offset :: wall_height * 0.3
+  wall_height :: TILE_SIZE * 0.9
+  wall_offset :: wall_height * 0
 
   for i := i32(0); i < size; i += 1 {
     for j := i32(0); j < size; j += 1 {
@@ -128,3 +132,4 @@ generate_physics :: proc(l: ^Location) {
     }
   }
 }
+

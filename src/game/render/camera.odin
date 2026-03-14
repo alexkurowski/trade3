@@ -6,9 +6,9 @@ import "core:math/linalg"
 import rl "vendor:raylib"
 
 CAMERA_SPEED :: 4
-CAMERA_PITCH :: 35.264
+CAMERA_PITCH :: 90 - 35.264
 CAMERA_YAW :: 90 // 45
-CAMERA_DISTANCE :: 20
+CAMERA_DISTANCE :: 7
 CAMERA_FOV :: 24
 
 camera: struct {
@@ -26,7 +26,7 @@ camera_init :: proc() {
   camera.offset = calculate_camera_offset(CAMERA_PITCH, CAMERA_YAW, CAMERA_DISTANCE)
   camera.target = Vec3(0)
   camera.fovy = CAMERA_FOV
-  camera.c3d.projection = .ORTHOGRAPHIC
+  camera.c3d.projection = .PERSPECTIVE // .ORTHOGRAPHIC
   camera.c3d.target = Vec3(0)
   camera.c3d.position = camera.offset
   camera.c3d.fovy = CAMERA_FOV
@@ -60,3 +60,4 @@ calculate_camera_offset :: proc(pitch, yaw, distance: f32) -> Vec3 {
   }
   return vec * distance
 }
+

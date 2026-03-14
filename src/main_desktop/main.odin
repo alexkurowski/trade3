@@ -1,8 +1,6 @@
 package main
 
 import "../game"
-import rl "vendor:raylib"
-import gl "vendor:raylib/rlgl"
 
 main :: proc() {
   game.open_window()
@@ -16,3 +14,8 @@ main :: proc() {
   }
 }
 
+// Make game use good GPU on laptops.
+@(export)
+NvOptimusEnablement: u32 = 1
+@(export)
+AmdPowerXpressRequestHighPerformance: i32 = 1
