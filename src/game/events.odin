@@ -3,12 +3,14 @@ package game
 
 import cont "containers"
 
-EventPayload :: rawptr
-EventCallback :: #type proc(data: EventPayload)
+EventQueue :: struct {
+  subscribers: [EventKind]cont.Pool(EventCallback, 8),
+  events:      [EventKind]cont.Pool(EventPayload, 1024),
+}
 
-EventSubscriber :: struct {
-  id:       ID,
-  callback: EventCallback,
+EventPayload :: rawptr
+EventCallback :: struct {
+  callback: #type proc(data: EventPayload),
 }
 
 EventKind :: enum {
@@ -17,37 +19,36 @@ EventKind :: enum {
   GotKilled,
 }
 
-SomeEvent :: struct {
-  value: int,
-}
-
-@(private = "file")
-subscribers: [EventKind]cont.Array(EventSubscriber, ID, 32)
-@(private = "file")
-events: [EventKind]cont.Pool(EventPayload, 1024)
-
-subscribe :: proc(kind: EventKind, callback: proc(data: EventPayload)) -> (ID, bool) {
-  return cont.append(&subscribers[kind], EventSubscriber{callback = callback})
-}
-
-unsubscribe :: proc(kind: EventKind, id: ID) {
-  cont.remove(&subscribers[kind], id)
+Event_Entity :: struct {
+  id: ID,
 }
 
 send_event :: proc(kind: EventKind, event: $T) {
   ptr := new_clone(event, context.temp_allocator)
-  cont.append(&events[kind], ptr)
+  cont.append(&g.events.events[kind], ptr)
 }
 
 process_events :: proc() {
   for kind in EventKind {
-    for &event in cont.every(&events[kind]) {
-      for &subscriber in subscribers[kind].items {
-        if cont.is_none(subscriber) do continue
+    for &event in cont.every(&g.events.events[kind]) {
+      for &subscriber in cont.every(&g.events.subscribers[kind]) {
         subscriber.callback(event)
       }
     }
-    cont.clear(&events[kind])
+    cont.clear(&g.events.events[kind])
   }
+}
+
+subscribe_events :: proc() {
+  cont.append(&g.events.subscribers[.GotKilled], EventCallback {
+    callback = proc(raw: EventPayload) {
+      p(raw)
+      event := cast(^Event_Entity)raw
+      p(event)
+      entity := cont.get(&g.entities, event.id)
+      if entity == nil do return
+      despawn(entity.id)
+    },
+  })
 }
 

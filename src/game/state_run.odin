@@ -83,6 +83,7 @@ draw_entity :: proc(e: ^Entity) {
 //
 //
 //
+
 update_bullets :: proc() {
   #reverse for &b, idx in cont.every(&g.bullets) {
     b.position += b.velocity * time.wdt
@@ -96,6 +97,11 @@ update_bullets :: proc() {
       b.by == .Player ? .Enemy | .Obstacle : .Player,
     )
     if collision.hit {
+      id := g.body_to_entity[collision.bid]
+      e := cont.get(&g.entities, id)
+      if e != nil {
+        hurt(e, 1)
+      }
       despawn_bullet(i32(idx))
       continue
     }

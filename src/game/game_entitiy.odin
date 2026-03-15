@@ -70,9 +70,9 @@ hurt :: proc(e: ^Entity, value: f32) {
   if value > 0 {
     e.health.current -= value
     if e.health.current <= 0 {
-      send_event(.GotKilled, e)
+      send_event(.GotKilled, Event_Entity{id = e.id})
     } else {
-      send_event(.GotHurt, e)
+      send_event(.GotHurt, Event_Entity{id = e.id})
     }
   }
 }
