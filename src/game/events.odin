@@ -9,18 +9,12 @@ EventQueue :: struct {
 }
 
 EventPayload :: rawptr
-EventCallback :: struct {
-  callback: #type proc(data: EventPayload),
-}
+EventCallback :: #type proc(data: EventPayload)
 
 EventKind :: enum {
   None,
   GotHurt,
   GotKilled,
-}
-
-Event_Entity :: struct {
-  id: ID,
 }
 
 send_event :: proc(kind: EventKind, event: $T) {
@@ -32,23 +26,31 @@ process_events :: proc() {
   for kind in EventKind {
     for &event in cont.every(&g.events.events[kind]) {
       for &subscriber in cont.every(&g.events.subscribers[kind]) {
-        subscriber.callback(event)
+        subscriber(event)
       }
     }
     cont.clear(&g.events.events[kind])
   }
 }
 
+//
+//
+//
+
 subscribe_events :: proc() {
-  cont.append(&g.events.subscribers[.GotKilled], EventCallback {
-    callback = proc(raw: EventPayload) {
-      p(raw)
-      event := cast(^Event_Entity)raw
-      p(event)
-      entity := cont.get(&g.entities, event.id)
-      if entity == nil do return
-      despawn(entity.id)
-    },
-  })
+  cont.append(&g.events.subscribers[.GotKilled], on_got_killed)
+}
+
+Event_Entity :: struct {
+  id: ID,
+}
+
+on_got_killed :: proc(raw: EventPayload) {
+  p(raw)
+  event := cast(^Event_Entity)raw
+  p(event)
+  entity := cont.get(&g.entities, event.id)
+  if entity == nil do return
+  despawn(entity.id)
 }
 
