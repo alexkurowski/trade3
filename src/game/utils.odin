@@ -122,7 +122,7 @@ normalize :: proc {
 }
 
 to_vec2 :: proc(v: Vec3) -> Vec2 {
-  return Vec2{v.x, v.z}
+  return v.xz
 }
 to_vec3 :: proc(v: Vec2, y: f32 = 0) -> Vec3 {
   return Vec3{v.x, y, v.y}

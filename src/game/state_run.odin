@@ -18,13 +18,6 @@ state_run_ready :: proc() {
 }
 
 state_run :: proc() {
-  process_systems()
-  process_events()
-  process_spawners()
-}
-
-@(private)
-process_systems :: proc() {
   time_step()
 
   draw_map()
@@ -37,11 +30,23 @@ process_systems :: proc() {
   if rl.IsKeyPressed(.R) {
     set_state(.Run)
   }
+
+  process_events()
+
+  update_spawners()
 }
+
+//
+//
+//
 
 draw_map :: proc() {
   render.shape(.Plane, Vec3(0), Vec2(50), Color{20, 20, 30, 255})
 }
+
+//
+//
+//
 
 update_entities :: proc() {
   g.player = cont.get(&g.entities, g.player_id)
@@ -57,36 +62,27 @@ update_entities :: proc() {
       ai_controls(&e)
     }
 
-    update_transform(&e)
-    draw(&e)
+    update_entity_transform(&e)
+    draw_entity(&e)
   }
 }
 
-update_transform :: proc(e: ^Entity) {
+update_entity_transform :: proc(e: ^Entity) {
   t := physics.get_transform(e.body)
   e.transform.position = to_vec3(t.position, e.transform.position.y)
   e.transform.velocity = to_vec3(t.velocity, e.transform.velocity.y)
   e.transform.rotation = t.rotation
 }
 
-draw :: proc(e: ^Entity) {
+draw_entity :: proc(e: ^Entity) {
   if e.sprite.kind != .None {
     render.sprite(e.sprite.kind, e.transform.position, e.sprite.size, e.sprite.flip)
   }
 }
 
-process_spawners :: proc() {
-  ENEMY_SPAWN_INTERVAL :: 0.1
-
-  @(static) enemy_spawn_timer: f32
-  enemy_spawn_timer -= time.wdt
-
-  if enemy_spawn_timer <= 0 {
-    spawn_enemy()
-    enemy_spawn_timer = ENEMY_SPAWN_INTERVAL
-  }
-}
-
+//
+//
+//
 update_bullets :: proc() {
   #reverse for &b, idx in cont.every(&g.bullets) {
     b.position += b.velocity * time.wdt
@@ -103,14 +99,27 @@ update_bullets :: proc() {
       despawn_bullet(i32(idx))
       continue
     }
-    render.shape(.Sphere, b.position, 0.1, rl.WHITE)
+    draw_bullet(&b)
   }
 }
 
-// on_bullet_entity_collision :: proc(bid: physics.BID) {
-//   id := g.body_to_entity[bid]
-//   e := cont.get(&g.entities, id)
-//   if cont.is_none(e) do return
-//   fmt.println("HIT")
-// }
+draw_bullet :: proc(b: ^Bullet) {
+  render.shape(.Sphere, b.position, 0.1, rl.WHITE)
+}
+
+//
+//
+//
+
+update_spawners :: proc() {
+  ENEMY_SPAWN_INTERVAL :: 0.1
+
+  @(static) enemy_spawn_timer: f32
+  enemy_spawn_timer -= time.wdt
+
+  if enemy_spawn_timer <= 0 {
+    spawn_enemy()
+    enemy_spawn_timer = ENEMY_SPAWN_INTERVAL
+  }
+}
 
