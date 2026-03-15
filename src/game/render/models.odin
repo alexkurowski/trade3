@@ -1,6 +1,5 @@
 package render
 
-import "deps:box"
 import rl "vendor:raylib"
 
 Model :: struct {
@@ -16,17 +15,17 @@ ModelKind :: enum {
 }
 
 @(private = "file")
-model_queue: box.Pool(Model, 1024)
+model_queue: Pool(Model, 1024)
 
 models_begin :: proc() {
-  box.clear(&model_queue)
+  clear_pool(&model_queue)
 }
 
 models_end :: proc() {
   rl.BeginShaderMode(shaders.lighting)
   defer rl.EndShaderMode()
 
-  for model in box.every(&model_queue) {
+  for model in every(&model_queue) {
     m := get_mesh(model.kind)
 
     scale := rl.MatrixScale(model.scale.x, model.scale.y, model.scale.z)
@@ -48,7 +47,7 @@ model :: proc(
   scale: Vec3 = Vec3(1),
   color: rl.Color = rl.WHITE,
 ) {
-  box.append(
+  push(
     &model_queue,
     Model{kind = kind, position = position, rotation = rotation, scale = scale, color = color},
   )

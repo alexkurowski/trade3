@@ -1,6 +1,5 @@
 package render
 
-import "deps:box"
 import rl "vendor:raylib"
 
 Icon :: struct {
@@ -20,16 +19,16 @@ IconKind :: enum {
 }
 
 @(private = "file")
-icon_queue: box.Pool(Icon, 1024)
+icon_queue: Pool(Icon, 1024)
 
 icons_begin :: proc() {
-  box.clear(&icon_queue)
+  clear_pool(&icon_queue)
 }
 
 icons_end :: proc() {
   texture: rl.Texture = textures.icons
 
-  for icon in box.every(&icon_queue) {
+  for icon in every(&icon_queue) {
     source := Rect{0, 0, 32, 32}
     size := Vec2{16, 16} * icon.size
     switch icon.kind {
@@ -74,7 +73,7 @@ icons_end :: proc() {
 // )
 
 add_icon_vec2 :: proc(kind: IconKind, position: Vec2, color: rl.Color = rl.WHITE) {
-  box.append(&icon_queue, Icon{kind, position, 1, color})
+  push(&icon_queue, Icon{kind, position, 1, color})
 }
 add_icon_vec2_size :: proc(
   kind: IconKind,
@@ -82,11 +81,11 @@ add_icon_vec2_size :: proc(
   size: f32 = 1,
   color: rl.Color = rl.WHITE,
 ) {
-  box.append(&icon_queue, Icon{kind, position, size, color})
+  push(&icon_queue, Icon{kind, position, size, color})
 }
 add_icon_vec3 :: proc(kind: IconKind, position: Vec3, color: rl.Color = rl.WHITE) {
   if is_on_screen(position) {
-    box.append(&icon_queue, Icon{kind, get_screen_position(position), 1, color})
+    push(&icon_queue, Icon{kind, get_screen_position(position), 1, color})
   }
 }
 add_icon_vec3_size :: proc(
@@ -96,7 +95,7 @@ add_icon_vec3_size :: proc(
   color: rl.Color = rl.WHITE,
 ) {
   if is_on_screen(position) {
-    box.append(&icon_queue, Icon{kind, get_screen_position(position), size, color})
+    push(&icon_queue, Icon{kind, get_screen_position(position), size, color})
   }
 }
 icon :: proc {

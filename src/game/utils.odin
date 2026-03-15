@@ -1,15 +1,15 @@
 #+private
 package game
 
+import "containers"
 import "core:fmt"
 import "core:math"
 import "core:math/linalg"
 import "core:math/rand"
 import "core:time"
-import "deps:box"
 import rl "vendor:raylib"
 
-ID :: box.ArrayItem
+ID :: containers.ArrayItem
 none :: ID{0, 0}
 is_none :: #force_inline proc(id: ID) -> bool {
   return id == none
@@ -158,7 +158,6 @@ perpendicular :: proc {
   perpendicular_vec3,
 }
 
-
 // === Randoms ===
 rand :: proc() -> f32 {
   return rand.float32()
@@ -251,7 +250,6 @@ rand_choice :: proc {
   rand_choice_not,
 }
 
-
 // === Easing ===
 ease_in_out_cubic :: proc(x: f32) -> f32 {
   return x < 0.5 ? 4 * x * x * x : 1 - math.pow(-2 * x + 2, 3) / 2
@@ -267,12 +265,10 @@ scale :: proc(value, from_min, from_max, to_min, to_max: f32) -> f32 {
   return (value - from_min) / (from_max - from_min) * (to_max - to_min) + to_min
 }
 
-
 // === Memory ===
 temp :: proc(v: $T) -> rawptr {
   return new_clone(v, context.temp_allocator)
 }
-
 
 // === Debug ===
 p :: proc(x: any, name := #caller_expression(x)) {
@@ -293,3 +289,4 @@ bench :: proc {
   bench_first,
   bench_next,
 }
+

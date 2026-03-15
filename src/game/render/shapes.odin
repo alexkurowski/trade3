@@ -1,7 +1,6 @@
 package render
 
 import "core:math/linalg"
-import "deps:box"
 import rl "vendor:raylib"
 import gl "vendor:raylib/rlgl"
 
@@ -23,17 +22,17 @@ ShapeKind :: enum {
 }
 
 @(private = "file")
-shape_queue: box.Pool(Shape, 1024)
+shape_queue: Pool(Shape, 1024)
 
 shapes_begin :: proc() {
-  box.clear(&shape_queue)
+  clear_pool(&shape_queue)
 }
 
 shapes_end :: proc() {
   rl.BeginShaderMode(shaders.lighting)
   defer rl.EndShaderMode()
 
-  for shape in box.every(&shape_queue) {
+  for shape in every(&shape_queue) {
     switch shape.kind {
     case .DebugGrid:
       rl.DrawGrid(i32(shape.position_a.x), shape.position_a.y)
@@ -54,16 +53,16 @@ shapes_end :: proc() {
 }
 
 add_shape_1 :: proc(kind: ShapeKind, a: Vec3, color: rl.Color = rl.WHITE) {
-  box.append(&shape_queue, Shape{kind, a, Vec3(0), color})
+  push(&shape_queue, Shape{kind, a, Vec3(0), color})
 }
 add_shape_2f :: proc(kind: ShapeKind, a: Vec3, b: f32, color: rl.Color = rl.WHITE) {
-  box.append(&shape_queue, Shape{kind, a, Vec3(b), color})
+  push(&shape_queue, Shape{kind, a, Vec3(b), color})
 }
 add_shape_2v :: proc(kind: ShapeKind, a: Vec3, b: Vec2, color: rl.Color = rl.WHITE) {
-  box.append(&shape_queue, Shape{kind, a, {b.x, 0, b.y}, color})
+  push(&shape_queue, Shape{kind, a, {b.x, 0, b.y}, color})
 }
 add_shape_2 :: proc(kind: ShapeKind, a, b: Vec3, color: rl.Color = rl.WHITE) {
-  box.append(&shape_queue, Shape{kind, a, b, color})
+  push(&shape_queue, Shape{kind, a, b, color})
 }
 shape :: proc {
   add_shape_1,

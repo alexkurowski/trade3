@@ -1,12 +1,13 @@
 #+private
 package game
 
-import "deps:box"
+import cont "containers"
 import "physics"
 import "render"
 import rl "vendor:raylib"
 
 state_run_ready :: proc() {
+  despawn_all_bullets()
   despawn_all_entities()
   spawn_player()
   spawn_circle_at({1, 0, 0}, 0.6, 2)
@@ -40,10 +41,10 @@ draw_map :: proc() {
 }
 
 update_entities :: proc() {
-  g.player = box.get(&g.entities, g.player_id)
+  g.player = cont.get(&g.entities, g.player_id)
 
   #reverse for &e in g.entities.items {
-    if box.is_none(e) do continue
+    if cont.is_none(e) do continue
 
     if .Player in e.kind {
       player_controls(&e)
@@ -79,7 +80,7 @@ draw :: proc(e: ^Entity) {
 }
 
 process_spawners :: proc() {
-  ENEMY_SPAWN_INTERVAL :: 3
+  ENEMY_SPAWN_INTERVAL :: 0.1
 
   @(static) enemy_spawn_timer: f32
   enemy_spawn_timer -= time.wdt

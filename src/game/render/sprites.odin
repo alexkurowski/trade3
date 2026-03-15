@@ -1,6 +1,5 @@
 package render
 
-import "deps:box"
 import rl "vendor:raylib"
 
 Sprite :: struct {
@@ -17,17 +16,17 @@ SpriteKind :: enum {
 }
 
 @(private = "file")
-sprite_queue: box.Pool(Sprite, 1024)
+sprite_queue: Pool(Sprite, 1024)
 
 sprites_begin :: proc() {
-  box.clear(&sprite_queue)
+  clear_pool(&sprite_queue)
 }
 
 sprites_end :: proc() {
   rl.BeginShaderMode(shaders.sprites)
   defer rl.EndShaderMode()
 
-  for sprite in box.every(&sprite_queue) {
+  for sprite in every(&sprite_queue) {
     sprite_size :: 16
     source := Rect{0, 0, sprite_size, sprite_size}
     size := Vec2{1, 1} * sprite.size
@@ -64,8 +63,9 @@ add_sprite_vec3 :: proc(
   flip: bool = false,
   color: rl.Color = rl.WHITE,
 ) {
-  box.append(&sprite_queue, Sprite{kind, position, size, flip, color})
+  push(&sprite_queue, Sprite{kind, position, size, flip, color})
 }
 sprite :: proc {
   add_sprite_vec3,
 }
+

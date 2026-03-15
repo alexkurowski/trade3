@@ -1,6 +1,6 @@
 package game
 
-import "deps:box"
+import cont "containers"
 import "physics"
 import "render"
 import "text"
@@ -13,9 +13,10 @@ INITIAL_WINDOW_HEIGHT :: 600
 
 GameMemory :: struct {
   state:     GameState,
-  entities:  box.Array(Entity, ID, 2048),
+  entities:  cont.Array(Entity, ID, 2048),
+  bullets:   cont.Pool(Bullet, 2048),
   player_id: ID,
-  player: ^Entity,
+  player:    ^Entity,
   debug:     bool,
 }
 
@@ -27,7 +28,7 @@ open_window :: proc() {
 
   rl.InitWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Garden")
 
-  rl.SetTargetFPS(90)
+  // rl.SetTargetFPS(90)
   rl.SetExitKey(.ESCAPE)
   gl.EnableDepthTest()
   gl.EnableColorBlend()
@@ -122,3 +123,4 @@ frame_end :: proc() {
     rl.DrawFPS(0, 0)
   }
 }
+

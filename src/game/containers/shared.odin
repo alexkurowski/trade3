@@ -1,4 +1,4 @@
-package box
+package containers
 
 append :: proc {
   append_array,
@@ -26,3 +26,4 @@ is_empty :: proc {
   is_pool_empty,
   is_queue_empty,
 }
+

@@ -1,11 +1,11 @@
-package box
+package render
 
 Pool :: struct($T: typeid, $S: i32) {
   items: [S]T,
   count: i32,
 }
 
-append_pool :: proc(p: ^Pool($T, $S), value: T) -> ^T {
+push :: proc(p: ^Pool($T, $S), value: T) -> ^T {
   if p.count < S {
     p.items[p.count] = value
     p.count += 1
@@ -95,3 +95,4 @@ last :: proc(p: ^Pool($T, $S)) -> ^T {
   if p.count == 0 do return nil
   return &p.items[p.count - 1]
 }
+

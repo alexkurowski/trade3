@@ -46,7 +46,7 @@ Example (assumes this package is imported under the alias `hm`):
 		e.pos += { 5, 1 }
 	}
 */
-package box
+package containers
 
 import "base:intrinsics"
 
@@ -229,3 +229,4 @@ iter :: proc(it: ^Handle_Map_Iterator($T, $HT, $N)) -> (val: ^T, h: HT, cond: bo
 is_none :: #force_inline proc(e: $T) -> bool {
   return e.id.idx == 0
 }
+

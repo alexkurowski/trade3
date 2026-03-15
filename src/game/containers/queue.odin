@@ -1,4 +1,4 @@
-package box
+package containers
 
 Queue :: struct($T: typeid, $S: i32) {
   items: [S]T,
@@ -38,3 +38,4 @@ is_queue_full :: proc(q: ^Queue($T, $S)) -> bool {
 is_queue_empty :: proc(p: ^Queue($T, $S)) -> bool {
   return q.count == 0
 }
+
