@@ -8,6 +8,7 @@ import "render"
 import rl "vendor:raylib"
 
 state_run_ready :: proc() {
+  clear_all_events()
   despawn_all_bullets()
   despawn_all_entities()
   spawn_player()

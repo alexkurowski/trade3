@@ -27,6 +27,12 @@ process_events :: proc() {
   }
 }
 
+clear_all_events :: proc() {
+  for kind in EventKind {
+    cont.clear(&g.events.events[kind])
+  }
+}
+
 //
 //
 //
