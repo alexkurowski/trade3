@@ -2,7 +2,6 @@
 package game
 
 import cont "containers"
-import "core:fmt"
 import "physics"
 import "render"
 import rl "vendor:raylib"
@@ -12,10 +11,12 @@ state_run_ready :: proc() {
   despawn_all_bullets()
   despawn_all_entities()
   spawn_player()
-  spawn_circle_at({1, 0, 0}, 0.6, 2)
-  spawn_circle_at({0, 0, 2}, 0.3, 3)
-  spawn_circle_at({-2, 0, 1}, 0.3, 4)
-  spawn_box_at({-1, 0, -4}, 45 * DEG_TO_RAD, 5, 2, 0.5)
+  for i := 0; i < 4; i += 1 {
+    angle := f32(i) * PI / 2
+    spawn_small_wall(to_vec3(at_angle(angle) * 2), angle + PI / 2)
+  }
+
+  rl.HideCursor()
 }
 
 state_run :: proc() {
@@ -35,6 +36,8 @@ state_run :: proc() {
   process_events()
 
   update_spawners()
+
+  render.icon(.Circle, render.get_mouse_screen_position(), 10)
 }
 
 //
@@ -78,6 +81,9 @@ update_entity_transform :: proc(e: ^Entity) {
 draw_entity :: proc(e: ^Entity) {
   if e.sprite.kind != .None {
     render.sprite(e.sprite.kind, e.transform.position, e.sprite.size, e.sprite.flip)
+  }
+  if e.model.kind != .None {
+    render.model(e.model.kind, e.transform.position, e.transform.rotation)
   }
 }
 

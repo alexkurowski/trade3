@@ -16,6 +16,7 @@ IconKind :: enum {
   City,
   Ship,
   DebugFps,
+  Circle,
 }
 
 @(private = "file")
@@ -46,6 +47,9 @@ icons_end :: proc() {
       source.y = 32
     case .DebugFps:
       rl.DrawFPS(i32(icon.position.x), i32(icon.position.y))
+      continue
+    case .Circle:
+      rl.DrawCircleLinesV(icon.position, icon.size, icon.color)
       continue
     }
     rl.DrawTexturePro(

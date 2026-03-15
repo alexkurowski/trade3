@@ -9,7 +9,8 @@ shaders: struct {
   sprites:  rl.Shader,
 }
 models: struct {
-  test: rl.Model,
+  test:          rl.Model,
+  wall_small_00: rl.Model,
 }
 textures: struct {
   sprites: rl.Texture,
@@ -49,6 +50,7 @@ unload_shaders :: proc() {
 
 load_models :: proc() {
   models.test = load_and_set_shader("assets/models/test.gltf", &shaders.lighting)
+  models.wall_small_00 = load_and_set_shader("assets/models/wall_small_00.gltf", &shaders.lighting)
 }
 
 unload_models :: proc() {
@@ -73,3 +75,4 @@ unload_textures :: proc() {
   rl.UnloadTexture(textures.sprites)
   rl.UnloadTexture(textures.icons)
 }
+

@@ -15,10 +15,14 @@ Entity :: struct {
     rotation: f32, // cached value from box2d
   },
   health:    EntityValue,
+  speed:     EntityValue,
   sprite:    struct {
     kind: render.SpriteKind,
     size: f32,
     flip: bool,
+  },
+  model:     struct {
+    kind: render.ModelKind,
   },
   // ai:        struct {
   //   state: AiState,
@@ -29,6 +33,7 @@ EntityKind :: enum {
   None,
   Player,
   Enemy,
+  WallSmall,
 }
 
 EntityValue :: struct {
@@ -66,6 +71,10 @@ despawn_all_entities :: proc() {
   cont.clear(&g.entities)
 }
 
+val :: proc(value: f32) -> EntityValue {
+  return EntityValue{value, value}
+}
+
 hurt :: proc(e: ^Entity, value: f32) {
   if value > 0 {
     e.health.current -= value
@@ -78,24 +87,31 @@ hurt :: proc(e: ^Entity, value: f32) {
 }
 
 spawn_player :: proc() {
-  player := spawn(Entity{transform = {position = {6, 0, 6}}})
-  player.kind |= {.Player}
-  player.sprite = {
+  e := spawn(Entity{transform = {position = {6, 0, 6}}, health = val(10), speed = val(200)})
+  e.kind |= {.Player}
+  e.sprite = {
     kind = .Character,
     size = 1,
   }
-  physics.set_body_shape(&player.body, .Circle, 0.3, mass = 6, category = .Player)
-  g.player_id = player.id
+  physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
+  g.player_id = e.id
 }
 
 spawn_enemy :: proc() {
-  enemy := spawn(Entity{transform = {position = to_vec3(at_random_angle(25))}})
-  enemy.kind |= {.Enemy}
-  enemy.sprite = {
+  e := spawn(Entity{transform = {position = to_vec3(at_random_angle(25))}, speed = val(10)})
+  e.kind |= {.Enemy}
+  e.health = val(1)
+  e.sprite = {
     kind = .Character,
     size = 1,
   }
-  physics.set_body_shape(&enemy.body, .Circle, 0.3, mass = 6, category = .Enemy)
+  physics.set_body_shape(&e.body, .Circle, 0.75, mass = 2, category = .Enemy)
+}
+
+spawn_small_wall :: proc(position: Vec3, rotation: f32) {
+  e := spawn(Entity{transform = {position = position, rotation = rotation}, health = val(1000)})
+  e.model.kind = .WallSmall00
+  physics.set_body_shape(&e.body, .Box, 1.3, 0.8, mass = 500, category = .Obstacle)
 }
 
 spawn_circle_at :: proc(position: Vec3, size, mass: f32) {

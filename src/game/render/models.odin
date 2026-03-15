@@ -5,13 +5,15 @@ import rl "vendor:raylib"
 Model :: struct {
   kind:     ModelKind,
   position: Vec3,
-  rotation: rl.Quaternion,
+  rotation: f32,
   scale:    Vec3,
   color:    rl.Color,
 }
 
 ModelKind :: enum {
+  None,
   Test,
+  WallSmall00,
 }
 
 @(private = "file")
@@ -29,7 +31,7 @@ models_end :: proc() {
     m := get_mesh(model.kind)
 
     scale := rl.MatrixScale(model.scale.x, model.scale.y, model.scale.z)
-    rotate := rl.QuaternionToMatrix(model.rotation)
+    rotate := rl.MatrixRotate(Vec3{0, 1, 0}, -model.rotation)
     translate := rl.MatrixTranslate(model.position.x, model.position.y, model.position.z)
     transform := translate * rotate * scale * m.transform
 
@@ -43,7 +45,7 @@ models_end :: proc() {
 model :: proc(
   kind: ModelKind,
   position: Vec3 = Vec3(0),
-  rotation: rl.Quaternion = rl.Quaternion(1),
+  rotation: f32,
   scale: Vec3 = Vec3(1),
   color: rl.Color = rl.WHITE,
 ) {
@@ -56,8 +58,12 @@ model :: proc(
 @(private = "file")
 get_mesh :: proc(kind: ModelKind) -> rl.Model {
   switch kind {
+  case .None:
+  // NOP
   case .Test:
     return models.test
+  case .WallSmall00:
+    return models.wall_small_00
   }
   return models.test
 }

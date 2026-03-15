@@ -6,7 +6,6 @@ import "physics"
 import "render"
 import rl "vendor:raylib"
 
-PLAYER_SPEED :: 200
 PLAYER_LIMIT :: 20
 
 player_controls :: proc(e: ^Entity) {
@@ -38,7 +37,7 @@ player_movement :: proc(e: ^Entity) {
     input.y = sign(e.transform.position.z)
   }
 
-  physics.push(e.body, render.to_camera_relative(input) * PLAYER_SPEED)
+  physics.push(e.body, render.to_camera_relative(input) * e.speed.current)
 }
 
 player_shooting :: proc(e: ^Entity) {

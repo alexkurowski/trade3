@@ -91,3 +91,7 @@ get_mouse_world_position :: proc() -> Vec3 {
   return mouse_world_position
 }
 
+get_mouse_screen_position :: proc() -> Vec2 {
+  return mouse_screen_position
+}
+
