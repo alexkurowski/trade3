@@ -14,32 +14,8 @@ push :: proc(p: ^Pool($T, $S), value: T) -> ^T {
   return nil
 }
 
-prepend :: proc(p: ^Pool($T, $S), value: T) {
-  if p.count < S {
-    for i: i32 = p.count; i > 0; i -= 1 {
-      p.items[i] = p.items[i - 1]
-    }
-    p.items[0] = value
-    p.count += 1
-  }
-}
-
-shift :: proc(p: ^Pool($T, $S)) -> T {
-  if p.count == 0 do return T{}
-
-  result: T = p.items[0]
-  for i: i32 = 1; i < p.count; i += 1 {
-    p.items[i - 1] = p.items[i]
-  }
-  p.count -= 1
-  return result
-}
-
-pop :: proc(p: ^Pool($T, $S)) -> T {
-  if p.count == 0 do return T{}
-
-  p.count -= 1
-  return p.items[p.count]
+every :: proc(p: ^Pool($T, $S)) -> []T {
+  return p.items[:p.count]
 }
 
 // Make sure to iterate backwards when calling this
@@ -48,6 +24,10 @@ remove_pool :: proc(p: ^Pool($T, $S), idx: i32) {
     p.items[idx] = p.items[p.count - 1]
   }
   p.count -= 1
+}
+
+clear_pool :: proc(p: ^Pool($T, $S)) {
+  p.count = 0
 }
 
 move_to_front :: proc(p: ^Pool($T, $S), idx: i32) {
@@ -68,31 +48,5 @@ move_to_back :: proc(p: ^Pool($T, $S), idx: i32) {
     }
     p.items[p.count - 1] = temp
   }
-}
-
-clear_pool :: proc(p: ^Pool($T, $S)) {
-  p.count = 0
-}
-
-is_pool_full :: proc(p: ^Pool($T, $S)) -> bool {
-  return p.count >= S
-}
-
-is_pool_empty :: proc(p: ^Pool($T, $S)) -> bool {
-  return p.count == 0
-}
-
-every :: proc(p: ^Pool($T, $S)) -> []T {
-  return p.items[:p.count]
-}
-
-first :: proc(p: ^Pool($T, $S)) -> ^T {
-  if p.count == 0 do return nil
-  return &p.items[0]
-}
-
-last :: proc(p: ^Pool($T, $S)) -> ^T {
-  if p.count == 0 do return nil
-  return &p.items[p.count - 1]
 }
 

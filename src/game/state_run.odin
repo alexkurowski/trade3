@@ -2,6 +2,7 @@
 package game
 
 import cont "containers"
+import "core:fmt"
 import "physics"
 import "render"
 import rl "vendor:raylib"
@@ -31,6 +32,8 @@ process_systems :: proc() {
 
   physics.update(time.dt)
 
+  update_bullets()
+
   if rl.IsKeyPressed(.R) {
     set_state(.Run)
   }
@@ -52,13 +55,6 @@ update_entities :: proc() {
     }
     if .Enemy in e.kind {
       ai_controls(&e)
-    }
-    if .Bullet in e.kind {
-      bullet_physics(&e)
-      if bullet_despawn(&e) {
-        despawn(e.id)
-        continue
-      }
     }
 
     update_transform(&e)
@@ -91,15 +87,26 @@ process_spawners :: proc() {
   }
 }
 
-bullet_physics :: proc(e: ^Entity) {
-  // physics.move(e.body, to_vec2(e.transform.velocity))
+update_bullets :: proc() {
+  #reverse for &b, idx in cont.every(&g.bullets) {
+    b.position += b.velocity * time.wdt
+    if length(b.position) > 25 {
+      despawn_bullet(i32(idx))
+      continue
+    }
+    collision := physics.query_collision(b.position, 0.5, .Enemy | .Obstacle)
+    if collision.hit {
+      despawn_bullet(i32(idx))
+      continue
+    }
+    render.shape(.Sphere, b.position, 0.1, rl.WHITE)
+  }
 }
 
-bullet_despawn :: proc(e: ^Entity) -> bool {
-  if length(e.transform.position) > 25 {
-    despawn(e.id)
-    return true
-  }
-  return false
-}
+// on_bullet_entity_collision :: proc(bid: physics.BID) {
+//   id := g.body_to_entity[bid]
+//   e := cont.get(&g.entities, id)
+//   if cont.is_none(e) do return
+//   fmt.println("HIT")
+// }
 

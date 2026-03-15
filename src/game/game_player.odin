@@ -42,6 +42,8 @@ player_movement :: proc(e: ^Entity) {
 }
 
 player_shooting :: proc(e: ^Entity) {
+  PLAYER_BULLET_SPEED :: 40
+
   @(static) player_shooting_cooldown: f32
   if player_shooting_cooldown > 0 {
     player_shooting_cooldown -= time.wdt
@@ -50,10 +52,10 @@ player_shooting :: proc(e: ^Entity) {
 
   if rl.IsMouseButtonDown(.LEFT) {
     player_shooting_cooldown = 0.2
-    point := render.get_mouse_world_position()
-    pos := e.transform.position
-    dir := normalize(point - pos)
-    spawn_bullet(pos, dir)
+    target := render.get_mouse_world_position()
+    position := e.transform.position
+    speed := normalize(target - position) * PLAYER_BULLET_SPEED
+    spawn_bullet(position, speed)
   }
 }
 

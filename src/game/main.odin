@@ -12,12 +12,13 @@ INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
 GameMemory :: struct {
-  state:     GameState,
-  entities:  cont.Array(Entity, ID, 2048),
-  bullets:   cont.Pool(Bullet, 2048),
-  player_id: ID,
-  player:    ^Entity,
-  debug:     bool,
+  state:          GameState,
+  entities:       cont.Array(Entity, ID, 2048),
+  body_to_entity: map[physics.BID]ID,
+  bullets:        cont.Pool(Bullet, 2048),
+  player_id:      ID,
+  player:         ^Entity,
+  debug:          bool,
 }
 
 g: ^GameMemory

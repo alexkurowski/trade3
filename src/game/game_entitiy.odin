@@ -29,7 +29,6 @@ EntityKind :: enum {
   None,
   Player,
   Enemy,
-  Bullet,
 }
 
 EntityValue :: struct {
@@ -44,6 +43,8 @@ spawn :: proc(entity: Entity) -> ^Entity {
   e := cont.get(&g.entities, id)
   e.body = physics.create_body()
   physics.set_position(e.body, to_vec2(e.transform.position), e.transform.rotation)
+  g.body_to_entity[e.body.bid] = e.id
+
   return e
 }
 
@@ -52,6 +53,7 @@ despawn :: proc(id: ID) {
   if e == nil do return
 
   physics.destroy_body(e.body)
+  delete_key(&g.body_to_entity, e.body.bid)
   cont.remove(&g.entities, id)
 }
 
@@ -60,6 +62,7 @@ despawn_all_entities :: proc() {
     if cont.is_none(e) do continue
     physics.destroy_body(e.body)
   }
+  clear(&g.body_to_entity)
   cont.clear(&g.entities)
 }
 
@@ -81,7 +84,7 @@ spawn_player :: proc() {
     kind = .Character,
     size = 1,
   }
-  physics.set_body_shape(&player.body, .Circle, 0.3, mass = 6)
+  physics.set_body_shape(&player.body, .Circle, 0.3, mass = 6, category = .Player)
   g.player_id = player.id
 }
 
@@ -92,14 +95,7 @@ spawn_enemy :: proc() {
     kind = .Character,
     size = 1,
   }
-  physics.set_body_shape(&enemy.body, .Circle, 0.3, mass = 6)
-}
-
-spawn_bullet :: proc(position, direction: Vec3) {
-  bullet := spawn(Entity{transform = {position = position + direction, velocity = direction}})
-  bullet.kind |= {.Bullet}
-  physics.set_body_shape(&bullet.body, .Circle, 0.5, mass = 10, is_sensor = true)
-  physics.launch_bullet(bullet.body, to_vec2(direction) * 25)
+  physics.set_body_shape(&enemy.body, .Circle, 0.3, mass = 6, category = .Enemy)
 }
 
 spawn_circle_at :: proc(position: Vec3, size, mass: f32) {
@@ -108,11 +104,11 @@ spawn_circle_at :: proc(position: Vec3, size, mass: f32) {
     kind = .Character,
     size = 1,
   }
-  physics.set_body_shape(&e.body, .Circle, size, mass = mass)
+  physics.set_body_shape(&e.body, .Circle, size, mass = mass, category = .Obstacle)
 }
 
 spawn_box_at :: proc(position: Vec3, rotation, width, height, mass: f32) {
   e := spawn(Entity{transform = {position = position, rotation = rotation}})
-  physics.set_body_shape(&e.body, .Box, width, height, mass = mass)
+  physics.set_body_shape(&e.body, .Box, width, height, mass = mass, category = .Obstacle)
 }
 
