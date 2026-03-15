@@ -94,7 +94,11 @@ update_bullets :: proc() {
       despawn_bullet(i32(idx))
       continue
     }
-    collision := physics.query_collision(b.position, 0.5, .Enemy | .Obstacle)
+    collision := physics.query_collision(
+      b.position,
+      0.5,
+      b.by == .Player ? .Enemy | .Obstacle : .Player,
+    )
     if collision.hit {
       despawn_bullet(i32(idx))
       continue

@@ -55,7 +55,7 @@ player_shooting :: proc(e: ^Entity) {
     target := render.get_mouse_world_position()
     position := e.transform.position
     speed := normalize(target - position) * PLAYER_BULLET_SPEED
-    spawn_bullet(position, speed)
+    spawn_bullet(.Player, position, speed)
   }
 }
 
