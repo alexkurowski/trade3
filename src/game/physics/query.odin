@@ -46,11 +46,9 @@ query_collision :: proc(
 }
 
 on_collision_callback :: proc "c" (shapeId: b2.ShapeId, data: rawptr) -> bool {
-  context = runtime.default_context()
   data := cast(^CollisionData)data
   data.hit = true
   data.bid = b2.Shape_GetBody(shapeId)
-  // data.callback(b2.Shape_GetBody(shapeId))
   return true
 }
 
