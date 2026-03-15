@@ -11,12 +11,6 @@ EventQueue :: struct {
 EventPayload :: rawptr
 EventCallback :: #type proc(data: EventPayload)
 
-EventKind :: enum {
-  None,
-  GotHurt,
-  GotKilled,
-}
-
 send_event :: proc(kind: EventKind, event: $T) {
   ptr := new_clone(event, context.temp_allocator)
   cont.append(&g.events.events[kind], ptr)
@@ -37,8 +31,18 @@ process_events :: proc() {
 //
 //
 
+EventKind :: enum {
+  None,
+  GotHurt,
+  GotKilled,
+}
+
 subscribe_events :: proc() {
-  cont.append(&g.events.subscribers[.GotKilled], on_got_killed)
+  subscribe :: proc(kind: EventKind, callback: EventCallback) {
+    cont.append(&g.events.subscribers[kind], callback)
+  }
+
+  subscribe(.GotKilled, on_got_killed)
 }
 
 Event_Entity :: struct {
@@ -46,11 +50,10 @@ Event_Entity :: struct {
 }
 
 on_got_killed :: proc(raw: EventPayload) {
-  p(raw)
   event := cast(^Event_Entity)raw
-  p(event)
   entity := cont.get(&g.entities, event.id)
-  if entity == nil do return
-  despawn(entity.id)
+  if entity != nil {
+    despawn(entity.id)
+  }
 }
 
