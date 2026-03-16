@@ -37,6 +37,10 @@ player_movement :: proc(e: ^Entity) {
     input.y = sign(e.transform.position.z)
   }
 
+  if rl.IsKeyPressed(.C) {
+    e.crouch = !e.crouch
+  }
+
   physics.push(e.body, render.to_camera_relative(input) * e.speed.current)
 }
 
@@ -54,7 +58,7 @@ player_shooting :: proc(e: ^Entity) {
     target := render.get_mouse_world_position()
     position := e.transform.position
     speed := normalize(target - position) * PLAYER_BULLET_SPEED
-    spawn_bullet(.Player, position, speed)
+    spawn_bullet(.Player, position, speed, e.crouch)
   }
 }
 

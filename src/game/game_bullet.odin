@@ -5,9 +5,10 @@ import cont "containers"
 
 Bullet :: struct {
   kind:     BulletKind,
-  by:       BulletOwner,
+  from:     BulletOwner,
   position: Vec3,
   velocity: Vec3,
+  low:      bool,
 }
 
 BulletKind :: enum {
@@ -19,10 +20,15 @@ BulletOwner :: enum {
   Enemy,
 }
 
-spawn_bullet :: proc(by: BulletOwner, position, velocity: Vec3) {
+spawn_bullet :: proc(from: BulletOwner, position, velocity: Vec3, low: bool = false) {
   bullet := cont.append(
     &g.bullets,
-    Bullet{by = by, position = position + normalize(velocity), velocity = velocity},
+    Bullet {
+      from = from,
+      position = position + normalize(velocity) / 2,
+      velocity = velocity,
+      low = low,
+    },
   )
 }
 

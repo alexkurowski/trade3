@@ -18,6 +18,8 @@ transition: struct {
 set_state :: proc(state: GameState, immediate: bool = false) {
   g.state = state
   #partial switch state {
+  case .Menu:
+    state_menu_ready()
   case .Run:
     state_run_ready()
   }
@@ -26,3 +28,4 @@ set_state :: proc(state: GameState, immediate: bool = false) {
 state_transition :: proc() {
   // TODO: animate state transision
 }
+

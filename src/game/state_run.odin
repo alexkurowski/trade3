@@ -13,7 +13,7 @@ state_run_ready :: proc() {
   spawn_player()
   for i := 0; i < 4; i += 1 {
     angle := f32(i) * PI / 2
-    spawn_small_wall(to_vec3(at_angle(angle) * 2), angle + PI / 2)
+    spawn_small_wall(to_vec3(at_angle(angle) * 4), angle + PI / 2)
   }
 
   rl.HideCursor()
@@ -92,17 +92,29 @@ draw_entity :: proc(e: ^Entity) {
 //
 
 update_bullets :: proc() {
+  get_collision_mask :: proc(b: ^Bullet) -> physics.CollisionLayer {
+    if b.from == .Player {
+      if b.low {
+        return .Enemy | .Obstacle | .SemiObstacle
+      } else {
+        return .Enemy | .Obstacle
+      }
+    } else {
+      if b.low {
+        return .Player | .Obstacle | .SemiObstacle
+      } else {
+        return .Player | .Obstacle
+      }
+    }
+  }
+
   #reverse for &b, idx in cont.every(&g.bullets) {
     b.position += b.velocity * time.wdt
     if length(b.position) > 25 {
       despawn_bullet(i32(idx))
       continue
     }
-    collision := physics.query_collision(
-      b.position,
-      0.5,
-      b.by == .Player ? .Enemy | .Obstacle : .Player,
-    )
+    collision := physics.query_collision(b.position, 0.5, get_collision_mask(&b))
     if collision.hit {
       id := g.body_to_entity[collision.bid]
       e := cont.get(&g.entities, id)

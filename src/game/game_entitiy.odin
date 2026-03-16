@@ -14,8 +14,6 @@ Entity :: struct {
     velocity: Vec3, // cached value from box2d
     rotation: f32, // cached value from box2d
   },
-  health:    EntityValue,
-  speed:     EntityValue,
   sprite:    struct {
     kind: render.SpriteKind,
     size: f32,
@@ -27,6 +25,9 @@ Entity :: struct {
   // ai:        struct {
   //   state: AiState,
   // },
+  health:    EntityValue,
+  speed:     EntityValue,
+  crouch:    bool,
 }
 
 EntityKind :: enum {
@@ -87,7 +88,7 @@ hurt :: proc(e: ^Entity, value: f32) {
 }
 
 spawn_player :: proc() {
-  e := spawn(Entity{transform = {position = {6, 0, 6}}, health = val(10), speed = val(200)})
+  e := spawn(Entity{health = val(10), speed = val(200)})
   e.kind |= {.Player}
   e.sprite = {
     kind = .Character,
@@ -98,9 +99,12 @@ spawn_player :: proc() {
 }
 
 spawn_enemy :: proc() {
-  e := spawn(Entity{transform = {position = to_vec3(at_random_angle(25))}, speed = val(10)})
+  e := spawn(Entity {
+      transform = {position = to_vec3(at_random_angle(25))},
+      health = val(1),
+      speed = val(10),
+    })
   e.kind |= {.Enemy}
-  e.health = val(1)
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -111,7 +115,7 @@ spawn_enemy :: proc() {
 spawn_small_wall :: proc(position: Vec3, rotation: f32) {
   e := spawn(Entity{transform = {position = position, rotation = rotation}, health = val(1000)})
   e.model.kind = .WallSmall00
-  physics.set_body_shape(&e.body, .Box, 1.3, 0.8, mass = 500, category = .Obstacle)
+  physics.set_body_shape(&e.body, .Box, 1.3, 0.8, mass = 500, category = .SemiObstacle)
 }
 
 spawn_circle_at :: proc(position: Vec3, size, mass: f32) {

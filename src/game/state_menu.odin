@@ -2,6 +2,11 @@
 package game
 
 import "ui"
+import rl "vendor:raylib"
+
+state_menu_ready :: proc() {
+  rl.ShowCursor()
+}
 
 state_menu :: proc() {
   if g.debug {
@@ -34,3 +39,4 @@ state_menu :: proc() {
     }
   }
 }
+
