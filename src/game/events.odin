@@ -39,8 +39,7 @@ clear_all_events :: proc() {
 
 EventKind :: enum {
   None,
-  GotHurt,
-  GotKilled,
+  Despawn,
 }
 
 subscribe_events :: proc() {
@@ -48,14 +47,14 @@ subscribe_events :: proc() {
     cont.append(&g.events.subscribers[kind], callback)
   }
 
-  subscribe(.GotKilled, on_got_killed)
+  subscribe(.Despawn, event_despawn_entity)
 }
 
 Event_Entity :: struct {
   id: ID,
 }
 
-on_got_killed :: proc(raw: EventPayload) {
+event_despawn_entity :: proc(raw: EventPayload) {
   event := cast(^Event_Entity)raw
   entity := cont.get(&g.entities, event.id)
   if entity != nil {

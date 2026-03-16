@@ -11,6 +11,8 @@ import gl "vendor:raylib/rlgl"
 INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
+AREA_SIZE :: 25
+
 GameMemory :: struct {
   state:          GameState,
   entities:       cont.Array(Entity, ID, 2048),

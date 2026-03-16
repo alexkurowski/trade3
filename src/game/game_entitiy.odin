@@ -54,6 +54,17 @@ spawn :: proc(entity: Entity) -> ^Entity {
   return e
 }
 
+spawn_at_vec2 :: proc(position: Vec2, rotation: f32 = 0) -> ^Entity {
+  return spawn(Entity{transform = {position = to_vec3(position), rotation = rotation}})
+}
+spawn_at_vec3 :: proc(position: Vec3, rotation: f32 = 0) -> ^Entity {
+  return spawn(Entity{transform = {position = position, rotation = rotation}})
+}
+spawn_at :: proc {
+  spawn_at_vec2,
+  spawn_at_vec3,
+}
+
 despawn :: proc(id: ID) {
   e := cont.get(&g.entities, id)
   if e == nil do return
@@ -72,24 +83,11 @@ despawn_all_entities :: proc() {
   cont.clear(&g.entities)
 }
 
-val :: proc(value: f32) -> EntityValue {
-  return EntityValue{value, value}
-}
-
-hurt :: proc(e: ^Entity, value: f32) {
-  if value > 0 {
-    e.health.current -= value
-    if e.health.current <= 0 {
-      send_event(.GotKilled, Event_Entity{id = e.id})
-    } else {
-      send_event(.GotHurt, Event_Entity{id = e.id})
-    }
-  }
-}
-
 spawn_player :: proc() {
-  e := spawn(Entity{health = val(10), speed = val(200)})
+  e := spawn_at(Vec3(0))
   e.kind |= {.Player}
+  e.health = val(10)
+  e.speed = val(200)
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -99,12 +97,10 @@ spawn_player :: proc() {
 }
 
 spawn_enemy :: proc() {
-  e := spawn(Entity {
-      transform = {position = to_vec3(at_random_angle(25))},
-      health = val(1),
-      speed = val(10),
-    })
-  e.kind |= {.Enemy}
+  e := spawn_at(at_random_angle(AREA_SIZE))
+  e.kind = {.Enemy}
+  e.health = val(1)
+  e.speed = val(10)
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -113,22 +109,42 @@ spawn_enemy :: proc() {
 }
 
 spawn_small_wall :: proc(position: Vec3, rotation: f32) {
-  e := spawn(Entity{transform = {position = position, rotation = rotation}, health = val(1000)})
-  e.model.kind = .WallSmall00
+  e := spawn_at(position, rotation)
+  e.health = val(1000)
+  e.model = {
+    kind = .WallSmall00,
+  }
   physics.set_body_shape(&e.body, .Box, 1.3, 0.8, mass = 500, category = .SemiObstacle)
 }
 
-spawn_circle_at :: proc(position: Vec3, size, mass: f32) {
-  e := spawn(Entity{transform = {position = position}})
-  e.sprite = {
-    kind = .Character,
-    size = 1,
-  }
-  physics.set_body_shape(&e.body, .Circle, size, mass = mass, category = .Obstacle)
+// spawn_circle_at :: proc(position: Vec3, size, mass: f32) {
+//   e := spawn(Entity{transform = {position = position}})
+//   e.sprite = {
+//     kind = .Character,
+//     size = 1,
+//   }
+//   physics.set_body_shape(&e.body, .Circle, size, mass = mass, category = .Obstacle)
+// }
+
+// spawn_box_at :: proc(position: Vec3, rotation, width, height, mass: f32) {
+//   e := spawn(Entity{transform = {position = position, rotation = rotation}})
+//   physics.set_body_shape(&e.body, .Box, width, height, mass = mass, category = .Obstacle)
+// }
+
+//
+//
+//
+
+val :: proc(value: f32) -> EntityValue {
+  return EntityValue{value, value}
 }
 
-spawn_box_at :: proc(position: Vec3, rotation, width, height, mass: f32) {
-  e := spawn(Entity{transform = {position = position, rotation = rotation}})
-  physics.set_body_shape(&e.body, .Box, width, height, mass = mass, category = .Obstacle)
+hurt :: proc(e: ^Entity, value: f32) {
+  if value > 0 {
+    e.health.current -= value
+    if e.health.current <= 0 {
+      send_event(.Despawn, Event_Entity{id = e.id})
+    }
+  }
 }
 

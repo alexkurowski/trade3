@@ -6,7 +6,7 @@ import "physics"
 import "render"
 import rl "vendor:raylib"
 
-PLAYER_LIMIT :: 20
+PLAYER_LIMIT :: AREA_SIZE - 5
 
 player_controls :: proc(e: ^Entity) {
   player_movement(e)
@@ -41,7 +41,11 @@ player_movement :: proc(e: ^Entity) {
     e.crouch = !e.crouch
   }
 
-  physics.push(e.body, render.to_camera_relative(input) * e.speed.current)
+  speed := e.speed.current
+  if e.crouch {
+    speed *= 0.66
+  }
+  physics.push(e.body, render.to_camera_relative(input) * speed)
 }
 
 player_shooting :: proc(e: ^Entity) {
@@ -63,6 +67,15 @@ player_shooting :: proc(e: ^Entity) {
 }
 
 player_camera_follow :: proc(e: ^Entity) {
-  render.move_camera_to(e.transform.position / 3)
+  is_focus := !rl.IsMouseButtonDown(.RIGHT)
+  if is_focus {
+    camera_target := e.transform.position + render.get_mouse_world_position()
+    factor := f32(0.33)
+    render.move_camera_to(camera_target * factor)
+  } else {
+    camera_target := e.transform.position
+    factor := f32(0.33)
+    render.move_camera_to(camera_target * factor)
+  }
 }
 
