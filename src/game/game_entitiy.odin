@@ -28,6 +28,7 @@ Entity :: struct {
   health:    EntityValue,
   speed:     EntityValue,
   crouch:    bool,
+  weapon:    Weapon,
 }
 
 EntityKind :: enum {
@@ -76,7 +77,7 @@ despawn :: proc(id: ID) {
 
 despawn_all_entities :: proc() {
   for &e in g.entities.items {
-    if cont.is_none(e) do continue
+    if is_none(e.id) do continue
     physics.destroy_body(e.body)
   }
   clear(&g.body_to_entity)

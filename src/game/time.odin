@@ -30,3 +30,22 @@ time_step :: proc() {
 set_time_factor :: proc(f: f32) {
   time.target = f
 }
+
+//
+//
+//
+
+Cooldown :: struct {
+  current:  f32,
+  interval: f32,
+}
+
+cooldown :: proc(c: ^Cooldown) -> bool {
+  c.current -= time.wdt
+  if c.current <= 0 {
+    c.current = c.interval
+    return true
+  }
+  return false
+}
+

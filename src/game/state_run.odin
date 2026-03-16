@@ -58,7 +58,7 @@ update_entities :: proc() {
   g.player = cont.get(&g.entities, g.player_id)
 
   #reverse for &e in g.entities.items {
-    if cont.is_none(e) do continue
+    if is_none(e.id) do continue
 
     if .Player in e.kind {
       player_controls(&e)

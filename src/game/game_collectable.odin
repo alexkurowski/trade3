@@ -14,7 +14,7 @@ CollectableKind :: enum {
 }
 
 spawn_collectable_at :: proc(kind: CollectableKind, position: Vec3) {
-  cont.append(&g.collectables, Collectable{kind = kind, position = position})
+  cont.append(&g.collectables, Collectable{kind = kind, position = to_vec3(position.xz)})
 }
 
 despawn_collectable :: proc(idx: i32) {

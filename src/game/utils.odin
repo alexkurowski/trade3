@@ -9,12 +9,18 @@ import "core:math/rand"
 import "core:time"
 import rl "vendor:raylib"
 
+//
+// === Entity ID ===
+//
 ID :: containers.ArrayItem
 none :: ID{0, 0}
 is_none :: #force_inline proc(id: ID) -> bool {
-  return id == none
+  return id.idx == 0
 }
 
+//
+// === Types ===
+//
 Grid2 :: [2]i32
 Vec2 :: [2]f32
 Vec3 :: [3]f32
@@ -25,6 +31,9 @@ Size :: struct {
 Rect :: rl.Rectangle
 Color :: rl.Color
 
+//
+// === Math ===
+//
 PI :: math.PI
 TAU :: math.TAU
 EPSILON :: 0.00001
@@ -47,8 +56,6 @@ sqrt :: math.sqrt
 distance :: linalg.distance
 length :: linalg.length
 dot :: linalg.dot
-
-shuffle :: rand.shuffle
 
 distance_squared_vec2 :: #force_inline proc(a: Vec2, b: Vec2) -> f32 {
   dx := a.x - b.x
@@ -158,7 +165,11 @@ perpendicular :: proc {
   perpendicular_vec3,
 }
 
+//
 // === Randoms ===
+//
+shuffle :: rand.shuffle
+
 rand :: proc() -> f32 {
   return rand.float32()
 }
@@ -250,7 +261,9 @@ rand_choice :: proc {
   rand_choice_not,
 }
 
+//
 // === Easing ===
+//
 ease_in_out_cubic :: proc(x: f32) -> f32 {
   return x < 0.5 ? 4 * x * x * x : 1 - math.pow(-2 * x + 2, 3) / 2
 }
@@ -265,12 +278,16 @@ scale :: proc(value, from_min, from_max, to_min, to_max: f32) -> f32 {
   return (value - from_min) / (from_max - from_min) * (to_max - to_min) + to_min
 }
 
+//
 // === Memory ===
+//
 temp :: proc(v: $T) -> rawptr {
   return new_clone(v, context.temp_allocator)
 }
 
+//
 // === Debug ===
+//
 p :: proc(x: any, name := #caller_expression(x)) {
   fmt.printf("%v = %#v\n", name, x)
 }

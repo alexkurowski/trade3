@@ -58,7 +58,7 @@ event_despawn_entity :: proc(raw: EventPayload) {
   event := cast(^Event_Entity)raw
   entity := cont.get(&g.entities, event.id)
   if entity != nil {
-    spawn_collectable_at(.None, to_vec3(entity.transform.position.xz))
+    spawn_collectable_at(.None, entity.transform.position)
     despawn(entity.id)
   }
 }
