@@ -9,6 +9,7 @@ import rl "vendor:raylib"
 state_run_ready :: proc() {
   clear_all_events()
   despawn_all_bullets()
+  despawn_all_collectables()
   despawn_all_entities()
   spawn_player()
   for i := 0; i < 4; i += 1 {
@@ -28,6 +29,7 @@ state_run :: proc() {
   physics.update(time.dt)
 
   update_bullets()
+  update_collectables()
 
   if rl.IsKeyPressed(.R) {
     set_state(.Run)
@@ -130,6 +132,26 @@ update_bullets :: proc() {
 
 draw_bullet :: proc(b: ^Bullet) {
   render.shape(.Sphere, b.position, 0.1, rl.WHITE)
+}
+
+//
+//
+//
+
+update_collectables :: proc() {
+  #reverse for &c, idx in cont.every(&g.collectables) {
+    distance_to_player := length(c.position - g.player.transform.position)
+    if distance_to_player < 1 {
+      // Pickup
+      despawn_collectable(i32(idx))
+      continue
+    }
+    draw_collectable(&c)
+  }
+}
+
+draw_collectable :: proc(c: ^Collectable) {
+  render.shape(.Sphere, c.position, 0.1, rl.YELLOW)
 }
 
 //

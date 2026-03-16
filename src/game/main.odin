@@ -18,6 +18,7 @@ GameMemory :: struct {
   entities:       cont.Array(Entity, ID, 2048),
   body_to_entity: map[physics.BID]ID,
   bullets:        cont.Pool(Bullet, 2048),
+  collectables:   cont.Pool(Collectable, 2048),
   events:         EventQueue,
   player_id:      ID,
   player:         ^Entity,
