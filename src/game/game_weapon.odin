@@ -14,10 +14,10 @@ Weapon :: struct {
     qte_end:   f32,
   },
   spray:  struct {
-    radius:     f32,
-    max_radius: f32,
-    accuracy:   f32,
-    stability:  f32,
+    angle:     f32,
+    max_angle: f32,
+    accuracy:  f32,
+    stability: f32,
   },
 }
 

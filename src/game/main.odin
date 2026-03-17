@@ -11,7 +11,10 @@ import gl "vendor:raylib/rlgl"
 INITIAL_WINDOW_WIDTH :: 800
 INITIAL_WINDOW_HEIGHT :: 600
 
-AREA_SIZE :: 25
+AREA_LIMIT :: 25
+PLAYER_AREA_LIMIT :: AREA_LIMIT * 0.75
+BULLET_AREA_LIMIT :: AREA_LIMIT * 2
+ENEMY_SPAWN_DISTANCE :: AREA_LIMIT * 1.5
 
 GameMemory :: struct {
   state:          GameState,
@@ -22,6 +25,7 @@ GameMemory :: struct {
   events:         EventQueue,
   player_id:      ID,
   player:         ^Entity,
+  enemy_count:    u32,
   debug:          bool,
 }
 

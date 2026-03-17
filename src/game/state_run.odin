@@ -24,18 +24,18 @@ state_run :: proc() {
   time_step()
 
   draw_map()
+  update_bullets()
   update_entities()
 
   physics.update(time.dt)
 
-  update_bullets()
   update_collectables()
 
   if rl.IsKeyPressed(.R) {
     set_state(.Run)
   }
 
-  process_events()
+  // process_events()
 
   update_spawners()
 
@@ -47,7 +47,7 @@ state_run :: proc() {
 //
 
 draw_map :: proc() {
-  render.shape(.Plane, Vec3(0), Vec2(50), Color{20, 20, 30, 255})
+  render.shape(.Plane, Vec3(0), Vec2(100), Color{20, 20, 30, 255})
 }
 
 //
@@ -56,21 +56,31 @@ draw_map :: proc() {
 
 update_entities :: proc() {
   g.player = cont.get(&g.entities, g.player_id)
+  enemy_count := u32(0)
 
   #reverse for &e in g.entities.items {
     if is_none(e.id) do continue
+
+    if e.health.current <= 0 {
+      spawn_collectable_at(.None, e.transform.position)
+      despawn(e.id)
+      continue
+    }
 
     if .Player in e.kind {
       player_controls(&e)
       player_camera_follow(&e)
     }
     if .Enemy in e.kind {
+      enemy_count += 1
       ai_controls(&e)
     }
 
     update_entity_transform(&e)
     draw_entity(&e)
   }
+
+  g.enemy_count = enemy_count
 }
 
 update_entity_transform :: proc(e: ^Entity) {
@@ -94,35 +104,13 @@ draw_entity :: proc(e: ^Entity) {
 //
 
 update_bullets :: proc() {
-  get_collision_mask :: proc(b: ^Bullet) -> physics.CollisionLayer {
-    if b.from == .Player {
-      if b.low {
-        return .Enemy | .Obstacle | .SemiObstacle
-      } else {
-        return .Enemy | .Obstacle
-      }
-    } else {
-      if b.low {
-        return .Player | .Obstacle | .SemiObstacle
-      } else {
-        return .Player | .Obstacle
-      }
-    }
-  }
-
   #reverse for &b, idx in cont.every(&g.bullets) {
     b.position += b.velocity * time.wdt
-    if length(b.position) > 25 {
+    if length(b.position) > BULLET_AREA_LIMIT {
       despawn_bullet(i32(idx))
       continue
     }
-    collision := physics.query_collision(b.position, 0.5, get_collision_mask(&b))
-    if collision.hit {
-      id := g.body_to_entity[collision.bid]
-      e := cont.get(&g.entities, id)
-      if e != nil {
-        hurt(e, 1)
-      }
+    if bullet_check_collision_radius(&b) {
       despawn_bullet(i32(idx))
       continue
     }
@@ -139,12 +127,21 @@ draw_bullet :: proc(b: ^Bullet) {
 //
 
 update_collectables :: proc() {
+  SPEED :: 10
+
   #reverse for &c, idx in cont.every(&g.collectables) {
+    c.position += c.velocity * time.wdt
+    distance_to_base := length(c.position)
     distance_to_player := length(c.position - g.player.transform.position)
     if distance_to_player < 1 {
       // Pickup
       despawn_collectable(i32(idx))
       continue
+    }
+    if distance_to_base > PLAYER_AREA_LIMIT {
+      c.velocity = -normalize(c.position) * SPEED
+    } else {
+      c.velocity -= c.velocity * randf(0.5, 2) * time.wdt
     }
     draw_collectable(&c)
   }
@@ -159,6 +156,11 @@ draw_collectable :: proc(c: ^Collectable) {
 //
 
 update_spawners :: proc() {
+  MAX_ENEMY_COUNT :: 50 // NOTE: this will depend on difficulty
+  if g.enemy_count > MAX_ENEMY_COUNT {
+    return
+  }
+
   ENEMY_SPAWN_INTERVAL :: 0.1
 
   @(static) enemy_spawn_timer: f32

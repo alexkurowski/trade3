@@ -6,8 +6,6 @@ import "physics"
 import "render"
 import rl "vendor:raylib"
 
-PLAYER_LIMIT :: AREA_SIZE - 5
-
 player_controls :: proc(e: ^Entity) {
   player_movement(e)
   player_shooting(e)
@@ -30,11 +28,10 @@ player_movement :: proc(e: ^Entity) {
     input.y = -1
   }
 
-  if math.abs(e.transform.position.x) > PLAYER_LIMIT {
-    input.x = sign(-e.transform.position.x)
-  }
-  if math.abs(e.transform.position.z) > PLAYER_LIMIT {
-    input.y = sign(e.transform.position.z)
+  if length(e.transform.position) > PLAYER_AREA_LIMIT {
+    input.x = 0
+    input.y = 0
+    physics.push(e.body, -normalize(e.transform.position).xz * 500)
   }
 
   if rl.IsKeyPressed(.C) {

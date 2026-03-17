@@ -98,10 +98,10 @@ spawn_player :: proc() {
 }
 
 spawn_enemy :: proc() {
-  e := spawn_at(at_random_angle(AREA_SIZE))
+  e := spawn_at(at_random_angle(ENEMY_SPAWN_DISTANCE))
   e.kind = {.Enemy}
   e.health = val(1)
-  e.speed = val(10)
+  e.speed = val(20)
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -143,9 +143,9 @@ val :: proc(value: f32) -> EntityValue {
 hurt :: proc(e: ^Entity, value: f32) {
   if value > 0 {
     e.health.current -= value
-    if e.health.current <= 0 {
-      send_event(.Despawn, Event_Entity{id = e.id})
-    }
+    // if e.health.current <= 0 {
+    //   send_event(.Despawn, Event_Entity{id = e.id})
+    // }
   }
 }
 
