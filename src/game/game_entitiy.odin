@@ -95,14 +95,15 @@ spawn_player :: proc() {
   }
   physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
   g.player_id = e.id
+  g.player_aim = Vec3(0)
 }
 
 spawn_enemy :: proc() {
   position := g.location.doors[randi(0, 1)]
-  e := spawn_at(position)
+  e := spawn_at(position + rand_offset(0, TILE_SIZE / 2))
   e.kind = {.Enemy}
   e.health = val(1)
-  e.speed = val(20)
+  e.speed = val(10)
   e.sprite = {
     kind = .Character,
     size = 1,

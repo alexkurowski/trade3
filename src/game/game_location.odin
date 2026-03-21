@@ -2,6 +2,7 @@
 package game
 
 import cont "containers"
+import "physics"
 
 MAP_SIZE :: 24
 TILE_SIZE :: 2
@@ -11,6 +12,7 @@ DOOR_COUNT :: 2
 Location :: struct {
   tiles: [MAP_SIZE][MAP_SIZE]Tile,
   doors: [DOOR_COUNT]Vec2,
+  body:  Maybe(physics.Body),
 }
 
 Tile :: struct {
@@ -55,11 +57,12 @@ generate_location :: proc() {
     )
   }
 
-  count_around :: proc(tiles: ^[MAP_SIZE][MAP_SIZE]Tile, i, j: i32, kind: TileKind) -> i32 {
+  count_walkable_around :: proc(tiles: ^[MAP_SIZE][MAP_SIZE]Tile, i, j: i32) -> i32 {
     count := i32(0)
     for x := i32(-1); x <= 1; x += 1 {
       for y := i32(-1); y <= 1; y += 1 {
-        if kind_at(tiles, i + x, j + y) == kind {
+        kind := kind_at(tiles, i + x, j + y)
+        if kind == .Floor || kind == .DoorWall || kind == .DoorFloor {
           count += 1
         }
       }
@@ -87,7 +90,7 @@ generate_location :: proc() {
         tiles[i][j].kind = .Wall
       }
 
-      floors_around := count_around(&tiles, i, j, .Floor)
+      floors_around := count_walkable_around(&tiles, i, j)
       if floors_around >= 3 {
         cont.append(&potential_door_positions, [2]i32{i, j})
       }
@@ -110,6 +113,33 @@ generate_location :: proc() {
     }
   }
 
+  // Finalize tiles generation
   g.location.tiles = tiles
+
+  //
+
+  // Update collision
+  if body, ok := g.location.body.?; ok {
+    physics.destroy_body(body)
+  }
+
+  body := physics.create_static_body()
+  for i := i32(0); i < MAP_SIZE; i += 1 {
+    for j := i32(0); j < MAP_SIZE; j += 1 {
+      tile := tiles[i][j]
+      if tile.kind != .Floor &&
+         tile.kind != .DoorWall &&
+         tile.kind != .DoorFloor &&
+         count_walkable_around(&tiles, i, j) > 0 {
+        physics.add_body_shape(
+          body,
+          Vec2{f32(i + TILE_OFFSET) * TILE_SIZE, f32(j + TILE_OFFSET) * TILE_SIZE},
+          Vec2{TILE_SIZE, TILE_SIZE},
+        )
+      }
+    }
+  }
+
+  g.location.body = body
 }
 

@@ -28,12 +28,6 @@ player_movement :: proc(e: ^Entity) {
     input.y = -1
   }
 
-  if length(e.transform.position) > PLAYER_AREA_LIMIT {
-    input.x = 0
-    input.y = 0
-    physics.push(e.body, -normalize(e.transform.position).xz * 500)
-  }
-
   if rl.IsKeyPressed(.C) {
     e.crouch = !e.crouch
   }
@@ -56,7 +50,7 @@ player_shooting :: proc(e: ^Entity) {
 
   if rl.IsMouseButtonDown(.LEFT) {
     player_shooting_cooldown = 0.2
-    target := render.get_mouse_world_position()
+    target := g.player_aim
     position := e.transform.position
     speed := normalize(target - position) * PLAYER_BULLET_SPEED
     spawn_bullet(.Player, position, speed, e.crouch)
@@ -66,9 +60,8 @@ player_shooting :: proc(e: ^Entity) {
 player_camera_follow :: proc(e: ^Entity) {
   is_focus := !rl.IsMouseButtonDown(.RIGHT)
   if is_focus {
-    camera_target := e.transform.position + render.get_mouse_world_position()
-    factor := f32(0.33)
-    render.move_camera_to(camera_target * factor)
+    camera_target := e.transform.position + g.player_aim
+    render.move_camera_to(camera_target * 0.5)
   } else {
     camera_target := e.transform.position
     factor := f32(0.33)

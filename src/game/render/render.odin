@@ -80,6 +80,10 @@ to_screen_position :: proc(position: Vec3) -> (Vec2, bool) {
   return get_screen_position(position), is_on_screen(position)
 }
 
+get_world_position :: proc(position: Vec2) -> Vec3 {
+  return get_world_position_from_screen(position)
+}
+
 to_camera_relative :: proc(v: Vec2) -> Vec2 {
   direction := linalg.normalize(camera.c3d.target - camera.c3d.position)
   forward := Vec2{direction.x, direction.z}

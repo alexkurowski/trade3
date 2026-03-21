@@ -32,6 +32,12 @@ create_body :: proc() -> Body {
   return Body{bid = b2.CreateBody(world, body_def)}
 }
 
+create_static_body :: proc() -> Body {
+  body_def := b2.DefaultBodyDef()
+  body_def.type = .staticBody
+  return Body{bid = b2.CreateBody(world, body_def)}
+}
+
 destroy_body :: proc(body: Body) {
   b2.DestroyBody(body.bid)
 }
@@ -81,6 +87,13 @@ set_body_shape :: proc(
 
   density := mass / area
   b2.Shape_SetDensity(sid, density, true)
+}
+
+add_body_shape :: proc(body: Body, position, size: Vec2) {
+  shape_def := b2.DefaultShapeDef()
+  shape_def.filter.categoryBits = u64(CollisionLayer.Obstacle)
+  polygon := b2.MakeOffsetBox(size.x / 2, size.y / 2, position, b2.MakeRot(0))
+  sid := b2.CreatePolygonShape(body.bid, shape_def, polygon)
 }
 
 get_position :: proc(body: Body) -> Vec2 {

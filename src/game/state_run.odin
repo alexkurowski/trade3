@@ -25,6 +25,7 @@ state_run_ready :: proc() {
 
 state_run :: proc() {
   time_step()
+  update_input()
 
   draw_location()
   update_bullets()
@@ -42,7 +43,21 @@ state_run :: proc() {
 
   update_spawners()
 
-  render.icon(.Circle, render.get_mouse_screen_position(), 10)
+  render.icon(.Circle, render.get_screen_position(g.player_aim), 10)
+}
+
+//
+//
+//
+
+update_input :: proc() {
+  reticle_screen_position := render.get_screen_position(g.player_aim)
+  reticle_screen_position += rl.GetMouseDelta()
+  g.player_aim = render.get_world_position(reticle_screen_position)
+  // TODO: Fix reticle going off-screen
+
+  // Lock mouse to center
+  rl.SetMousePosition(rl.GetScreenWidth() / 2, rl.GetScreenHeight() / 2)
 }
 
 //

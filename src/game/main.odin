@@ -27,6 +27,7 @@ GameMemory :: struct {
   events:         EventQueue,
   player_id:      ID,
   player:         ^Entity,
+  player_aim:     Vec3,
   enemy_count:    u32,
   debug:          bool,
 }
