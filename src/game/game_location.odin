@@ -3,12 +3,14 @@ package game
 
 import cont "containers"
 
-MAP_SIZE :: 32
-TILE_SIZE :: 1
-TILE_OFFSET :: -(MAP_SIZE * TILE_SIZE) / 2
+MAP_SIZE :: 24
+TILE_SIZE :: 2
+TILE_OFFSET :: -MAP_SIZE / 2
+DOOR_COUNT :: 2
 
 Location :: struct {
   tiles: [MAP_SIZE][MAP_SIZE]Tile,
+  doors: [DOOR_COUNT]Vec2,
 }
 
 Tile :: struct {
@@ -92,9 +94,15 @@ generate_location :: proc() {
     }
   }
 
+  // Place doors
+  // TODO: fix doors next to each other
   shuffle(cont.every(&potential_door_positions))
-  for i := 0; i < 2; i += 1 {
+  for i := 0; i < DOOR_COUNT; i += 1 {
     pos := cont.pop(&potential_door_positions)
+    g.location.doors[i] = Vec2 {
+      f32(pos.x + TILE_OFFSET) * TILE_SIZE,
+      f32(pos.y + TILE_OFFSET) * TILE_SIZE,
+    }
     if is_visible_wall(&tiles, pos.x, pos.y) {
       tiles[pos.x][pos.y].kind = .DoorWall
     } else {

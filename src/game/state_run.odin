@@ -40,7 +40,7 @@ state_run :: proc() {
 
   // process_events()
 
-  // update_spawners()
+  update_spawners()
 
   render.icon(.Circle, render.get_mouse_screen_position(), 10)
 }
@@ -55,18 +55,47 @@ draw_location :: proc() {
       tile := g.location.tiles[i][j]
       if tile.kind == .None do continue
 
-      x, y := f32(i + TILE_OFFSET), f32(j + TILE_OFFSET)
-      if tile.kind == .Floor {
-        render.shape(.Cube, to_vec3(Vec2{x, y}, -0.25), Vec3{1, 0.5, 1}, Color{50, 50, 60, 255})
-      } else if tile.kind == .Wall {
-        render.shape(.Cube, to_vec3(Vec2{x, y}, 1.25), Vec3{1, 3.5, 1}, Color{30, 30, 42, 255})
-      } else if tile.kind == .DoorWall {
-        render.shape(.Cube, to_vec3(Vec2{x, y}, 2.5), Vec3{1, 1, 1}, Color{30, 30, 42, 255})
-        render.shape(.Cube, to_vec3(Vec2{x, y}, -0.25), Vec3{1, 0.5, 1}, Color{50, 50, 60, 255})
-      } else if tile.kind == .DoorFloor {
-        render.shape(.Cube, to_vec3(Vec2{x, y}, -0.25), Vec3{1, 0.5, 1}, Color{50, 50, 60, 255})
-      }
+      x, y := f32(i + TILE_OFFSET) * TILE_SIZE, f32(j + TILE_OFFSET) * TILE_SIZE
+      draw_tile(tile, Vec2{x, y})
     }
+  }
+}
+
+draw_tile :: proc(tile: Tile, position: Vec2) {
+  if tile.kind == .Floor {
+    render.shape(
+      .Cube,
+      to_vec3(position, -0.25),
+      Vec3{TILE_SIZE, 0.5, TILE_SIZE},
+      Color{50, 50, 60, 255},
+    )
+  } else if tile.kind == .Wall {
+    render.shape(
+      .Cube,
+      to_vec3(position, 1.25),
+      Vec3{TILE_SIZE, 3.5, TILE_SIZE},
+      Color{30, 30, 42, 255},
+    )
+  } else if tile.kind == .DoorWall {
+    render.shape(
+      .Cube,
+      to_vec3(position, 2.5),
+      Vec3{TILE_SIZE, 1, TILE_SIZE},
+      Color{30, 30, 42, 255},
+    )
+    render.shape(
+      .Cube,
+      to_vec3(position, -0.25),
+      Vec3{TILE_SIZE, 0.5, TILE_SIZE},
+      Color{50, 50, 60, 255},
+    )
+  } else if tile.kind == .DoorFloor {
+    render.shape(
+      .Cube,
+      to_vec3(position, -0.25),
+      Vec3{TILE_SIZE, 0.5, TILE_SIZE},
+      Color{50, 50, 60, 255},
+    )
   }
 }
 
@@ -176,12 +205,12 @@ draw_collectable :: proc(c: ^Collectable) {
 //
 
 update_spawners :: proc() {
-  MAX_ENEMY_COUNT :: 50 // NOTE: this will depend on difficulty
+  MAX_ENEMY_COUNT :: 20 // NOTE: this will depend on difficulty
   if g.enemy_count > MAX_ENEMY_COUNT {
     return
   }
 
-  ENEMY_SPAWN_INTERVAL :: 0.1
+  ENEMY_SPAWN_INTERVAL :: 0.75
 
   @(static) enemy_spawn_timer: f32
   enemy_spawn_timer -= time.wdt

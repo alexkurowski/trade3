@@ -98,8 +98,8 @@ spawn_player :: proc() {
 }
 
 spawn_enemy :: proc() {
-  // e := spawn_at(at_random_angle(ENEMY_SPAWN_DISTANCE))
-  e := spawn_at(at_angle(randf(-PI / 4, PI / 4)) * ENEMY_SPAWN_DISTANCE)
+  position := g.location.doors[randi(0, 1)]
+  e := spawn_at(position)
   e.kind = {.Enemy}
   e.health = val(1)
   e.speed = val(20)
