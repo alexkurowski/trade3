@@ -1,6 +1,7 @@
 package game
 
 import cont "containers"
+import "core:fmt"
 import "physics"
 import "render"
 import "text"
@@ -18,6 +19,7 @@ ENEMY_SPAWN_DISTANCE :: AREA_LIMIT * 1.5
 
 GameMemory :: struct {
   state:          GameState,
+  location:       Location,
   entities:       cont.Array(Entity, ID, 2048),
   body_to_entity: map[physics.BID]ID,
   bullets:        cont.Pool(Bullet, 2048),
@@ -132,6 +134,18 @@ frame_end :: proc() {
   }
   if g.debug {
     rl.DrawFPS(0, 0)
+    rl.DrawText(
+      fmt.ctprintf(
+        "%v %v %v",
+        render.camera.offset.x,
+        render.camera.offset.y,
+        render.camera.offset.z,
+      ),
+      0,
+      30,
+      20,
+      rl.WHITE,
+    )
   }
 }
 

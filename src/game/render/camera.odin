@@ -1,4 +1,4 @@
-#+private
+// #+private
 package render
 
 import "core:math"
@@ -6,8 +6,8 @@ import "core:math/linalg"
 import rl "vendor:raylib"
 
 CAMERA_SPEED :: 4
-CAMERA_PITCH :: 90 - 35.264
-CAMERA_YAW :: 90
+CAMERA_PITCH :: 35.264
+CAMERA_YAW :: 45
 CAMERA_DISTANCE :: 7
 CAMERA_FOV :: 24
 
@@ -48,6 +48,8 @@ camera_step :: proc(dt: f32) {
   forward := linalg.normalize(camera.c3d.target - camera.c3d.position)
   right := linalg.normalize(linalg.cross(camera.c3d.up, forward))
   camera.up = linalg.normalize(linalg.cross(forward, right))
+
+  debug_controls()
 }
 
 calculate_camera_offset :: proc(pitch, yaw, distance: f32) -> Vec3 {
@@ -59,4 +61,21 @@ calculate_camera_offset :: proc(pitch, yaw, distance: f32) -> Vec3 {
     CAMERA_DISTANCE * math.cos(pitch_rad) * math.sin(yaw_rad),
   }
   return vec * distance
+}
+
+debug_controls :: proc() {
+  d := f32(3) * rl.GetFrameTime()
+
+  if rl.IsKeyDown(.H) {
+    camera.offset.x -= d
+  }
+  if rl.IsKeyDown(.L) {
+    camera.offset.x += d
+  }
+  if rl.IsKeyDown(.J) {
+    camera.offset.z += d
+  }
+  if rl.IsKeyDown(.K) {
+    camera.offset.z -= d
+  }
 }

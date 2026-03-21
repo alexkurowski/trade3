@@ -11,6 +11,9 @@ state_run_ready :: proc() {
   despawn_all_bullets()
   despawn_all_collectables()
   despawn_all_entities()
+
+  generate_location()
+
   spawn_player()
   for i := 0; i < 4; i += 1 {
     angle := f32(i) * PI / 2
@@ -23,7 +26,7 @@ state_run_ready :: proc() {
 state_run :: proc() {
   time_step()
 
-  draw_map()
+  draw_location()
   update_bullets()
   update_entities()
 
@@ -37,7 +40,7 @@ state_run :: proc() {
 
   // process_events()
 
-  update_spawners()
+  // update_spawners()
 
   render.icon(.Circle, render.get_mouse_screen_position(), 10)
 }
@@ -46,8 +49,25 @@ state_run :: proc() {
 //
 //
 
-draw_map :: proc() {
-  render.shape(.Plane, Vec3(0), Vec2(100), Color{20, 20, 30, 255})
+draw_location :: proc() {
+  for i := 0; i < MAP_SIZE; i += 1 {
+    for j := 0; j < MAP_SIZE; j += 1 {
+      tile := g.location.tiles[i][j]
+      if tile.kind == .None do continue
+
+      x, y := f32(i + TILE_OFFSET), f32(j + TILE_OFFSET)
+      if tile.kind == .Floor {
+        render.shape(.Cube, to_vec3(Vec2{x, y}, -0.25), Vec3{1, 0.5, 1}, Color{50, 50, 60, 255})
+      } else if tile.kind == .Wall {
+        render.shape(.Cube, to_vec3(Vec2{x, y}, 1.25), Vec3{1, 3.5, 1}, Color{30, 30, 42, 255})
+      } else if tile.kind == .DoorWall {
+        render.shape(.Cube, to_vec3(Vec2{x, y}, 2.5), Vec3{1, 1, 1}, Color{30, 30, 42, 255})
+        render.shape(.Cube, to_vec3(Vec2{x, y}, -0.25), Vec3{1, 0.5, 1}, Color{50, 50, 60, 255})
+      } else if tile.kind == .DoorFloor {
+        render.shape(.Cube, to_vec3(Vec2{x, y}, -0.25), Vec3{1, 0.5, 1}, Color{50, 50, 60, 255})
+      }
+    }
+  }
 }
 
 //

@@ -29,6 +29,13 @@ load_shaders :: proc() {
       "assets/shaders/gl330/lighting_vertex.glsl",
       "assets/shaders/gl330/lighting_fragment.glsl",
     )
+    lightPosition := [3]f32{0, 23, 0}
+    rl.SetShaderValue(
+      shaders.lighting,
+      rl.GetShaderLocation(shaders.lighting, "lightPosition"),
+      &lightPosition,
+      .VEC3,
+    )
     ambientColor := [4]f32{0.15, 0.4, 0.8, 1.0}
     rl.SetShaderValue(
       shaders.lighting,
@@ -75,4 +82,3 @@ unload_textures :: proc() {
   rl.UnloadTexture(textures.sprites)
   rl.UnloadTexture(textures.icons)
 }
-

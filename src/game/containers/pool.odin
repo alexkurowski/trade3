@@ -5,6 +5,7 @@ Pool :: struct($T: typeid, $S: i32) {
   count: i32,
 }
 
+// Add to the end of the pool and return a pointer to the new item, or nil if the pool is full
 append_pool :: proc(p: ^Pool($T, $S), value: T) -> ^T {
   if p.count < S {
     p.items[p.count] = value
@@ -14,6 +15,7 @@ append_pool :: proc(p: ^Pool($T, $S), value: T) -> ^T {
   return nil
 }
 
+// Add to the front of the pool, shifting all other items back. Does nothing if the pool is full
 prepend :: proc(p: ^Pool($T, $S), value: T) {
   if p.count < S {
     for i: i32 = p.count; i > 0; i -= 1 {
@@ -24,6 +26,7 @@ prepend :: proc(p: ^Pool($T, $S), value: T) {
   }
 }
 
+// Remove from the front of the pool, shifting all other items forward. Returns a default value if the pool is empty
 shift :: proc(p: ^Pool($T, $S)) -> T {
   if p.count == 0 do return T{}
 
@@ -35,6 +38,7 @@ shift :: proc(p: ^Pool($T, $S)) -> T {
   return result
 }
 
+// Remove from the end of the pool. Returns a default value if the pool is empty
 pop :: proc(p: ^Pool($T, $S)) -> T {
   if p.count == 0 do return T{}
 
@@ -42,7 +46,8 @@ pop :: proc(p: ^Pool($T, $S)) -> T {
   return p.items[p.count]
 }
 
-// Make sure to iterate backwards when calling this
+// Remove an item from the pool by index, replacing it with the last item
+// NOTE: Make sure to iterate backwards when calling this
 remove_pool :: proc(p: ^Pool($T, $S), idx: i32) {
   if idx < p.count - 1 {
     p.items[idx] = p.items[p.count - 1]
