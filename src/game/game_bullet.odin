@@ -78,10 +78,12 @@ bullet_check_collision_raycast :: proc(
 bullet_check_collision_radius :: proc(b: ^Bullet) -> bool {
   collision := physics.collision_radius(b.position, 0.5, get_bullet_collision_mask(b.from, b.low))
   if collision.hit {
-    id := g.body_to_entity[collision.bid]
-    e := cont.get(&g.entities, id)
-    if e != nil {
-      hurt(e, 1)
+    id, ok := g.body_to_entity[collision.bid]
+    if ok {
+      e := cont.get(&g.entities, id)
+      if e != nil {
+        hurt(e, 1)
+      }
     }
     return true
   }

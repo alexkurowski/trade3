@@ -84,34 +84,6 @@ despawn_all_entities :: proc() {
   cont.clear(&g.entities)
 }
 
-spawn_player :: proc() {
-  e := spawn_at(Vec3(0))
-  e.kind |= {.Player}
-  e.health = val(10)
-  e.speed = val(200)
-  weapon_set_ammo(&e.weapon, 30)
-  e.sprite = {
-    kind = .Character,
-    size = 1,
-  }
-  physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
-  g.player_id = e.id
-  g.player_aim = Vec3(0)
-}
-
-spawn_enemy :: proc() {
-  position := g.location.doors[randi(0, 1)]
-  e := spawn_at(position + rand_offset(0, TILE_SIZE / 2))
-  e.kind = {.Enemy}
-  e.health = val(1)
-  e.speed = val(10)
-  e.sprite = {
-    kind = .Character,
-    size = 1,
-  }
-  physics.set_body_shape(&e.body, .Circle, 0.75, mass = 2, category = .Enemy)
-}
-
 spawn_small_wall :: proc(position: Vec3, rotation: f32) {
   e := spawn_at(position, rotation)
   e.health = val(1000)

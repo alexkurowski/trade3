@@ -6,6 +6,24 @@ import "physics"
 import "render"
 import rl "vendor:raylib"
 
+spawn_player :: proc() {
+  e := spawn_at(Vec3(0))
+  e.kind |= {.Player}
+  e.health = val(10)
+  e.speed = val(200)
+  weapon_set_ammo(&e.weapon, 30)
+  e.weapon.reload.duration = 1.5
+  e.weapon.reload.qte_start = 0.7
+  e.weapon.reload.qte_duration = 0.1
+  e.sprite = {
+    kind = .Character,
+    size = 1,
+  }
+  physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
+  g.player_id = e.id
+  g.player_aim = Vec3(0)
+}
+
 player_controls :: proc(e: ^Entity) {
   player_movement(e)
   player_shooting(e)
@@ -49,9 +67,10 @@ player_shooting :: proc(e: ^Entity) {
     return
   }
 
-  can_shoot := player_shooting_cooldown <= 0 && e.weapon.ammo.current > 0
+  can_shoot :=
+    player_shooting_cooldown <= 0 && e.weapon.ammo.current > 0 && e.weapon.reload.current <= 0
 
-  if rl.IsMouseButtonDown(.LEFT) && can_shoot {
+  if can_shoot && rl.IsMouseButtonDown(.LEFT) {
     player_shooting_cooldown = 0.2
     e.weapon.ammo.current -= 1
     target := g.player_aim
@@ -62,8 +81,31 @@ player_shooting :: proc(e: ^Entity) {
 }
 
 player_reloading :: proc(e: ^Entity) {
-  if rl.IsKeyPressed(.E) {
-    weapon_reload(&e.weapon)
+  is_reloading := e.weapon.reload.current > 0
+  can_reload := e.weapon.ammo.current < e.weapon.ammo.max && !is_reloading
+
+  if is_reloading {
+    e.weapon.reload.current += time.wdt
+
+    is_reloading_done := weapon_is_reloading_done(&e.weapon)
+    is_in_qte_window := weapon_is_in_qte_window(&e.weapon)
+
+    if rl.IsKeyPressed(.E) {
+      if is_in_qte_window && e.weapon.reload.can_qte {
+        is_reloading_done = true
+      } else {
+        // TODO: qte failed
+      }
+      e.weapon.reload.can_qte = false
+    }
+
+    if is_reloading_done {
+      e.weapon.reload.current = 0
+      weapon_reload(&e.weapon)
+    }
+  } else if can_reload && rl.IsKeyPressed(.E) {
+    weapon_start_reload(&e.weapon)
+    e.weapon.reload.current += time.wdt
   }
 }
 

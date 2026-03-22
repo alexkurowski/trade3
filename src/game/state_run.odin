@@ -45,7 +45,13 @@ state_run :: proc() {
 
   update_spawners()
 
-  render.icon(.Circle, render.get_screen_position(g.player_aim), 10)
+  render.ui(.Circle, render.get_screen_position(g.player_aim), 10)
+  render.ui(
+    .ReloadCounter,
+    render.get_screen_position(g.player.transform.position + Vec3{0, 2, 0}),
+    g.player.weapon.reload.current / g.player.weapon.reload.duration,
+    Vec2{g.player.weapon.reload.qte_start, g.player.weapon.reload.qte_duration},
+  )
 
   draw_ui()
 }
@@ -141,7 +147,7 @@ update_entities :: proc() {
     }
     if .Enemy in e.kind {
       enemy_count += 1
-      ai_controls(&e)
+      enemy_controls(&e)
     }
 
     update_entity_transform(&e)

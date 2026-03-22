@@ -27,7 +27,7 @@ begin :: proc(delta_time: f32) {
   shapes_begin()
   models_begin()
   sprites_begin()
-  icons_begin()
+  ui_begin()
 }
 
 begin_3d :: proc() {
@@ -49,7 +49,7 @@ begin_2d :: proc() {
 }
 
 draw_2d :: proc() {
-  icons_end()
+  ui_end()
 }
 
 end_2d :: proc() {
