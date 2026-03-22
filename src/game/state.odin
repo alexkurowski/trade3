@@ -2,10 +2,9 @@
 package game
 
 GameState :: enum {
-  Menu,
-  Map,
-  Run,
-  Pause,
+  Menu, // Main menu screen
+  Upgrade, // Upgrade screen
+  Run, // Main game loop
   Quit,
 }
 
@@ -20,8 +19,23 @@ set_state :: proc(state: GameState, immediate: bool = false) {
   #partial switch state {
   case .Menu:
     state_menu_ready()
+  case .Upgrade:
+    state_upgrade_ready()
   case .Run:
     state_run_ready()
+  }
+}
+
+state_update :: proc() {
+  switch g.state {
+  case .Menu:
+    state_menu()
+  case .Upgrade:
+    state_upgrade()
+  case .Run:
+    state_run()
+  case .Quit:
+    break
   }
 }
 

@@ -91,18 +91,7 @@ update :: proc() {
   defer rl.EndDrawing()
 
   frame_begin()
-  switch g.state {
-  case .Menu:
-    state_menu()
-  case .Map:
-    state_map()
-  case .Run:
-    state_run()
-  case .Pause:
-    state_pause()
-  case .Quit:
-    break
-  }
+  state_update()
   state_transition()
   frame_end()
 

@@ -2,13 +2,12 @@
 package game
 
 import "ui"
-import rl "vendor:raylib"
 
-state_menu_ready :: proc() {
-  rl.ShowCursor()
+state_upgrade_ready :: proc() {
+
 }
 
-state_menu :: proc() {
+state_upgrade :: proc() {
   btn :: proc(label: string) -> bool {
     hover, click: bool
 
@@ -26,8 +25,8 @@ state_menu :: proc() {
   }
 
   if UI()({layout = {layoutDirection = .TopToBottom, padding = {8, 8, 8, 8}, childGap = 8}}) {
-    if btn("Start Game") {
-      set_state(.Upgrade)
+    if btn("Begin round") {
+      set_state(.Run)
     }
     if btn("Exit") {
       set_state(.Quit)

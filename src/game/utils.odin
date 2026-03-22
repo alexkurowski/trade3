@@ -218,7 +218,7 @@ rand_angle :: proc() -> f32 {
 at_angle :: proc(angle: f32) -> Vec2 {
   return Vec2{math.cos(angle), math.sin(angle)}
 }
-at_random_angle :: proc(distance: f32) -> Vec2 {
+at_random_angle :: proc(distance: f32 = 1) -> Vec2 {
   return at_angle(rand_angle()) * distance
 }
 rand_vec2 :: proc(distance: f32) -> Vec2 {

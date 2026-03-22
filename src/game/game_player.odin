@@ -9,6 +9,8 @@ PLAYER_AIM_HEIGHT :: 0.5
 
 spawn_player :: proc() {
   e := spawn_at(Vec3(0))
+  g.player.id = e.id
+
   e.kind |= {.Player}
   e.health = val(10)
   e.speed = val(200)
@@ -22,8 +24,10 @@ spawn_player :: proc() {
     size = 1,
   }
   physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
-  g.player.id = e.id
-  g.player.aim = Vec3(0)
+
+  dir := at_random_angle()
+  g.player.aim = to_vec3(dir * 2)
+  physics.push(e.body, dir * 10)
 }
 
 spawn_player_base :: proc() {
