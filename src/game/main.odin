@@ -135,18 +135,6 @@ frame_end :: proc() {
   }
   if g.debug {
     rl.DrawFPS(0, 0)
-    rl.DrawText(
-      fmt.ctprintf(
-        "%v %v %v",
-        render.camera.offset.x,
-        render.camera.offset.y,
-        render.camera.offset.z,
-      ),
-      0,
-      30,
-      20,
-      rl.WHITE,
-    )
   }
 }
 

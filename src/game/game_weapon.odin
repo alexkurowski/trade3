@@ -26,3 +26,12 @@ WeaponKind :: enum {
   Projectile,
 }
 
+weapon_set_ammo :: proc(w: ^Weapon, value: u16) {
+  w.ammo.max = value
+  w.ammo.current = w.ammo.max
+}
+
+weapon_reload :: proc(w: ^Weapon) {
+  w.ammo.current = w.ammo.max
+}
+

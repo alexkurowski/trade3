@@ -22,11 +22,12 @@ BulletOwner :: enum {
 }
 
 spawn_bullet :: proc(from: BulletOwner, position, velocity: Vec3, low: bool = false) {
+  height := low ? Vec3{0, 0.2, 0} : Vec3{0, 0.6, 0}
   cont.append(
     &g.bullets,
     Bullet {
       from = from,
-      position = position + normalize(velocity) / 2,
+      position = position + height + normalize(velocity) / 4,
       velocity = velocity,
       low = low,
     },

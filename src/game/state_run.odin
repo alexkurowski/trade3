@@ -2,8 +2,10 @@
 package game
 
 import cont "containers"
+import "core:fmt"
 import "physics"
 import "render"
+import "ui"
 import rl "vendor:raylib"
 
 state_run_ready :: proc() {
@@ -44,6 +46,8 @@ state_run :: proc() {
   update_spawners()
 
   render.icon(.Circle, render.get_screen_position(g.player_aim), 10)
+
+  draw_ui()
 }
 
 //
@@ -233,6 +237,21 @@ update_spawners :: proc() {
   if enemy_spawn_timer <= 0 {
     spawn_enemy()
     enemy_spawn_timer = ENEMY_SPAWN_INTERVAL
+  }
+}
+
+//
+//
+//
+
+draw_ui :: proc() {
+  player := g.player
+  if player == nil do return
+
+  if UI()({}) {
+    if UI()({layout = {padding = {8, 8, 42, 8}}}) {
+      ui.text(fmt.tprintf("Ammo: %v/%v", player.weapon.ammo.current, player.weapon.ammo.max))
+    }
   }
 }
 

@@ -89,6 +89,7 @@ spawn_player :: proc() {
   e.kind |= {.Player}
   e.health = val(10)
   e.speed = val(200)
+  weapon_set_ammo(&e.weapon, 30)
   e.sprite = {
     kind = .Character,
     size = 1,

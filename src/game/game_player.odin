@@ -9,6 +9,7 @@ import rl "vendor:raylib"
 player_controls :: proc(e: ^Entity) {
   player_movement(e)
   player_shooting(e)
+  player_reloading(e)
 }
 
 player_movement :: proc(e: ^Entity) {
@@ -48,12 +49,21 @@ player_shooting :: proc(e: ^Entity) {
     return
   }
 
-  if rl.IsMouseButtonDown(.LEFT) {
+  can_shoot := player_shooting_cooldown <= 0 && e.weapon.ammo.current > 0
+
+  if rl.IsMouseButtonDown(.LEFT) && can_shoot {
     player_shooting_cooldown = 0.2
+    e.weapon.ammo.current -= 1
     target := g.player_aim
     position := e.transform.position
     speed := normalize(target - position) * PLAYER_BULLET_SPEED
     spawn_bullet(.Player, position, speed, e.crouch)
+  }
+}
+
+player_reloading :: proc(e: ^Entity) {
+  if rl.IsKeyPressed(.E) {
+    weapon_reload(&e.weapon)
   }
 }
 
