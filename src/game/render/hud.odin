@@ -64,46 +64,35 @@ hud_end :: proc() {
   }
 }
 
-add_hud_vec2 :: proc(kind: HudKind, position: Vec2, color: rl.Color = rl.WHITE) {
+add_hud :: proc(kind: HudKind, position: Vec2, color: rl.Color = rl.WHITE) {
   push(&elements_queue, Hud{kind, position, 1, 0, color})
 }
-add_hud_vec2_size :: proc(
-  kind: HudKind,
-  position: Vec2,
-  size_a: f32 = 1,
-  color: rl.Color = rl.WHITE,
-) {
+add_hud_size1 :: proc(kind: HudKind, position: Vec2, size_a: f32 = 1, color: rl.Color = rl.WHITE) {
   push(&elements_queue, Hud{kind, position, size_a, 0, color})
 }
-add_hud_vec2_size2 :: proc(
+add_hud_size2 :: proc(
   kind: HudKind,
   position: Vec2,
   size_a: f32 = 1,
-  size_b: Vec2 = 0,
+  size_b: f32 = 1,
   color: rl.Color = rl.WHITE,
 ) {
   push(&elements_queue, Hud{kind, position, size_a, size_b, color})
 }
-add_hud_vec3 :: proc(kind: HudKind, position: Vec3, color: rl.Color = rl.WHITE) {
-  if is_on_screen(position) {
-    push(&elements_queue, Hud{kind, get_screen_position(position), 1, 0, color})
-  }
-}
-add_hud_vec3_size :: proc(
+add_hud_size3 :: proc(
   kind: HudKind,
-  position: Vec3,
-  size_a: f32 = 1,
+  position: Vec2,
+  size_a: f32,
+  size_b_x: f32,
+  size_b_y: f32,
   color: rl.Color = rl.WHITE,
 ) {
-  if is_on_screen(position) {
-    push(&elements_queue, Hud{kind, get_screen_position(position), size_a, 0, color})
-  }
+  push(&elements_queue, Hud{kind, position, size_a, Vec2{size_b_x, size_b_y}, color})
 }
 hud :: proc {
-  add_hud_vec2,
-  add_hud_vec2_size,
-  add_hud_vec2_size2,
-  add_hud_vec3,
-  add_hud_vec3_size,
+  add_hud,
+  add_hud_size1,
+  add_hud_size2,
+  add_hud_size3,
 }
 

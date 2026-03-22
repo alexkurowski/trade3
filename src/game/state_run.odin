@@ -50,7 +50,8 @@ state_run :: proc() {
     .ReloadCounter,
     render.get_screen_position(g.player.transform.position + Vec3{0, 2, 0}),
     g.player.weapon.reload.current / g.player.weapon.reload.duration,
-    Vec2{g.player.weapon.reload.qte_start, g.player.weapon.reload.qte_duration},
+    g.player.weapon.reload.qte_start,
+    g.player.weapon.reload.qte_duration,
   )
 
   draw_ui()
