@@ -138,7 +138,12 @@ update_entities :: proc() {
     if is_none(e.id) do continue
 
     if e.health.current <= 0 {
-      spawn_collectable_at(.None, e.transform.position)
+      if .Player in e.kind {
+        set_state(.Upgrade)
+      }
+      if .Enemy in e.kind {
+        spawn_collectable_at(.None, e.transform.position)
+      }
       despawn(e.id)
       continue
     }

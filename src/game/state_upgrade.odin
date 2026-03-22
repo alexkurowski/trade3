@@ -2,9 +2,10 @@
 package game
 
 import "ui"
+import rl "vendor:raylib"
 
 state_upgrade_ready :: proc() {
-
+  rl.ShowCursor()
 }
 
 state_upgrade :: proc() {

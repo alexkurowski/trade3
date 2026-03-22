@@ -13,7 +13,7 @@ spawn_player :: proc() {
   g.player.id = e.id
 
   e.kind |= {.Player}
-  e.health = val(10)
+  e.health = val(1)
   e.speed = val(200)
   weapon_set_ammo(&e.weapon, 30)
   e.weapon.fire.interval = 0.2
