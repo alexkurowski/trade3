@@ -45,8 +45,8 @@ state_run :: proc() {
 
   update_spawners()
 
-  render.ui(.Circle, render.get_screen_position(g.player_aim), 10)
-  render.ui(
+  render.hud(.Circle, render.get_screen_position(g.player_aim), 10)
+  render.hud(
     .ReloadCounter,
     render.get_screen_position(g.player.transform.position + Vec3{0, 2, 0}),
     g.player.weapon.reload.current / g.player.weapon.reload.duration,

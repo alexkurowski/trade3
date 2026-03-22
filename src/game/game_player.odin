@@ -13,8 +13,8 @@ spawn_player :: proc() {
   e.speed = val(200)
   weapon_set_ammo(&e.weapon, 30)
   e.weapon.reload.duration = 1.5
-  e.weapon.reload.qte_start = 0.7
-  e.weapon.reload.qte_duration = 0.1
+  e.weapon.reload.qte_start = 0.66
+  e.weapon.reload.qte_duration = 0.075
   e.sprite = {
     kind = .Character,
     size = 1,
