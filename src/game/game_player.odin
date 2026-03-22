@@ -1,7 +1,6 @@
 #+private
 package game
 
-import "core:math"
 import "physics"
 import "render"
 import rl "vendor:raylib"

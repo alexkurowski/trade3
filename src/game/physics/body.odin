@@ -93,7 +93,7 @@ add_body_shape :: proc(body: Body, position, size: Vec2) {
   shape_def := b2.DefaultShapeDef()
   shape_def.filter.categoryBits = u64(CollisionLayer.Obstacle)
   polygon := b2.MakeOffsetBox(size.x / 2, size.y / 2, position, b2.MakeRot(0))
-  sid := b2.CreatePolygonShape(body.bid, shape_def, polygon)
+  _ = b2.CreatePolygonShape(body.bid, shape_def, polygon)
 }
 
 get_position :: proc(body: Body) -> Vec2 {

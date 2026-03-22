@@ -1,7 +1,5 @@
 package physics
 
-import "base:runtime"
-import "core:compress/shoco"
 import b2 "vendor:box2d"
 
 CollisionLayer :: enum u64 {

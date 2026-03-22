@@ -5,6 +5,7 @@ import cont "containers"
 import "core:fmt"
 import "physics"
 import "render"
+import "text"
 import "ui"
 import rl "vendor:raylib"
 
@@ -165,7 +166,8 @@ update_entity_transform :: proc(e: ^Entity) {
 draw_entity :: proc(e: ^Entity) {
   if e.sprite.kind != .None {
     if is_status(e, .Invincible) {
-      if int(e.status[.Invincible].current * 11) % 2 == 0 {
+      if int(e.status[.Invincible].current * 7) % 2 == 0 {
+        // Draw blinking effect when invincible
         return
       }
     }
@@ -274,6 +276,11 @@ draw_player_hud :: proc() {
   if UI()({}) {
     if UI()({layout = {padding = {8, 8, 42, 8}}}) {
       ui.text(fmt.tprintf("Ammo: %v/%v", player.weapon.ammo.current, player.weapon.ammo.max))
+    }
+  }
+  if UI()({}) {
+    if UI()({layout = {padding = {8, 8, 42, 8}}}) {
+      ui.text(text.format_number(1))
     }
   }
 }

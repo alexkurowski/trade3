@@ -4,13 +4,11 @@ import "core:fmt"
 import "core:math"
 import "core:strings"
 
-
 @(private)
 b: strings.Builder
 
 @(private)
 not := map[string]bool{}
-
 
 load :: proc() {
   b = strings.builder_make(0xFF)
@@ -68,7 +66,7 @@ make_ship_callsign :: proc() -> string {
   return strings.clone_from_bytes(id[:])
 }
 
-format_number :: proc(amount: $T) -> string where IS_NUMERIC(T) {
+format_number :: proc(amount: f32) -> string {
   if amount >= 1_000_000_000 {
     return fmt.tprintf("%.2fB", amount / 1_000_000_000)
   } else if amount >= 1_000_000 {
@@ -80,7 +78,7 @@ format_number :: proc(amount: $T) -> string where IS_NUMERIC(T) {
   }
 }
 
-format_money :: proc(amount: $T) -> string where IS_NUMERIC(T) {
+format_money :: proc(amount: f32) -> string {
   if amount >= 1_000_000_000 {
     return fmt.tprintf("$%.2fB", amount / 1_000_000_000)
   } else if amount >= 1_000_000 {

@@ -1,8 +1,6 @@
 package render
 
-import "core:math/linalg"
 import rl "vendor:raylib"
-import gl "vendor:raylib/rlgl"
 
 Shape :: struct {
   kind:       ShapeKind,

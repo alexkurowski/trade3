@@ -1,7 +1,6 @@
 package game
 
 import cont "containers"
-import "core:fmt"
 import "physics"
 import "render"
 import "text"
