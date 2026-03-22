@@ -18,29 +18,41 @@ spawn_enemy :: proc() {
 }
 
 enemy_controls :: proc(e: ^Entity) {
-  if g.player == nil do return
+  if g.player.e == nil do return
 
-  dir := normalize(g.player.transform.position - e.transform.position)
-  distance := length(g.player.transform.position - e.transform.position)
+  enemy_move(e)
+  enemy_attack(e)
+}
+
+enemy_move :: proc(e: ^Entity) {
+  player := g.player.e
+  if player == nil do return
+
+  dir := normalize(player.transform.position - e.transform.position)
+  distance := length(player.transform.position - e.transform.position)
   physics.push(e.body, to_vec2(dir) * e.speed.current)
-
-  if distance < 2 {
-    enemy_attack(e)
-  }
 }
 
 enemy_attack :: proc(e: ^Entity) {
+  player := g.player.e
+  if player == nil do return
+
   if e.weapon.fire.current > 0 {
     e.weapon.fire.current -= time.wdt
     return
   }
 
-  if !is_status(g.player, .Invincible) {
-    g.player.health.current -= 1
-    set_status(g.player, .Invincible, 2)
-    dir := normalize(e.transform.position - g.player.transform.position)
+  distance_to_player := length(player.transform.position - e.transform.position)
+  if distance_to_player > 2 {
+    return
+  }
+
+  if !is_status(player, .Invincible) {
+    player.health.current -= 1
+    set_status(player, .Invincible, 2)
+    dir := normalize(e.transform.position - player.transform.position)
     physics.kick(e.body, to_vec2(dir) * 20)
-    physics.kick(g.player.body, to_vec2(-dir) * 100)
+    physics.kick(player.body, to_vec2(-dir) * 100)
   }
 
   e.weapon.fire.current = e.weapon.fire.interval

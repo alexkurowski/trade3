@@ -5,6 +5,8 @@ import "physics"
 import "render"
 import rl "vendor:raylib"
 
+PLAYER_AIM_HEIGHT :: 0.5
+
 spawn_player :: proc() {
   e := spawn_at(Vec3(0))
   e.kind |= {.Player}
@@ -20,8 +22,18 @@ spawn_player :: proc() {
     size = 1,
   }
   physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
-  g.player_id = e.id
-  g.player_aim = Vec3(0)
+  g.player.id = e.id
+  g.player.aim = Vec3(0)
+}
+
+spawn_player_base :: proc() {
+  e := spawn_at(Vec3(0))
+  e.kind |= {.Base}
+  e.health = val(100)
+  e.model = {
+    kind = .Test,
+  }
+  physics.set_body_shape(&e.body, .Circle, 2, mass = 99999, category = .Obstacle)
 }
 
 player_controls :: proc(e: ^Entity) {
@@ -72,7 +84,7 @@ player_shooting :: proc(e: ^Entity) {
   if can_shoot && rl.IsMouseButtonDown(.LEFT) {
     e.weapon.fire.current = e.weapon.fire.interval
     e.weapon.ammo.current -= 1
-    target := g.player_aim
+    target := g.player.aim
     position := e.transform.position
     speed := normalize(target - position) * PLAYER_BULLET_SPEED
     spawn_bullet(.Player, position, speed, e.crouch)
@@ -111,7 +123,7 @@ player_reloading :: proc(e: ^Entity) {
 player_camera_follow :: proc(e: ^Entity) {
   is_focus := !rl.IsMouseButtonDown(.RIGHT)
   if is_focus {
-    camera_target := e.transform.position + g.player_aim
+    camera_target := e.transform.position + g.player.aim
     render.move_camera_to(camera_target * 0.5)
   } else {
     camera_target := e.transform.position

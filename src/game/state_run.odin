@@ -10,17 +10,27 @@ import "ui"
 import rl "vendor:raylib"
 
 state_run_ready :: proc() {
-  clear_all_events()
-  despawn_all_bullets()
-  despawn_all_collectables()
-  despawn_all_entities()
+  {
+    // Unload everything
+    clear_all_events()
+    despawn_all_bullets()
+    despawn_all_collectables()
+    despawn_all_entities()
 
-  generate_location()
+    g.player.inventory = Inventory{}
+  }
 
-  spawn_player()
-  for i := 0; i < 4; i += 1 {
-    angle := f32(i) * PI / 2
-    spawn_small_wall(to_vec3(at_angle(angle) * 4), angle + PI / 2)
+  {
+    // Generate fresh state
+    generate_location()
+
+    spawn_player()
+    spawn_player_base()
+
+    for i := 0; i < 4; i += 1 {
+      angle := f32(i) * PI / 2
+      spawn_small_wall(to_vec3(at_angle(angle) * 4), angle + PI / 2)
+    }
   }
 
   rl.HideCursor()
@@ -54,9 +64,9 @@ state_run :: proc() {
 //
 
 update_input :: proc() {
-  reticle_screen_position := render.get_screen_position(g.player_aim)
+  reticle_screen_position := render.get_screen_position(g.player.aim)
   reticle_screen_position += rl.GetMouseDelta()
-  g.player_aim = render.get_world_position(reticle_screen_position)
+  g.player.aim = render.get_world_position(reticle_screen_position)
   // TODO: Fix reticle going off-screen
 
   // Lock mouse to center
@@ -122,7 +132,7 @@ draw_tile :: proc(tile: Tile, position: Vec2) {
 //
 
 update_entities :: proc() {
-  g.player = cont.get(&g.entities, g.player_id)
+  g.player.e = cont.get(&g.entities, g.player.id)
   enemy_count := u32(0)
 
   #reverse for &e in g.entities.items {
@@ -144,12 +154,31 @@ update_entities :: proc() {
       enemy_count += 1
       enemy_controls(&e)
     }
+    if .Base in e.kind {
+      base_update(&e)
+    }
 
     update_entity_transform(&e)
     draw_entity(&e)
   }
 
   g.enemy_count = enemy_count
+}
+
+base_update :: proc(e: ^Entity) {
+  player := g.player.e
+  if player == nil do return
+
+  BASE_RESOURCE_TRANSFER_INTERVAL :: 0.33
+  @(static) base_resource_transfer_timer: f32
+  base_resource_transfer_timer -= time.wdt
+
+  distance_to_player := length(e.transform.position - g.player.e.transform.position)
+  should_transfer := distance_to_player < 3
+  if should_transfer && base_resource_transfer_timer <= 0 {
+    base_resource_transfer_timer = BASE_RESOURCE_TRANSFER_INTERVAL
+    // TODO: transfer resources from player to base (or directly to g.upgrades)
+  }
 }
 
 update_entity_statuses :: proc(e: ^Entity) {
@@ -211,7 +240,7 @@ update_collectables :: proc() {
   #reverse for &c, idx in cont.every(&g.collectables) {
     c.position += c.velocity * time.wdt
     distance_to_base := length(c.position)
-    distance_to_player := length(c.position - g.player.transform.position)
+    distance_to_player := length(c.position - g.player.e.transform.position)
     if distance_to_player < 1 {
       // Pickup
       despawn_collectable(i32(idx))
@@ -256,21 +285,21 @@ update_spawners :: proc() {
 //
 
 draw_player_hud :: proc() {
-  player := g.player
+  player := g.player.e
   if player == nil do return
 
-  render.hud(.Circle, render.get_screen_position(g.player_aim), 10)
+  render.hud(.Circle, render.get_screen_position(g.player.aim + Vec3{0, PLAYER_AIM_HEIGHT, 0}), 10)
   render.hud(
     .ReloadCounter,
-    render.get_screen_position(g.player.transform.position + Vec3{0, 2, 0}),
-    g.player.weapon.reload.current / g.player.weapon.reload.duration,
-    g.player.weapon.reload.qte_start,
-    g.player.weapon.reload.qte_duration,
+    render.get_screen_position(player.transform.position + Vec3{0, 2, 0}),
+    player.weapon.reload.current / player.weapon.reload.duration,
+    player.weapon.reload.qte_start,
+    player.weapon.reload.qte_duration,
   )
   render.hud(
     .HealthBar,
-    render.get_screen_position(g.player.transform.position + Vec3{0, -0.5, 0}),
-    g.player.health.current / g.player.health.max,
+    render.get_screen_position(player.transform.position + Vec3{0, -0.5, 0}),
+    player.health.current / player.health.max,
   )
 
   if UI()({}) {

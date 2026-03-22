@@ -24,10 +24,14 @@ GameMemory :: struct {
   bullets:        cont.Pool(Bullet, 2048),
   collectables:   cont.Pool(Collectable, 2048),
   events:         EventQueue,
-  player_id:      ID,
-  player:         ^Entity,
-  player_aim:     Vec3,
+  player:         struct {
+    id:        ID,
+    e:         ^Entity,
+    aim:       Vec3,
+    inventory: Inventory,
+  },
   enemy_count:    u32,
+  upgrades:       Upgrades,
   debug:          bool,
 }
 

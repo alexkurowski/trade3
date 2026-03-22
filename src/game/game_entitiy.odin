@@ -35,8 +35,11 @@ Entity :: struct {
 EntityKind :: enum {
   None,
   Player,
+  Base,
   Enemy,
+  // TODO: more enemy kinds
   WallSmall,
+  // TODO: more obstacle kinds
 }
 
 EntityValue :: struct {
