@@ -35,12 +35,14 @@ enemy_attack :: proc(e: ^Entity) {
     return
   }
 
-  g.player.health.current -= 1
-  e.weapon.fire.current = e.weapon.fire.interval
+  if !is_status(g.player, .Invincible) {
+    g.player.health.current -= 1
+    set_status(g.player, .Invincible, 2)
+    dir := normalize(e.transform.position - g.player.transform.position)
+    physics.kick(e.body, to_vec2(dir) * 20)
+    physics.kick(g.player.body, to_vec2(-dir) * 100)
+  }
 
-  p("hit")
-  dir := normalize(e.transform.position - g.player.transform.position)
-  physics.kick(e.body, to_vec2(dir) * 100)
-  physics.kick(g.player.body, to_vec2(-dir) * 100)
+  e.weapon.fire.current = e.weapon.fire.interval
 }
 

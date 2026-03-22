@@ -29,6 +29,7 @@ Entity :: struct {
   speed:     EntityValue,
   crouch:    bool,
   weapon:    Weapon,
+  status:    [StatusKind]EntityValue,
 }
 
 EntityKind :: enum {
@@ -41,6 +42,11 @@ EntityKind :: enum {
 EntityValue :: struct {
   current: f32,
   max:     f32,
+}
+
+StatusKind :: enum {
+  None,
+  Invincible,
 }
 
 spawn :: proc(entity: Entity) -> ^Entity {
@@ -122,5 +128,14 @@ hurt :: proc(e: ^Entity, value: f32) {
     //   send_event(.Despawn, Event_Entity{id = e.id})
     // }
   }
+}
+
+set_status :: proc(e: ^Entity, status: StatusKind, duration: f32) {
+  e.status[status].current = duration
+  e.status[status].max = duration
+}
+
+is_status :: proc(e: ^Entity, status: StatusKind) -> bool {
+  return e.status[status].current > 0
 }
 

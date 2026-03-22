@@ -133,6 +133,8 @@ update_entities :: proc() {
       continue
     }
 
+    update_entity_statuses(&e)
+
     if .Player in e.kind {
       player_controls(&e)
       player_camera_follow(&e)
@@ -147,6 +149,10 @@ update_entities :: proc() {
   }
 
   g.enemy_count = enemy_count
+}
+
+update_entity_statuses :: proc(e: ^Entity) {
+  e.status[.Invincible].current -= time.wdt
 }
 
 update_entity_transform :: proc(e: ^Entity) {
