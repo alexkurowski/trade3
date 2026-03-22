@@ -26,7 +26,6 @@ GameMemory :: struct {
   events:         EventQueue,
   player:         struct {
     id:        ID,
-    e:         ^Entity,
     aim:       Vec3,
     inventory: Inventory,
   },

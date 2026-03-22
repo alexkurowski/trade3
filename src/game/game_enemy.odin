@@ -18,14 +18,12 @@ spawn_enemy :: proc() {
 }
 
 enemy_controls :: proc(e: ^Entity) {
-  if g.player.e == nil do return
-
   enemy_move(e)
   enemy_attack(e)
 }
 
 enemy_move :: proc(e: ^Entity) {
-  player := g.player.e
+  player := get_player()
   if player == nil do return
 
   dir := normalize(player.transform.position - e.transform.position)
@@ -34,7 +32,7 @@ enemy_move :: proc(e: ^Entity) {
 }
 
 enemy_attack :: proc(e: ^Entity) {
-  player := g.player.e
+  player := get_player()
   if player == nil do return
 
   if e.weapon.fire.current > 0 {

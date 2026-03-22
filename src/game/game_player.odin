@@ -1,6 +1,7 @@
 #+private
 package game
 
+import cont "containers"
 import "physics"
 import "render"
 import rl "vendor:raylib"
@@ -38,6 +39,10 @@ spawn_player_base :: proc() {
     kind = .Test,
   }
   physics.set_body_shape(&e.body, .Circle, 2, mass = 99999, category = .Obstacle)
+}
+
+get_player :: proc() -> ^Entity {
+  return cont.get(&g.entities, g.player.id)
 }
 
 player_controls :: proc(e: ^Entity) {

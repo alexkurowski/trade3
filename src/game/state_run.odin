@@ -132,7 +132,6 @@ draw_tile :: proc(tile: Tile, position: Vec2) {
 //
 
 update_entities :: proc() {
-  g.player.e = cont.get(&g.entities, g.player.id)
   enemy_count := u32(0)
 
   #reverse for &e in g.entities.items {
@@ -166,14 +165,14 @@ update_entities :: proc() {
 }
 
 base_update :: proc(e: ^Entity) {
-  player := g.player.e
+  player := get_player()
   if player == nil do return
 
   BASE_RESOURCE_TRANSFER_INTERVAL :: 0.33
   @(static) base_resource_transfer_timer: f32
   base_resource_transfer_timer -= time.wdt
 
-  distance_to_player := length(e.transform.position - g.player.e.transform.position)
+  distance_to_player := length(e.transform.position - player.transform.position)
   should_transfer := distance_to_player < 3
   if should_transfer && base_resource_transfer_timer <= 0 {
     base_resource_transfer_timer = BASE_RESOURCE_TRANSFER_INTERVAL
@@ -237,10 +236,13 @@ draw_bullet :: proc(b: ^Bullet) {
 update_collectables :: proc() {
   SPEED :: 10
 
+  player := get_player()
+  if player == nil do return
+
   #reverse for &c, idx in cont.every(&g.collectables) {
     c.position += c.velocity * time.wdt
     distance_to_base := length(c.position)
-    distance_to_player := length(c.position - g.player.e.transform.position)
+    distance_to_player := length(c.position - player.transform.position)
     if distance_to_player < 1 {
       // Pickup
       despawn_collectable(i32(idx))
@@ -285,7 +287,7 @@ update_spawners :: proc() {
 //
 
 draw_player_hud :: proc() {
-  player := g.player.e
+  player := get_player()
   if player == nil do return
 
   render.hud(.Circle, render.get_screen_position(g.player.aim + Vec3{0, PLAYER_AIM_HEIGHT, 0}), 10)
