@@ -12,6 +12,7 @@ Hud :: struct {
 
 HudKind :: enum {
   ReloadCounter,
+  HealthBar,
   DebugFps,
   Circle,
 }
@@ -24,11 +25,7 @@ hud_begin :: proc() {
 }
 
 hud_end :: proc() {
-  texture: rl.Texture = textures.icons
-
   for el in every(&elements_queue) {
-    source := Rect{0, 0, 32, 32}
-    size_a := Vec2{16, 16} * el.size_a
     switch el.kind {
     case .ReloadCounter:
       if el.size_a.x > 0 {
@@ -56,6 +53,22 @@ hud_end :: proc() {
           rl.WHITE,
         )
       }
+    case .HealthBar:
+      width :: 56
+      height :: 8
+      padding :: 2
+      x := i32(el.position.x - width / 2)
+      y := i32(el.position.y)
+      // Outline
+      rl.DrawRectangleLines(x, y, width, height, rl.RED)
+      // Progress bar
+      rl.DrawRectangle(
+        x + padding,
+        y + padding,
+        i32((width - padding * 2) * el.size_a.x),
+        height - padding * 2,
+        rl.RED,
+      )
     case .DebugFps:
       rl.DrawFPS(i32(el.position.x), i32(el.position.y))
     case .Circle:

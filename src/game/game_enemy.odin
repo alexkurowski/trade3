@@ -9,6 +9,7 @@ spawn_enemy :: proc() {
   e.kind = {.Enemy}
   e.health = val(1)
   e.speed = val(10)
+  e.weapon.fire.interval = 0.75
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -20,6 +21,26 @@ enemy_controls :: proc(e: ^Entity) {
   if g.player == nil do return
 
   dir := normalize(g.player.transform.position - e.transform.position)
+  distance := length(g.player.transform.position - e.transform.position)
   physics.push(e.body, to_vec2(dir) * e.speed.current)
+
+  if distance < 2 {
+    enemy_attack(e)
+  }
+}
+
+enemy_attack :: proc(e: ^Entity) {
+  if e.weapon.fire.current > 0 {
+    e.weapon.fire.current -= time.wdt
+    return
+  }
+
+  g.player.health.current -= 1
+  e.weapon.fire.current = e.weapon.fire.interval
+
+  p("hit")
+  dir := normalize(e.transform.position - g.player.transform.position)
+  physics.kick(e.body, to_vec2(dir) * 100)
+  physics.kick(g.player.body, to_vec2(-dir) * 100)
 }
 

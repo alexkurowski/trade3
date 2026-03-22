@@ -121,7 +121,8 @@ push :: proc(body: Body, force: Vec2) {
   b2.Body_ApplyForceToCenter(body.bid, force, true)
 }
 
-move :: proc(body: Body, direction: Vec2) {
+kick :: proc(body: Body, direction: Vec2) {
+  b2.Body_SetLinearVelocity(body.bid, 0)
   b2.Body_ApplyLinearImpulseToCenter(body.bid, direction, true)
 }
 

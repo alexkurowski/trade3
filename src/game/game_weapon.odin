@@ -7,7 +7,10 @@ Weapon :: struct {
     current: u16,
     max:     u16,
   },
-  fire:   Cooldown,
+  fire:   struct {
+    current:  f32,
+    interval: f32,
+  },
   reload: struct {
     current:      f32,
     duration:     f32,

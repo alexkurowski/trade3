@@ -12,6 +12,7 @@ spawn_player :: proc() {
   e.health = val(10)
   e.speed = val(200)
   weapon_set_ammo(&e.weapon, 30)
+  e.weapon.fire.interval = 0.2
   e.weapon.reload.duration = 1.5
   e.weapon.reload.qte_start = 0.66
   e.weapon.reload.qte_duration = 0.075
@@ -61,17 +62,16 @@ player_movement :: proc(e: ^Entity) {
 player_shooting :: proc(e: ^Entity) {
   PLAYER_BULLET_SPEED :: 40
 
-  @(static) player_shooting_cooldown: f32
-  if player_shooting_cooldown > 0 {
-    player_shooting_cooldown -= time.wdt
+  if e.weapon.fire.current > 0 {
+    e.weapon.fire.current -= time.wdt
     return
   }
 
   can_shoot :=
-    player_shooting_cooldown <= 0 && e.weapon.ammo.current > 0 && e.weapon.reload.current <= 0
+    e.weapon.fire.current <= 0 && e.weapon.ammo.current > 0 && e.weapon.reload.current <= 0
 
   if can_shoot && rl.IsMouseButtonDown(.LEFT) {
-    player_shooting_cooldown = 0.2
+    e.weapon.fire.current = e.weapon.fire.interval
     e.weapon.ammo.current -= 1
     target := g.player_aim
     position := e.transform.position

@@ -45,16 +45,7 @@ state_run :: proc() {
 
   update_spawners()
 
-  render.hud(.Circle, render.get_screen_position(g.player_aim), 10)
-  render.hud(
-    .ReloadCounter,
-    render.get_screen_position(g.player.transform.position + Vec3{0, 2, 0}),
-    g.player.weapon.reload.current / g.player.weapon.reload.duration,
-    g.player.weapon.reload.qte_start,
-    g.player.weapon.reload.qte_duration,
-  )
-
-  draw_ui()
+  draw_player_hud()
 }
 
 //
@@ -251,9 +242,23 @@ update_spawners :: proc() {
 //
 //
 
-draw_ui :: proc() {
+draw_player_hud :: proc() {
   player := g.player
   if player == nil do return
+
+  render.hud(.Circle, render.get_screen_position(g.player_aim), 10)
+  render.hud(
+    .ReloadCounter,
+    render.get_screen_position(g.player.transform.position + Vec3{0, 2, 0}),
+    g.player.weapon.reload.current / g.player.weapon.reload.duration,
+    g.player.weapon.reload.qte_start,
+    g.player.weapon.reload.qte_duration,
+  )
+  render.hud(
+    .HealthBar,
+    render.get_screen_position(g.player.transform.position + Vec3{0, -0.5, 0}),
+    g.player.health.current / g.player.health.max,
+  )
 
   if UI()({}) {
     if UI()({layout = {padding = {8, 8, 42, 8}}}) {
