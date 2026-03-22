@@ -164,6 +164,11 @@ update_entity_transform :: proc(e: ^Entity) {
 
 draw_entity :: proc(e: ^Entity) {
   if e.sprite.kind != .None {
+    if is_status(e, .Invincible) {
+      if int(e.status[.Invincible].current * 11) % 2 == 0 {
+        return
+      }
+    }
     render.sprite(e.sprite.kind, e.transform.position, e.sprite.size, e.sprite.flip)
   }
   if e.model.kind != .None {
