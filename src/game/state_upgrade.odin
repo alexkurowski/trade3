@@ -40,7 +40,7 @@ state_upgrade :: proc() {
     for kind in ResourceKind {
       ui.text(
         fmt.tprintf(
-          "%v - %s",
+          "%v = %s",
           RESOURCE_LABELS[kind],
           text.format_number(g.progress.inventory.resources[kind]),
         ),

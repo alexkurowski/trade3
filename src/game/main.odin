@@ -67,7 +67,7 @@ is_running :: proc() -> bool {
 load :: proc() {
   g = new(GameMemory)
   g.debug = true // DBG
-  g.progress.pickup_radius = 2
+  g.progress.pickup_radius = 0.8
 
   text.load()
   render.load()

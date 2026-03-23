@@ -279,7 +279,7 @@ update_collectables :: proc() {
       pickup_collectable(&c)
       despawn_collectable(i32(idx))
       continue
-    } else if distance_to_player < g.progress.pickup_radius * 1.5 {
+    } else if distance_to_player < g.progress.pickup_radius * 2 {
       direction_to_player := normalize(player.transform.position - c.position)
       c.velocity += direction_to_player * time.wdt * ACCELERATION
       c.velocity.y = 0
