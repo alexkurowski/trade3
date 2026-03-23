@@ -66,6 +66,18 @@ make_ship_callsign :: proc() -> string {
   return strings.clone_from_bytes(id[:])
 }
 
+format_number_prefix :: proc($prefix: rune, amount: f32) -> string {
+  if amount >= 1_000_000_000 {
+    return fmt.tprintf("%v%.2fB", prefix, amount / 1_000_000_000)
+  } else if amount >= 1_000_000 {
+    return fmt.tprintf("%v%.2fM", prefix, amount / 1_000_000)
+  } else if amount >= 1_000 {
+    return fmt.tprintf("%v%.2fk", prefix, amount / 1_000)
+  } else {
+    return fmt.tprintf("%v%.0f", prefix, math.floor(amount))
+  }
+}
+
 format_number :: proc(amount: f32) -> string {
   if amount >= 1_000_000_000 {
     return fmt.tprintf("%.2fB", amount / 1_000_000_000)
@@ -75,18 +87,6 @@ format_number :: proc(amount: f32) -> string {
     return fmt.tprintf("%.2fk", amount / 1_000)
   } else {
     return fmt.tprintf("%.0f", math.floor(amount))
-  }
-}
-
-format_money :: proc(amount: f32) -> string {
-  if amount >= 1_000_000_000 {
-    return fmt.tprintf("$%.2fB", amount / 1_000_000_000)
-  } else if amount >= 1_000_000 {
-    return fmt.tprintf("$%.2fM", amount / 1_000_000)
-  } else if amount >= 1_000 {
-    return fmt.tprintf("$%.2fk", amount / 1_000)
-  } else {
-    return fmt.tprintf("$%.0f", math.floor(amount))
   }
 }
 
