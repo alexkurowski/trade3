@@ -27,6 +27,13 @@ spawn_collectable_at :: proc(
   )
 }
 
+spawn_collectable_crate :: proc() {
+  cont.append(
+    &g.collectables,
+    Collectable{kind = .A, position = to_vec3(rand_offset(3, 5), 0), velocity = 0, amount = 10},
+  )
+}
+
 despawn_collectable :: proc(idx: i32) {
   cont.remove(&g.collectables, idx)
 }

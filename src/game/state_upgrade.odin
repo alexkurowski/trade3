@@ -1,8 +1,19 @@
 #+private
 package game
 
+import "core:fmt"
+import "text"
 import "ui"
 import rl "vendor:raylib"
+
+RESOURCE_LABELS := [ResourceKind]string {
+  .A = "A",
+  .B = "B",
+  .C = "C",
+  .D = "D",
+  .E = "E",
+  .F = "F",
+}
 
 state_upgrade_ready :: proc() {
   rl.ShowCursor()
@@ -26,6 +37,15 @@ state_upgrade :: proc() {
   }
 
   if UI()({layout = {layoutDirection = .TopToBottom, padding = {8, 8, 8, 8}, childGap = 8}}) {
+    for kind in ResourceKind {
+      ui.text(
+        fmt.tprintf(
+          "%v - %s",
+          RESOURCE_LABELS[kind],
+          text.format_number(g.progress.inventory.resources[kind]),
+        ),
+      )
+    }
     if btn("Begin round") {
       set_state(.Run)
     }

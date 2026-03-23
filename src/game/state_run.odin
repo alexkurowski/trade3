@@ -264,6 +264,7 @@ draw_bullet :: proc(b: ^Bullet) {
 //
 
 update_collectables :: proc() {
+  ACCELERATION :: 7.5
   FRICTION :: 2.25
 
   player := get_player()
@@ -278,15 +279,21 @@ update_collectables :: proc() {
       pickup_collectable(&c)
       despawn_collectable(i32(idx))
       continue
-    } else if distance_to_player < g.progress.pickup_radius * 2 {
-      c.velocity += distance_to_player * time.wdt
+    } else if distance_to_player < g.progress.pickup_radius * 1.5 {
+      direction_to_player := normalize(player.transform.position - c.position)
+      c.velocity += direction_to_player * time.wdt * ACCELERATION
+      c.velocity.y = 0
     }
     draw_collectable(&c)
   }
 }
 
 draw_collectable :: proc(c: ^Collectable) {
-  render.shape(.Sphere, c.position, 0.1, rl.YELLOW)
+  if c.amount < 10 {
+    render.shape(.Sphere, c.position, 0.1, rl.YELLOW)
+  } else {
+    render.shape(.Sphere, c.position, 0.3, rl.YELLOW)
+  }
 }
 
 //
@@ -300,13 +307,21 @@ update_spawners :: proc() {
   }
 
   ENEMY_SPAWN_INTERVAL :: 0.75
-
   @(static) enemy_spawn_timer: f32
   enemy_spawn_timer -= time.wdt
 
   if enemy_spawn_timer <= 0 {
     spawn_enemy()
     enemy_spawn_timer = ENEMY_SPAWN_INTERVAL
+  }
+
+  CRATE_SPAWN_INTERVAL :: 5
+  @(static) crate_spawn_timer: f32
+  crate_spawn_timer -= time.wdt
+
+  if crate_spawn_timer <= 0 {
+    spawn_collectable_crate()
+    crate_spawn_timer = CRATE_SPAWN_INTERVAL
   }
 }
 
