@@ -32,6 +32,7 @@ GameMemory :: struct {
     inventory: Inventory,
   },
   progress:       Progress,
+  save_slot:      u32,
   enemy_count:    u32,
   debug:          bool,
 }
@@ -75,6 +76,7 @@ load :: proc() {
   physics.load()
 
   subscribe_events()
+  prepare_upgrades()
 }
 
 @(export)
