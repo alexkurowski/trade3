@@ -27,8 +27,8 @@ Entity :: struct {
   // },
   health:    EntityValue,
   speed:     EntityValue,
+  weapon:    EntityWeapon,
   crouch:    bool,
-  weapon:    Weapon,
   status:    [StatusKind]EntityValue,
 }
 
@@ -50,6 +50,14 @@ EntityValue :: struct {
 StatusKind :: enum {
   None,
   Invincible,
+}
+
+EntityWeapon :: struct {
+  kind: WeaponKind,
+  fire: struct {
+    current:  f32,
+    interval: f32,
+  },
 }
 
 spawn :: proc(entity: Entity) -> ^Entity {

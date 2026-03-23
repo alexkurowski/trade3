@@ -1,7 +1,7 @@
 #+private
 package game
 
-Weapon :: struct {
+PlayerWeapon :: struct {
   kind:   WeaponKind,
   ammo:   struct {
     current: u16,
@@ -31,29 +31,25 @@ WeaponKind :: enum {
   Projectile,
 }
 
-weapon_set_ammo :: proc(w: ^Weapon, value: u16) {
-  w.ammo.max = value
-  w.ammo.current = w.ammo.max
+weapon_start_reload :: proc() {
+  g.player.weapon.reload.current += time.wdt
+  g.player.weapon.reload.can_qte = true
 }
 
-weapon_start_reload :: proc(w: ^Weapon) {
-  w.reload.current += time.wdt
-  w.reload.can_qte = true
+weapon_reload :: proc() {
+  g.player.weapon.ammo.current = g.player.weapon.ammo.max
 }
 
-weapon_reload :: proc(w: ^Weapon) {
-  w.ammo.current = w.ammo.max
+weapon_is_reloading :: proc() -> bool {
+  return g.player.weapon.reload.current > 0
 }
 
-weapon_is_reloading :: proc(w: ^Weapon) -> bool {
-  return w.reload.current > 0
+weapon_is_reloading_done :: proc() -> bool {
+  return g.player.weapon.reload.current >= g.player.weapon.reload.duration
 }
 
-weapon_is_reloading_done :: proc(w: ^Weapon) -> bool {
-  return w.reload.current >= w.reload.duration
-}
-
-weapon_is_in_qte_window :: proc(w: ^Weapon) -> bool {
+weapon_is_in_qte_window :: proc() -> bool {
+  w := g.player.weapon
   return(
     w.reload.current >= w.reload.qte_start * w.reload.duration &&
     w.reload.current <=

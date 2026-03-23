@@ -1,8 +1,8 @@
 #+private
 package game
 
-Upgrades :: struct {
-  resources: [Resource]u64,
+Progress :: struct {
+  inventory: Inventory,
 }
 
 Resource :: enum {

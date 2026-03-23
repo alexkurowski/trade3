@@ -17,7 +17,7 @@ state_run_ready :: proc() {
     despawn_all_collectables()
     despawn_all_entities()
 
-    g.player.inventory = Inventory{}
+    reset_player()
   }
 
   {
@@ -299,9 +299,9 @@ draw_player_hud :: proc() {
   render.hud(
     .ReloadCounter,
     render.get_screen_position(player.transform.position + Vec3{0, 2, 0}),
-    player.weapon.reload.current / player.weapon.reload.duration,
-    player.weapon.reload.qte_start,
-    player.weapon.reload.qte_duration,
+    g.player.weapon.reload.current / g.player.weapon.reload.duration,
+    g.player.weapon.reload.qte_start,
+    g.player.weapon.reload.qte_duration,
   )
   render.hud(
     .HealthBar,
@@ -311,7 +311,7 @@ draw_player_hud :: proc() {
 
   if UI()({}) {
     if UI()({layout = {padding = {8, 8, 42, 8}}}) {
-      ui.text(fmt.tprintf("Ammo: %v/%v", player.weapon.ammo.current, player.weapon.ammo.max))
+      ui.text(fmt.tprintf("Ammo: %v/%v", g.player.weapon.ammo.current, g.player.weapon.ammo.max))
     }
   }
   if UI()({}) {

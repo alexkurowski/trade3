@@ -27,10 +27,11 @@ GameMemory :: struct {
   player:         struct {
     id:        ID,
     aim:       Vec3,
+    weapon:    PlayerWeapon,
     inventory: Inventory,
   },
+  progress:       Progress,
   enemy_count:    u32,
-  upgrades:       Upgrades,
   debug:          bool,
 }
 

@@ -15,11 +15,14 @@ spawn_player :: proc() {
   e.kind |= {.Player}
   e.health = val(1)
   e.speed = val(200)
-  weapon_set_ammo(&e.weapon, 30)
-  e.weapon.fire.interval = 0.2
-  e.weapon.reload.duration = 1.5
-  e.weapon.reload.qte_start = 0.66
-  e.weapon.reload.qte_duration = 0.075
+
+  g.player.weapon.ammo.current = 30
+  g.player.weapon.ammo.max = 30
+  g.player.weapon.fire.interval = 0.2
+  g.player.weapon.reload.duration = 1.5
+  g.player.weapon.reload.qte_start = 0.66
+  g.player.weapon.reload.qte_duration = 0.075
+
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -39,6 +42,10 @@ spawn_player_base :: proc() {
     kind = .Test,
   }
   physics.set_body_shape(&e.body, .Circle, 2, mass = 99999, category = .Obstacle)
+}
+
+reset_player :: proc() {
+  g.player.inventory = Inventory{}
 }
 
 get_player :: proc() -> ^Entity {
@@ -82,17 +89,19 @@ player_movement :: proc(e: ^Entity) {
 player_shooting :: proc(e: ^Entity) {
   PLAYER_BULLET_SPEED :: 40
 
-  if e.weapon.fire.current > 0 {
-    e.weapon.fire.current -= time.wdt
+  if g.player.weapon.fire.current > 0 {
+    g.player.weapon.fire.current -= time.wdt
     return
   }
 
   can_shoot :=
-    e.weapon.fire.current <= 0 && e.weapon.ammo.current > 0 && e.weapon.reload.current <= 0
+    g.player.weapon.fire.current <= 0 &&
+    g.player.weapon.ammo.current > 0 &&
+    g.player.weapon.reload.current <= 0
 
   if can_shoot && rl.IsMouseButtonDown(.LEFT) {
-    e.weapon.fire.current = e.weapon.fire.interval
-    e.weapon.ammo.current -= 1
+    g.player.weapon.fire.current = g.player.weapon.fire.interval
+    g.player.weapon.ammo.current -= 1
     target := g.player.aim
     position := e.transform.position
     speed := normalize(target - position) * PLAYER_BULLET_SPEED
@@ -101,31 +110,31 @@ player_shooting :: proc(e: ^Entity) {
 }
 
 player_reloading :: proc(e: ^Entity) {
-  is_reloading := e.weapon.reload.current > 0
-  can_reload := e.weapon.ammo.current < e.weapon.ammo.max && !is_reloading
+  is_reloading := g.player.weapon.reload.current > 0
+  can_reload := g.player.weapon.ammo.current < g.player.weapon.ammo.max && !is_reloading
 
   if is_reloading {
-    e.weapon.reload.current += time.wdt
+    g.player.weapon.reload.current += time.wdt
 
-    is_reloading_done := weapon_is_reloading_done(&e.weapon)
-    is_in_qte_window := weapon_is_in_qte_window(&e.weapon)
+    is_reloading_done := weapon_is_reloading_done()
+    is_in_qte_window := weapon_is_in_qte_window()
 
     if rl.IsKeyPressed(.E) {
-      if is_in_qte_window && e.weapon.reload.can_qte {
+      if is_in_qte_window && g.player.weapon.reload.can_qte {
         is_reloading_done = true
       } else {
         // TODO: qte failed
       }
-      e.weapon.reload.can_qte = false
+      g.player.weapon.reload.can_qte = false
     }
 
     if is_reloading_done {
-      e.weapon.reload.current = 0
-      weapon_reload(&e.weapon)
+      g.player.weapon.reload.current = 0
+      weapon_reload()
     }
   } else if can_reload && rl.IsKeyPressed(.E) {
-    weapon_start_reload(&e.weapon)
-    e.weapon.reload.current += time.wdt
+    weapon_start_reload()
+    g.player.weapon.reload.current += time.wdt
   }
 }
 
