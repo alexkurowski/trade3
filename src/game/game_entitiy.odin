@@ -141,12 +141,28 @@ hurt :: proc(e: ^Entity, value: f32) {
   }
 }
 
+die :: proc(e: ^Entity) {
+  if .Player in e.kind {
+    set_state(.Upgrade)
+  }
+  if .Enemy in e.kind {
+    spawn_collectable_at(.A, e.transform.position.xz, rand_offset(2, 4))
+  }
+}
+
 set_status :: proc(e: ^Entity, status: StatusKind, duration: f32) {
   e.status[status].current = duration
   e.status[status].max = duration
 }
 
-is_status :: proc(e: ^Entity, status: StatusKind) -> bool {
+add_status :: proc(e: ^Entity, status: StatusKind, duration: f32) {
+  if e.status[status].max == 0 {
+    e.status[status].max = duration
+  }
+  e.status[status].current = min(e.status[status].current + duration, e.status[status].max)
+}
+
+has_status :: proc(e: ^Entity, status: StatusKind) -> bool {
   return e.status[status].current > 0
 }
 

@@ -27,6 +27,7 @@ GameMemory :: struct {
   player:         struct {
     id:        ID,
     aim:       Vec3,
+    mouse:     Vec2,
     weapon:    PlayerWeapon,
     inventory: Inventory,
   },
@@ -65,7 +66,8 @@ is_running :: proc() -> bool {
 @(export)
 load :: proc() {
   g = new(GameMemory)
-  g.debug = true
+  g.debug = true // DBG
+  g.progress.pickup_radius = 2
 
   text.load()
   render.load()

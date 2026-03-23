@@ -45,7 +45,7 @@ enemy_attack :: proc(e: ^Entity) {
     return
   }
 
-  if !is_status(player, .Invincible) {
+  if !has_status(player, .Invincible) {
     player.health.current -= 1
     set_status(player, .Invincible, 2)
     dir := normalize(e.transform.position - player.transform.position)

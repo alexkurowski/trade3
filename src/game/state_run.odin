@@ -64,12 +64,12 @@ state_run :: proc() {
 //
 
 update_input :: proc() {
-  reticle_screen_position := render.get_screen_position(g.player.aim)
-  reticle_screen_position += rl.GetMouseDelta()
-  g.player.aim = render.get_world_position(reticle_screen_position)
+  g.player.mouse = render.get_screen_position(g.player.aim)
+  g.player.mouse += rl.GetMouseDelta()
+  g.player.aim = render.get_world_position(g.player.mouse)
   // TODO: Fix reticle going off-screen
 
-  // Lock mouse to center
+  // Lock actual mouse cursor to center
   rl.SetMousePosition(rl.GetScreenWidth() / 2, rl.GetScreenHeight() / 2)
 }
 
@@ -138,12 +138,7 @@ update_entities :: proc() {
     if is_none(e.id) do continue
 
     if e.health.current <= 0 {
-      if .Player in e.kind {
-        set_state(.Upgrade)
-      }
-      if .Enemy in e.kind {
-        spawn_collectable_at(.None, e.transform.position)
-      }
+      die(&e)
       despawn(e.id)
       continue
     }
@@ -198,7 +193,7 @@ update_entity_transform :: proc(e: ^Entity) {
 
 draw_entity :: proc(e: ^Entity) {
   if e.sprite.kind != .None {
-    if is_status(e, .Invincible) {
+    if has_status(e, .Invincible) {
       if int(e.status[.Invincible].current * 7) % 2 == 0 {
         // Draw blinking effect when invincible
         return
@@ -239,24 +234,22 @@ draw_bullet :: proc(b: ^Bullet) {
 //
 
 update_collectables :: proc() {
-  SPEED :: 10
+  FRICTION :: 2.25
 
   player := get_player()
   if player == nil do return
 
   #reverse for &c, idx in cont.every(&g.collectables) {
     c.position += c.velocity * time.wdt
-    distance_to_base := length(c.position)
+    c.velocity -= c.velocity * time.wdt * FRICTION
+
     distance_to_player := length(c.position - player.transform.position)
-    if distance_to_player < 1 {
-      // Pickup
+    if distance_to_player < g.progress.pickup_radius {
+      pickup_collectable(&c)
       despawn_collectable(i32(idx))
       continue
-    }
-    if distance_to_base > PLAYER_AREA_LIMIT {
-      c.velocity = -normalize(c.position) * SPEED
-    } else {
-      c.velocity -= c.velocity * randf(0.5, 2) * time.wdt
+    } else if distance_to_player < g.progress.pickup_radius * 2 {
+      c.velocity += distance_to_player * time.wdt
     }
     draw_collectable(&c)
   }

@@ -55,11 +55,11 @@ Event_Entity :: struct {
 }
 
 event_despawn_entity :: proc(raw: EventPayload) {
-  event := cast(^Event_Entity)raw
-  entity := cont.get(&g.entities, event.id)
-  if entity != nil {
-    spawn_collectable_at(.None, entity.transform.position)
-    despawn(entity.id)
-  }
+  // event := cast(^Event_Entity)raw
+  // entity := cont.get(&g.entities, event.id)
+  // if entity != nil {
+  //   spawn_collectable_at(.A, entity.transform.position)
+  //   despawn(entity.id)
+  // }
 }
 

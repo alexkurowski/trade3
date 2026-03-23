@@ -2,15 +2,20 @@
 package game
 
 Progress :: struct {
-  inventory: Inventory,
+  inventory:     Inventory,
+  pickup_radius: f32,
 }
 
-Resource :: enum {
-  Money,
-  Pips,
+ResourceKind :: enum {
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
 }
 
 Inventory :: struct {
-  resources: [Resource]u64,
+  resources: [ResourceKind]u64,
 }
 
