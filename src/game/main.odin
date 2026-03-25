@@ -31,6 +31,7 @@ GameMemory :: struct {
     weapon:    PlayerWeapon,
     inventory: Inventory,
   },
+  round_age:      f32,
   progress:       Progress,
   save_slot:      u32,
   enemy_count:    u32,

@@ -2,6 +2,7 @@
 package game
 
 import "physics"
+import "render"
 
 spawn_enemy :: proc() {
   position := g.location.doors[randi(0, 1)]
@@ -26,9 +27,11 @@ enemy_move :: proc(e: ^Entity) {
   player := get_player()
   if player == nil do return
 
-  dir := normalize(player.transform.position - e.transform.position)
-  distance := length(player.transform.position - e.transform.position)
-  physics.push(e.body, to_vec2(dir) * e.speed.current)
+  direction_to_player := normalize(player.transform.position - e.transform.position)
+  physics.push(e.body, to_vec2(direction_to_player) * e.speed.current)
+
+  relative_direction_to_player := render.to_camera_relative(direction_to_player.xz)
+  e.sprite.flip = relative_direction_to_player.x < 0
 }
 
 enemy_attack :: proc(e: ^Entity) {

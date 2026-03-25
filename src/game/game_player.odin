@@ -34,16 +34,6 @@ spawn_player :: proc() {
   physics.push(e.body, dir * 10)
 }
 
-spawn_player_base :: proc() {
-  e := spawn_at(Vec3(0))
-  e.kind |= {.Base}
-  e.health = val(100)
-  e.model = {
-    kind = .Test,
-  }
-  physics.set_body_shape(&e.body, .Circle, 2, mass = 99999, category = .Obstacle)
-}
-
 reset_player :: proc() {
   g.player.inventory = Inventory{}
 }

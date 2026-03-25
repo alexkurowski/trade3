@@ -25,13 +25,14 @@ state_run_ready :: proc() {
     generate_location()
 
     spawn_player()
-    spawn_player_base()
 
     for i := 0; i < 4; i += 1 {
       angle := f32(i) * PI / 2
       spawn_small_wall(to_vec3(at_angle(angle) * 4), angle + PI / 2)
     }
   }
+
+  g.round_age = 0
 
   rl.HideCursor()
 }
@@ -43,6 +44,7 @@ state_run :: proc() {
   draw_location()
   update_bullets()
   update_entities()
+  update_base()
 
   physics.update(time.dt)
 
@@ -143,6 +145,8 @@ update_entities :: proc() {
       continue
     }
 
+    e.age += time.wdt
+
     update_entity_statuses(&e)
 
     if .Player in e.kind {
@@ -153,9 +157,6 @@ update_entities :: proc() {
       enemy_count += 1
       enemy_controls(&e)
     }
-    if .Base in e.kind {
-      base_update(&e)
-    }
 
     update_entity_transform(&e)
     draw_entity(&e)
@@ -164,7 +165,7 @@ update_entities :: proc() {
   g.enemy_count = enemy_count
 }
 
-base_update :: proc(e: ^Entity) {
+update_base :: proc() {
   player := get_player()
   if player == nil do return
 
@@ -179,7 +180,7 @@ base_update :: proc(e: ^Entity) {
   if transfer_info_timer <= 0 do transfer_info_amount = 0
 
   TRANSFER_RADIUS :: 3
-  distance_to_player := length(e.transform.position - player.transform.position)
+  distance_to_player := length(player.transform.position)
   should_transfer := distance_to_player < TRANSFER_RADIUS
 
   MAX_TRANSFER_AMOUNT :: 1
@@ -208,6 +209,8 @@ base_update :: proc(e: ^Entity) {
       ui.text(text.format_number_prefix('+', f32(transfer_info_amount)))
     }
   }
+
+  render.shape(.CircleY, 0, TRANSFER_RADIUS, rl.LIME)
 }
 
 update_entity_statuses :: proc(e: ^Entity) {

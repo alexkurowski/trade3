@@ -25,6 +25,8 @@ time_step :: proc() {
   time.wdt = time.dt * time.factor
   time.t += time.dt
   time.wt += time.wdt
+
+  g.round_age += time.wdt
 }
 
 set_time_factor :: proc(f: f32) {

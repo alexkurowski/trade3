@@ -1,7 +1,6 @@
 package text
 
 import "core:fmt"
-import "core:math"
 import "core:strings"
 
 @(private)

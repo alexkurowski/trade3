@@ -8,6 +8,7 @@ import "render"
 Entity :: struct {
   id:        ID,
   kind:      bit_set[EntityKind],
+  age:       f32,
   body:      physics.Body,
   transform: struct {
     position: Vec3, // cached value from box2d
@@ -35,7 +36,6 @@ Entity :: struct {
 EntityKind :: enum {
   None,
   Player,
-  Base,
   Enemy,
   // TODO: more enemy kinds
   WallSmall,
