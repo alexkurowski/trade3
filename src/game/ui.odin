@@ -32,7 +32,6 @@ sizing_col := clay.Sizing {
   clay.SizingAxis{type = clay.SizingType.Grow},
 }
 
-
 sizing_fixed_1 := proc(size: f32) -> clay.Sizing {
   return clay.Sizing{clay.SizingFixed(size), clay.SizingFixed(size)}
 }
@@ -48,8 +47,7 @@ sizing_fullscreen :: proc() -> clay.Sizing {
   return clay.Sizing{clay.SizingFixed(ui.window_width), clay.SizingFixed(ui.window_height)}
 }
 
-
-root := clay.ElementDeclaration {
+ui_root := clay.ElementDeclaration {
   layout = {layoutDirection = .TopToBottom, sizing = sizing_grow},
 }
 
@@ -64,11 +62,9 @@ padding :: proc {
   padding_2,
 }
 
-
 border :: proc(width: u16) -> clay.BorderWidth {
   return clay.BorderWidth{left = width, right = width, top = width, bottom = width}
 }
-
 
 stop_propagation :: proc() {
   if clay.Hovered() {

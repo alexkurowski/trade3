@@ -29,6 +29,7 @@ begin :: proc(delta_time: f32) {
   sprites_begin()
   hud_begin()
   icons_begin()
+  upgrades_begin()
 }
 
 begin_3d :: proc() {
@@ -51,6 +52,7 @@ begin_2d :: proc() {
 
 draw_2d :: proc() {
   icons_end()
+  upgrades_end()
   hud_end()
 }
 
