@@ -3,12 +3,13 @@ package render
 import rl "vendor:raylib"
 
 Upgrade :: struct {
-  kind:     UpgradeKind,
-  position: Vec2,
-  size:     f32,
-  state:    UpgradeState,
-  current:  i32,
-  max:      i32,
+  kind:            UpgradeKind,
+  position:        Vec2,
+  parent_position: Maybe(Vec2),
+  size:            f32,
+  state:           UpgradeState,
+  current:         i32,
+  max:             i32,
 }
 
 UpgradeKind :: enum {
@@ -57,11 +58,15 @@ upgrades_end :: proc() {
     rect := Rect{upgrade.position.x, upgrade.position.y, size.x, size.y}
     color: rl.Color = rl.WHITE
 
+    // Parent line
+    if parent_position, ok := upgrade.parent_position.?; ok {
+      rl.DrawLineV(upgrade.position + size / 2, parent_position + size / 2, rl.WHITE)
+    }
     // Background
     if upgrade.state == .Hover {
       color = rl.BLACK
       rl.DrawRectangleRec(rect, rl.WHITE)
-    } else if upgrade.state == .Normal {
+    } else if upgrade.state == .Active {
       rl.DrawRectangleLinesEx(rect, 2, rl.WHITE)
     } else if upgrade.state == .Complete {
       color = rl.BLACK
@@ -91,11 +96,12 @@ upgrades_end :: proc() {
 upgrade :: proc(
   kind: UpgradeKind,
   position: Vec2,
+  parent_position: Maybe(Vec2) = nil,
   size: f32 = 1,
   state: UpgradeState = .Normal,
   current: i32 = 0,
   max: i32 = 0,
 ) {
-  push(&upgrade_queue, Upgrade{kind, position, size, state, current, max})
+  push(&upgrade_queue, Upgrade{kind, position, parent_position, size, state, current, max})
 }
 

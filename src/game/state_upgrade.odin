@@ -1,6 +1,7 @@
 #+private
 package game
 
+import cont "containers"
 import "core:fmt"
 import "render"
 import "text"
@@ -62,7 +63,7 @@ draw_upgrades :: proc() {
       state = .Complete
     } else if is_hover(&u) {
       state = .Hover
-    } else if upgrade_is_active(&u) {
+    } else if upgrade_can_afford(&u) {
       state = .Active
     } else {
       state = .Normal
@@ -74,7 +75,25 @@ draw_upgrades :: proc() {
       }
     }
 
-    render.upgrade(.Star, u.position + camera, state = state, current = u.current, max = u.max)
+    parent := cont.get(&g.progress.upgrades, u.parent_id)
+    if parent == nil {
+      render.upgrade(
+        u.icon,
+        position = u.position + camera,
+        state = state,
+        current = u.current,
+        max = u.max,
+      )
+    } else {
+      render.upgrade(
+        u.icon,
+        position = u.position + camera,
+        parent_position = parent.position + camera,
+        state = state,
+        current = u.current,
+        max = u.max,
+      )
+    }
   }
 }
 

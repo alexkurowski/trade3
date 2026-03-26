@@ -2,6 +2,7 @@
 package game
 
 import cont "containers"
+import "render"
 
 UPGRADE_COUNT :: 16
 
@@ -27,6 +28,7 @@ Inventory :: struct {
 Upgrade :: struct {
   id:        ID,
   kind:      UpgradeKind,
+  icon:      render.UpgradeKind,
   parent_id: ID,
   current:   i32,
   price:     [ResourceKind]u32,
@@ -51,8 +53,21 @@ prepare_upgrades :: proc() {
     return [ResourceKind]u32{.A = A, .B = B, .C = C, .D = D, .E = E, .F = F}
   }
 
+  add :: proc(u: Upgrade, parent_idx: u32, offset: Vec2) {
+    idx := g.progress.upgrades.num_items
+    idx -= parent_idx
+    parent := g.progress.upgrades.items[idx]
+    u := u
+    u.parent_id = parent.id
+    u.position = parent.position + offset
+    cont.append(&g.progress.upgrades, u)
+  }
+
   // TODO: define upgrades here
   cont.append(&g.progress.upgrades, Upgrade{max = 5, price = price(A = 10)})
+  add(Upgrade{icon = .Station, max = 3, price = price(A = 20)}, 1, Vec2{32, 0})
+  add(Upgrade{icon = .Planet, max = 3, price = price(A = 20)}, 2, Vec2{-32, -16})
+  add(Upgrade{icon = .City, max = 3, price = price(A = 40)}, 3, Vec2{-32, 16})
 }
 
 progress_save_to_file :: proc() {
