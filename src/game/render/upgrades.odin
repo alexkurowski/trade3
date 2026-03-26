@@ -6,8 +6,9 @@ Upgrade :: struct {
   kind:     UpgradeKind,
   position: Vec2,
   size:     f32,
-  color:    rl.Color,
   state:    UpgradeState,
+  current:  i32,
+  max:      i32,
 }
 
 UpgradeKind :: enum {
@@ -23,6 +24,7 @@ UpgradeState :: enum {
   Hover,
   Active,
   Complete,
+  Known,
 }
 
 @(private = "file")
@@ -37,7 +39,7 @@ upgrades_end :: proc() {
 
   for upgrade in every(&upgrade_queue) {
     source := Rect{0, 0, 32, 32}
-    size := Vec2{16, 16} * upgrade.size
+    size := Vec2{24, 24} * upgrade.size
     switch upgrade.kind {
     case .Star:
       source.x = 32
@@ -52,30 +54,48 @@ upgrades_end :: proc() {
       source.x = 128
       source.y = 32
     }
-    rl.DrawTexturePro(
-      texture,
-      source,
-      Rect{upgrade.position.x, upgrade.position.y, size.x, size.y},
-      size / 2,
-      0,
-      upgrade.color,
-    )
+    rect := Rect{upgrade.position.x, upgrade.position.y, size.x, size.y}
+    color: rl.Color = rl.WHITE
+
+    // Background
+    if upgrade.state == .Hover {
+      color = rl.BLACK
+      rl.DrawRectangleRec(rect, rl.WHITE)
+    } else if upgrade.state == .Normal {
+      rl.DrawRectangleLinesEx(rect, 2, rl.WHITE)
+    } else if upgrade.state == .Complete {
+      color = rl.BLACK
+      rl.DrawRectangleRec(rect, rl.WHITE)
+    } else if upgrade.state == .Known {
+      color = rl.DARKGRAY
+    }
+    // Icon
+    rl.DrawTexturePro(texture, source, rect, 0, 0, color)
+    // Purchased pips
+    if upgrade.current > 0 && upgrade.max > 0 {
+      rect.y += rect.height
+      rect.width /= f32(upgrade.max)
+      rect.height = 4
+      for i := i32(0); i < upgrade.max; i += 1 {
+        if i < upgrade.current {
+          rl.DrawRectangleRec(rect, rl.WHITE)
+        } else {
+          rl.DrawRectangleLinesEx(rect, 1, rl.WHITE)
+        }
+        rect.x += rect.width
+      }
+    }
   }
 }
 
-add_upgrade_vec2 :: proc(kind: UpgradeKind, position: Vec2, color: rl.Color = rl.WHITE) {
-  push(&upgrade_queue, Upgrade{kind, position, 1, color})
-}
-add_upgrade_vec2_size :: proc(
+upgrade :: proc(
   kind: UpgradeKind,
   position: Vec2,
   size: f32 = 1,
-  color: rl.Color = rl.WHITE,
+  state: UpgradeState = .Normal,
+  current: i32 = 0,
+  max: i32 = 0,
 ) {
-  push(&upgrade_queue, Upgrade{kind, position, size, color})
-}
-upgrade :: proc {
-  add_upgrade_vec2,
-  add_upgrade_vec2_size,
+  push(&upgrade_queue, Upgrade{kind, position, size, state, current, max})
 }
 

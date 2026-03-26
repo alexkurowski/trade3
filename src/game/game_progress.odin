@@ -93,3 +93,13 @@ upgrade_can_afford :: proc(u: ^Upgrade) -> bool {
   )
 }
 
+upgrade_purchase :: proc(u: ^Upgrade) {
+  g.progress.inventory.resources[.A] -= u64(u.price[.A])
+  g.progress.inventory.resources[.B] -= u64(u.price[.B])
+  g.progress.inventory.resources[.C] -= u64(u.price[.C])
+  g.progress.inventory.resources[.D] -= u64(u.price[.D])
+  g.progress.inventory.resources[.E] -= u64(u.price[.E])
+  g.progress.inventory.resources[.F] -= u64(u.price[.F])
+  u.current += 1
+}
+
