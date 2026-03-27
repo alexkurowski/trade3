@@ -132,12 +132,19 @@ val :: proc(value: f32) -> EntityValue {
   return EntityValue{value, value}
 }
 
+val_add :: proc(v: ^EntityValue, a: f32) {
+  v.current += a
+  v.max += a
+}
+
 hurt :: proc(e: ^Entity, value: f32) {
   if value > 0 {
     e.health.current -= value
-    // if e.health.current <= 0 {
-    //   send_event(.Despawn, Event_Entity{id = e.id})
-    // }
+    if e.id == g.player.id {
+      send_event(.PlayerTookDamage, e.id)
+    } else {
+      send_event(.PlayerHitEnemy, e.id)
+    }
   }
 }
 

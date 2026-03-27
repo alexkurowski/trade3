@@ -12,11 +12,10 @@ import rl "vendor:raylib"
 state_run_ready :: proc() {
   {
     // Unload everything
-    clear_all_events()
+    clear_all_subscribed_events()
     despawn_all_bullets()
     despawn_all_collectables()
     despawn_all_entities()
-
     reset_player()
   }
 
@@ -30,6 +29,8 @@ state_run_ready :: proc() {
       angle := f32(i) * PI / 2
       spawn_small_wall(to_vec3(at_angle(angle) * 4), angle + PI / 2)
     }
+
+    apply_upgrades()
   }
 
   g.round_age = 0
@@ -53,8 +54,6 @@ state_run :: proc() {
   if rl.IsKeyPressed(.R) {
     set_state(.Run)
   }
-
-  // process_events()
 
   update_spawners()
 
@@ -278,11 +277,11 @@ update_collectables :: proc() {
     c.velocity -= c.velocity * time.wdt * FRICTION
 
     distance_to_player := length(c.position - player.transform.position)
-    if distance_to_player < g.progress.pickup_radius {
+    if distance_to_player < g.player.pickup_radius {
       pickup_collectable(&c)
       despawn_collectable(i32(idx))
       continue
-    } else if distance_to_player < g.progress.pickup_radius * 2 {
+    } else if distance_to_player < g.player.pickup_radius * 2 {
       direction_to_player := normalize(player.transform.position - c.position)
       c.velocity += direction_to_player * time.wdt * ACCELERATION
       c.velocity.y = 0

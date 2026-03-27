@@ -23,15 +23,15 @@ GameMemory :: struct {
   body_to_entity: map[physics.BID]ID,
   bullets:        cont.Pool(Bullet, 2048),
   collectables:   cont.Pool(Collectable, 2048),
-  events:         EventQueue,
-  player:         struct {
-    id:        ID,
-    aim:       Vec3,
-    mouse:     Vec2,
-    weapon:    PlayerWeapon,
-    inventory: Inventory,
-  },
   round_age:      f32,
+  player:         struct {
+    id:            ID,
+    aim:           Vec3,
+    mouse:         Vec2,
+    weapon:        PlayerWeapon,
+    inventory:     Inventory,
+    pickup_radius: f32,
+  },
   progress:       Progress,
   save_slot:      u32,
   enemy_count:    u32,
@@ -69,14 +69,13 @@ is_running :: proc() -> bool {
 load :: proc() {
   g = new(GameMemory)
   g.debug = true // DBG
-  g.progress.pickup_radius = 0.8
+  g.player.pickup_radius = 0.8
 
   text.load()
   render.load()
   ui.load(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT)
   physics.load()
 
-  subscribe_events()
   prepare_upgrades()
 }
 

@@ -4,27 +4,6 @@ package game
 import cont "containers"
 import "render"
 
-UPGRADE_COUNT :: 16
-
-Progress :: struct {
-  inventory:     Inventory,
-  upgrades:      cont.Array(Upgrade, ID, UPGRADE_COUNT),
-  pickup_radius: f32,
-}
-
-ResourceKind :: enum {
-  A,
-  B,
-  C,
-  D,
-  E,
-  F,
-}
-
-Inventory :: struct {
-  resources: [ResourceKind]u64,
-}
-
 Upgrade :: struct {
   id:        ID,
   kind:      UpgradeKind,
@@ -34,12 +13,16 @@ Upgrade :: struct {
   price:     [ResourceKind]u32,
   max:       i32,
   position:  Vec2,
+  apply:     proc(u: ^Upgrade, id: ID),
 }
 
 UpgradeKind :: enum {
-  None,
-  Damage,
+  OnStart, // Apply when run begins
+  OnHit, // Apply when player hits an enemy
+  OnDamage, // Apply when player takes damage
 }
+
+UPGRADE_COUNT :: 16
 
 prepare_upgrades :: proc() {
   price :: proc(
@@ -53,33 +36,78 @@ prepare_upgrades :: proc() {
     return [ResourceKind]u32{.A = A, .B = B, .C = C, .D = D, .E = E, .F = F}
   }
 
-  add :: proc(u: Upgrade, parent_idx: u32, offset: Vec2) {
+  add :: proc(u: Upgrade, parent_idx_offset: u32 = 0, parent_position_offset: Vec2 = 0) {
     idx := g.progress.upgrades.num_items
-    idx -= parent_idx
+    idx -= parent_idx_offset
     parent := g.progress.upgrades.items[idx]
     u := u
     u.parent_id = parent.id
-    u.position = parent.position + offset
+    u.position = parent.position + parent_position_offset
     cont.append(&g.progress.upgrades, u)
   }
 
-  // TODO: define upgrades here
-  cont.append(&g.progress.upgrades, Upgrade{max = 5, price = price(A = 10)})
-  add(Upgrade{icon = .Station, max = 3, price = price(A = 20)}, 1, Vec2{32, 0})
-  add(Upgrade{icon = .Planet, max = 3, price = price(A = 20)}, 2, Vec2{-32, -16})
-  add(Upgrade{icon = .City, max = 3, price = price(A = 40)}, 3, Vec2{-32, 16})
+  // Root upgrade
+  add(Upgrade {
+    kind = .OnStart,
+    icon = .Star,
+    max = 5,
+    price = price(A = 10),
+    apply = proc(u: ^Upgrade, id: ID) {
+      e := cont.get(&g.entities, id)
+      if e == nil do return
+
+      val_add(&e.health, 1 * f32(u.current))
+    },
+  })
+
+  add(Upgrade {
+    kind = .OnHit,
+    icon = .Station,
+    max = 3,
+    price = price(A = 20),
+    apply = proc(u: ^Upgrade, id: ID) {
+      e := cont.get(&g.entities, id)
+      if e == nil do return
+
+      p("ON HIT")
+    },
+  }, 1, Vec2{32, 0})
+  add(Upgrade {
+    kind = .OnHit,
+    icon = .Planet,
+    max = 3,
+    price = price(A = 20),
+    apply = proc(u: ^Upgrade, id: ID) {
+      e := cont.get(&g.entities, id)
+      if e == nil do return
+
+    },
+  }, 2, Vec2{-32, -16})
+  add(Upgrade {
+    kind = .OnHit,
+    icon = .City,
+    max = 3,
+    price = price(A = 40),
+    apply = proc(u: ^Upgrade, id: ID) {
+      e := cont.get(&g.entities, id)
+      if e == nil do return
+
+    },
+  }, 3, Vec2{-32, 16})
 }
 
-progress_save_to_file :: proc() {
-  // TODO: save progress into g.save_slot file
-}
-
-progress_load_from_file :: proc(save_slot: u32) {
-  success := true
-  // TODO: restore progress
-
-  if success {
-    g.save_slot = save_slot
+apply_upgrades :: proc() {
+  for &u in g.progress.upgrades.items {
+    if is_none(u.id) do continue
+    if !upgrade_is_active(&u) do continue
+    switch u.kind {
+    case .OnStart:
+      u.apply(&u, g.player.id)
+    case .OnHit:
+      subscribe_event(.PlayerHitEnemy, u.id)
+    case .OnDamage:
+      subscribe_event(.PlayerTookDamage, u.id)
+    }
   }
 }
 
