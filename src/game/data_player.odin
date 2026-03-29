@@ -16,22 +16,14 @@ spawn_player :: proc() {
   e.health = val(1)
   e.speed = val(200)
 
-  g.player.weapon.ammo.current = 30
-  g.player.weapon.ammo.max = 30
-  g.player.weapon.fire.interval = 0.2
-  g.player.weapon.reload.duration = 1.5
-  g.player.weapon.reload.qte_start = 0.66
-  g.player.weapon.reload.qte_duration = 0.075
-
   e.sprite = {
     kind = .Character,
     size = 1,
   }
   physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
 
-  dir := at_random_angle()
-  g.player.aim = to_vec3(dir * 2)
-  physics.push(e.body, dir * 10)
+  g.player.aim.position = to_vec3(at_random_angle()) * 2
+  g.player.aim.show_last_timeout = -1
 }
 
 reset_player :: proc() {
@@ -88,14 +80,35 @@ player_shooting :: proc(e: ^Entity) {
     g.player.weapon.fire.current <= 0 &&
     g.player.weapon.ammo.current > 0 &&
     g.player.weapon.reload.current <= 0
+  should_shoot := can_shoot && rl.IsMouseButtonDown(.LEFT)
 
-  if can_shoot && rl.IsMouseButtonDown(.LEFT) {
+  if should_shoot {
     g.player.weapon.fire.current = g.player.weapon.fire.interval
+
+    player_position := e.transform.position
+
+    aim_radius := get_weapon_aim_radius(player_position)
+    aim_screen_target := render.get_screen_position(g.player.aim.position)
+    aim_screen_target += at_random_angle(randf(0, aim_radius))
+    aim_world_target := render.get_world_position(aim_screen_target)
+
+    direction := normalize(aim_world_target - player_position)
+    speed := direction * PLAYER_BULLET_SPEED
+    spawn_bullet(.Player, player_position, speed, e.crouch)
+
     g.player.weapon.ammo.current -= 1
-    target := g.player.aim
-    position := e.transform.position
-    speed := normalize(target - position) * PLAYER_BULLET_SPEED
-    spawn_bullet(.Player, position, speed, e.crouch)
+    g.player.aim.last_shot = aim_world_target
+    g.player.aim.show_last_timeout = 0.33
+  }
+
+  if should_shoot {
+    if g.player.weapon.spray.current < g.player.weapon.spray.max {
+      g.player.weapon.spray.current += 1000 * time.wdt
+    }
+  } else {
+    if g.player.weapon.spray.current > g.player.weapon.spray.min {
+      g.player.weapon.spray.current -= 50 * time.wdt
+    }
   }
 }
 
@@ -131,7 +144,7 @@ player_reloading :: proc(e: ^Entity) {
 player_camera_follow :: proc(e: ^Entity) {
   is_focus := !rl.IsMouseButtonDown(.RIGHT)
   if is_focus {
-    camera_target := e.transform.position + g.player.aim
+    camera_target := e.transform.position + g.player.aim.position
     render.move_camera_to(camera_target * 0.5)
   } else {
     camera_target := e.transform.position

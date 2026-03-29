@@ -22,19 +22,18 @@ state_run_ready :: proc() {
   {
     // Generate fresh state
     generate_location()
-
     spawn_player()
+    reset_weapon()
+    apply_upgrades()
 
+    // DEBUG: spawn some obstacles
     for i := 0; i < 4; i += 1 {
       angle := f32(i) * PI / 2
       spawn_small_wall(to_vec3(at_angle(angle) * 4), angle + PI / 2)
     }
-
-    apply_upgrades()
   }
 
   g.round_age = 0
-
   rl.HideCursor()
 }
 
@@ -65,9 +64,9 @@ state_run :: proc() {
 //
 
 update_input :: proc() {
-  g.player.mouse = render.get_screen_position(g.player.aim)
+  g.player.mouse = render.get_screen_position(g.player.aim.position)
   g.player.mouse += rl.GetMouseDelta()
-  g.player.aim = render.get_world_position(g.player.mouse)
+  g.player.aim.position = render.get_world_position(g.player.mouse)
   // TODO: Fix reticle going off-screen
 
   // Lock actual mouse cursor to center
@@ -159,6 +158,7 @@ update_entities :: proc() {
 
     update_entity_transform(&e)
     draw_entity(&e)
+    draw_health(&e)
   }
 
   g.enemy_count = enemy_count
@@ -303,6 +303,8 @@ draw_collectable :: proc(c: ^Collectable) {
 //
 
 update_spawners :: proc() {
+  if g.debug do return
+
   MAX_ENEMY_COUNT :: 20 // NOTE: this will depend on difficulty
   if g.enemy_count > MAX_ENEMY_COUNT {
     return
@@ -335,18 +337,33 @@ draw_player_hud :: proc() {
   player := get_player()
   if player == nil do return
 
-  render.hud(.Circle, render.get_screen_position(g.player.aim + Vec3{0, PLAYER_AIM_HEIGHT, 0}), 10)
+  render.hud(
+    .AimCircle,
+    render.get_screen_position(g.player.aim.position + Vec3{0, PLAYER_AIM_HEIGHT, 0}),
+    get_weapon_aim_radius(player.transform.position),
+  )
+
+  if g.player.aim.show_last_timeout < 0 {
+    render.hud(
+      .ShotCircle,
+      render.get_screen_position(g.player.aim.position + Vec3{0, PLAYER_AIM_HEIGHT, 0}),
+      2,
+    )
+  } else {
+    g.player.aim.show_last_timeout -= time.dt
+    render.hud(
+      .ShotCircle,
+      render.get_screen_position(g.player.aim.last_shot + Vec3{0, PLAYER_AIM_HEIGHT, 0}),
+      2,
+    )
+  }
+
   render.hud(
     .ReloadCounter,
     render.get_screen_position(player.transform.position + Vec3{0, 2, 0}),
     g.player.weapon.reload.current / g.player.weapon.reload.duration,
     g.player.weapon.reload.qte_start,
     g.player.weapon.reload.qte_duration,
-  )
-  render.hud(
-    .HealthBar,
-    render.get_screen_position(player.transform.position + Vec3{0, -0.5, 0}),
-    player.health.current / player.health.max,
   )
 
   if UI()({}) {
@@ -357,6 +374,24 @@ draw_player_hud :: proc() {
   if UI()({}) {
     if UI()({layout = {padding = {8, 8, 42, 8}}}) {
       ui.text(text.format_number(1))
+    }
+  }
+}
+
+draw_health :: proc(e: ^Entity) {
+  if .Player in e.kind {
+    render.hud(
+      .HealthBar,
+      render.get_screen_position(e.transform.position + Vec3{0, -0.5, 0}),
+      e.health.current / e.health.max,
+    )
+  } else if .Enemy in e.kind {
+    if e.health.current < e.health.max {
+      render.hud(
+        .HealthBarSmall,
+        render.get_screen_position(e.transform.position + Vec3{0, -0.5, 0}),
+        e.health.current / e.health.max,
+      )
     }
   }
 }

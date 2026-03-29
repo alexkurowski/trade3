@@ -26,7 +26,11 @@ GameMemory :: struct {
   round_age:      f32,
   player:         struct {
     id:            ID,
-    aim:           Vec3,
+    aim:           struct {
+      position:          Vec3,
+      last_shot:         Vec3,
+      show_last_timeout: f32,
+    },
     mouse:         Vec2,
     weapon:        PlayerWeapon,
     inventory:     Inventory,

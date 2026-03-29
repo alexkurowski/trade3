@@ -3,6 +3,9 @@ package game
 
 PlayerWeapon :: struct {
   kind:   WeaponKind,
+  damage: struct {
+    current: f32,
+  },
   ammo:   struct {
     current: u16,
     max:     u16,
@@ -19,8 +22,9 @@ PlayerWeapon :: struct {
     qte_duration: f32,
   },
   spray:  struct {
-    angle:     f32,
-    max_angle: f32,
+    current:   f32,
+    min:       f32,
+    max:       f32,
     accuracy:  f32,
     stability: f32,
   },
@@ -29,6 +33,19 @@ PlayerWeapon :: struct {
 WeaponKind :: enum {
   Raycast,
   Projectile,
+}
+
+reset_weapon :: proc() {
+  g.player.weapon.ammo.current = 30
+  g.player.weapon.ammo.max = 30
+  g.player.weapon.damage.current = 1
+  g.player.weapon.fire.interval = 0.2
+  g.player.weapon.reload.duration = 1.5
+  g.player.weapon.reload.qte_start = 0.66
+  g.player.weapon.reload.qte_duration = 0.075
+  g.player.weapon.spray.max = 75
+  g.player.weapon.spray.min = 10
+  g.player.weapon.spray.current = g.player.weapon.spray.min
 }
 
 weapon_start_reload :: proc() {
@@ -55,5 +72,11 @@ weapon_is_in_qte_window :: proc() -> bool {
     w.reload.current <=
       w.reload.qte_start * w.reload.duration + w.reload.qte_duration * w.reload.duration \
   )
+}
+
+get_weapon_aim_radius :: proc(position: Vec3) -> f32 {
+  distance := length(position - g.player.aim.position)
+  radius := distance * sin(g.player.weapon.spray.current * DEG_TO_RAD / 2) * 10
+  return clamp(radius, g.player.weapon.spray.min, g.player.weapon.spray.max)
 }
 

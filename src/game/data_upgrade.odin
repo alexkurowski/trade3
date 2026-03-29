@@ -61,7 +61,7 @@ prepare_upgrades :: proc() {
   })
 
   add(Upgrade {
-    kind = .OnHit,
+    kind = .OnStart,
     icon = .Station,
     max = 3,
     price = price(A = 20),
@@ -69,7 +69,7 @@ prepare_upgrades :: proc() {
       e := cont.get(&g.entities, id)
       if e == nil do return
 
-      p("ON HIT")
+      g.player.weapon.damage.current += 0.75 * f32(u.current)
     },
   }, 1, Vec2{32, 0})
   add(Upgrade {

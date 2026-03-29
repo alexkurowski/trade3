@@ -49,6 +49,7 @@ clamp :: math.clamp
 abs :: math.abs
 sin :: math.sin
 cos :: math.cos
+tan :: math.tan
 sign :: math.sign
 pow :: math.pow
 sqrt :: math.sqrt

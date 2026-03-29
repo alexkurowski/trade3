@@ -5,12 +5,16 @@ import "physics"
 import "render"
 
 spawn_enemy :: proc() {
+  DIFFICULTY: struct {
+    health: f32,
+    speed:  f32,
+  } : {health = 0.5, speed = 0.1}
+
   position := g.location.doors[randi(0, 1)]
   e := spawn_at(position + rand_offset(0, TILE_SIZE / 2))
   e.kind = {.Enemy}
-  e.health = val(1)
-  e.speed = val(10)
-  e.weapon.fire.interval = 0.75
+  e.health = val(1 + DIFFICULTY.speed * g.round_age)
+  e.speed = val(10 + DIFFICULTY.speed * g.round_age)
   e.sprite = {
     kind = .Character,
     size = 1,
@@ -44,7 +48,7 @@ enemy_attack :: proc(e: ^Entity) {
   }
 
   distance_to_player := length(player.transform.position - e.transform.position)
-  if distance_to_player > 2 {
+  if distance_to_player > 1.25 {
     return
   }
 

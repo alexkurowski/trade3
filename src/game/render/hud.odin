@@ -13,6 +13,9 @@ Hud :: struct {
 HudKind :: enum {
   ReloadCounter,
   HealthBar,
+  HealthBarSmall,
+  AimCircle,
+  ShotCircle,
   DebugFps,
   Circle,
 }
@@ -69,10 +72,30 @@ hud_end :: proc() {
         height - padding * 2,
         rl.RED,
       )
+    case .HealthBarSmall:
+      width :: 32
+      height :: 4
+      padding :: 1
+      x := i32(el.position.x - width / 2)
+      y := i32(el.position.y)
+      // Outline
+      rl.DrawRectangleLines(x, y, width, height, rl.RED)
+      // Progress bar
+      rl.DrawRectangle(
+        x + padding,
+        y + padding,
+        i32((width - padding * 2) * el.size_a.x),
+        height - padding * 2,
+        rl.RED,
+      )
     case .DebugFps:
       rl.DrawFPS(i32(el.position.x), i32(el.position.y))
     case .Circle:
       rl.DrawCircleLinesV(el.position, el.size_a.x, el.color)
+    case .AimCircle:
+      rl.DrawCircleLinesV(el.position, el.size_a.x, el.color)
+    case .ShotCircle:
+      rl.DrawCircleV(el.position, el.size_a.x, el.color)
     }
   }
 }
