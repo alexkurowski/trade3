@@ -24,8 +24,9 @@ Entity :: struct {
     kind: render.ModelKind,
   },
   ai:        struct {
-    state:  AiState,
-    target: Vec3,
+    state:              AiState,
+    target:             Vec3,
+    direction_out_door: Vec3,
   },
   health:    EntityValue,
   speed:     EntityValue,

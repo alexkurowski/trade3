@@ -14,7 +14,7 @@ spawn_enemy :: proc() {
 
   door := g.location.doors[randi(0, 1)]
   e := spawn_at(door.position + rand_offset(0, TILE_SIZE / 2))
-  e.ai.target = to_vec3(door.direction)
+  e.ai.direction_out_door = to_vec3(door.direction)
   e.kind = {.Enemy, .EnemyMelee}
   e.health = val(DIFFICULTY.initial_health + DIFFICULTY.health * g.round_age)
   e.speed = val(DIFFICULTY.initial_speed + DIFFICULTY.speed * g.round_age)
@@ -34,7 +34,7 @@ enemy_move :: proc(e: ^Entity) {
   direction: Vec3
 
   if e.age < 1.5 {
-    direction = e.ai.target
+    direction = e.ai.direction_out_door
   } else {
     player := get_player()
     if player == nil do return
