@@ -38,6 +38,24 @@ player_controls :: proc(e: ^Entity) {
   player_movement(e)
   player_shooting(e)
   player_reloading(e)
+
+  if g.debug {
+    // DEBUG
+    from := e.transform.position
+    to := g.player.aim.position
+
+    to1 := to
+    rotate_vec3(&to1, g.player.weapon.spray.current * DEG_TO_RAD)
+    to1 = to1 + (to1 - from) * 20
+
+    to2 := to
+    rotate_vec3(&to2, -g.player.weapon.spray.current * DEG_TO_RAD)
+    to2 = to2 + (to2 - from) * 20
+
+    render.shape(.Line, from, to1, rl.RED)
+    render.shape(.Line, from, to2, rl.RED)
+    render.shape(.CircleY, g.player.aim.position, g.player.aim.world_radius)
+  }
 }
 
 player_movement :: proc(e: ^Entity) {
@@ -85,29 +103,27 @@ player_shooting :: proc(e: ^Entity) {
   if should_shoot {
     g.player.weapon.fire.current = g.player.weapon.fire.interval
 
-    player_position := e.transform.position
+    aim_screen_position := render.get_screen_position(g.player.aim.position)
+    aim_screen_position += at_random_angle(randf(0, g.player.aim.screen_radius))
+    aim_world_position := render.get_world_position(aim_screen_position)
+    player_world_position := e.transform.position
 
-    aim_radius := get_weapon_aim_radius(player_position)
-    aim_screen_target := render.get_screen_position(g.player.aim.position)
-    aim_screen_target += at_random_angle(randf(0, aim_radius))
-    aim_world_target := render.get_world_position(aim_screen_target)
-
-    direction := normalize(aim_world_target - player_position)
+    direction := normalize(aim_world_position - player_world_position)
     speed := direction * PLAYER_BULLET_SPEED
-    spawn_bullet(.Player, player_position, speed, e.crouch)
+    spawn_bullet(.Player, player_world_position, speed, e.crouch)
 
     g.player.weapon.ammo.current -= 1
-    g.player.aim.last_shot = aim_world_target
+    g.player.aim.last_shot = aim_world_position
     g.player.aim.show_last_timeout = 0.33
   }
 
   if should_shoot {
     if g.player.weapon.spray.current < g.player.weapon.spray.max {
-      g.player.weapon.spray.current += 1000 * time.wdt
+      g.player.weapon.spray.current += g.player.weapon.spray.max / 10
     }
   } else {
     if g.player.weapon.spray.current > g.player.weapon.spray.min {
-      g.player.weapon.spray.current -= 50 * time.wdt
+      g.player.weapon.spray.current -= 20 * time.wdt
     }
   }
 }

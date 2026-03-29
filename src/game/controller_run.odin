@@ -64,10 +64,20 @@ state_run :: proc() {
 //
 
 update_input :: proc() {
-  g.player.mouse = render.get_screen_position(g.player.aim.position)
-  g.player.mouse += rl.GetMouseDelta()
-  g.player.aim.position = render.get_world_position(g.player.mouse)
-  // TODO: Fix reticle going off-screen
+  player := get_player()
+  if player != nil {
+    g.player.mouse = render.get_screen_position(g.player.aim.position)
+    g.player.mouse += rl.GetMouseDelta()
+    g.player.aim.position = render.get_world_position(g.player.mouse)
+    g.player.aim.world_radius = get_weapon_aim_radius(player.transform.position)
+
+    aim_world_circle_point := g.player.aim.position
+    aim_world_circle_point.x += g.player.aim.world_radius
+
+    g.player.aim.screen_radius = length(
+      g.player.mouse - render.get_screen_position(aim_world_circle_point),
+    )
+  }
 
   // Lock actual mouse cursor to center
   rl.SetMousePosition(rl.GetScreenWidth() / 2, rl.GetScreenHeight() / 2)
@@ -146,6 +156,7 @@ update_entities :: proc() {
     e.age += time.wdt
 
     update_entity_statuses(&e)
+    update_entity_transform(&e)
 
     if .Player in e.kind {
       player_controls(&e)
@@ -156,7 +167,6 @@ update_entities :: proc() {
       enemy_controls(&e)
     }
 
-    update_entity_transform(&e)
     draw_entity(&e)
     draw_health(&e)
   }
@@ -337,11 +347,12 @@ draw_player_hud :: proc() {
   player := get_player()
   if player == nil do return
 
-  render.hud(
-    .AimCircle,
-    render.get_screen_position(g.player.aim.position + Vec3{0, PLAYER_AIM_HEIGHT, 0}),
-    get_weapon_aim_radius(player.transform.position),
-  )
+  {
+    // Draw aim spray circle
+    offset := Vec3{0, PLAYER_AIM_HEIGHT, 0}
+    position := render.get_screen_position(g.player.aim.position + offset)
+    render.hud(.AimCircle, position, g.player.aim.screen_radius)
+  }
 
   if g.player.aim.show_last_timeout < 0 {
     render.hud(

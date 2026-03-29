@@ -43,8 +43,8 @@ reset_weapon :: proc() {
   g.player.weapon.reload.duration = 1.5
   g.player.weapon.reload.qte_start = 0.66
   g.player.weapon.reload.qte_duration = 0.075
-  g.player.weapon.spray.max = 75
-  g.player.weapon.spray.min = 10
+  g.player.weapon.spray.max = 10
+  g.player.weapon.spray.min = 2
   g.player.weapon.spray.current = g.player.weapon.spray.min
 }
 
@@ -76,7 +76,7 @@ weapon_is_in_qte_window :: proc() -> bool {
 
 get_weapon_aim_radius :: proc(position: Vec3) -> f32 {
   distance := length(position - g.player.aim.position)
-  radius := distance * sin(g.player.weapon.spray.current * DEG_TO_RAD / 2) * 10
-  return clamp(radius, g.player.weapon.spray.min, g.player.weapon.spray.max)
+  radius := distance * sin(g.player.weapon.spray.current * DEG_TO_RAD)
+  return radius
 }
 
