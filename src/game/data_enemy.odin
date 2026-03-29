@@ -6,17 +6,20 @@ import "render"
 
 spawn_enemy :: proc() {
   DIFFICULTY: struct {
-    health: f32,
-    speed:  f32,
-  } : {health = 0.5, speed = 0.1}
+    initial_health: f32,
+    health:         f32,
+    initial_speed:  f32,
+    speed:          f32,
+  } : {initial_health = 1, health = 0.01, initial_speed = 10, speed = 0.1}
 
-  position := g.location.doors[randi(0, 1)]
-  e := spawn_at(position + rand_offset(0, TILE_SIZE / 2))
-  e.kind = {.Enemy}
-  e.health = val(1 + DIFFICULTY.speed * g.round_age)
-  e.speed = val(10 + DIFFICULTY.speed * g.round_age)
+  door := g.location.doors[randi(0, 1)]
+  e := spawn_at(door.position + rand_offset(0, TILE_SIZE / 2))
+  e.ai.target = to_vec3(door.direction)
+  e.kind = {.Enemy, .EnemyMelee}
+  e.health = val(DIFFICULTY.initial_health + DIFFICULTY.health * g.round_age)
+  e.speed = val(DIFFICULTY.initial_speed + DIFFICULTY.speed * g.round_age)
   e.sprite = {
-    kind = .Character,
+    kind = .EnemyA,
     size = 1,
   }
   physics.set_body_shape(&e.body, .Circle, 0.75, mass = 2, category = .Enemy)
@@ -28,14 +31,21 @@ enemy_controls :: proc(e: ^Entity) {
 }
 
 enemy_move :: proc(e: ^Entity) {
-  player := get_player()
-  if player == nil do return
+  direction: Vec3
 
-  direction_to_player := normalize(player.transform.position - e.transform.position)
-  physics.push(e.body, to_vec2(direction_to_player) * e.speed.current)
+  if e.age < 1.5 {
+    direction = e.ai.target
+  } else {
+    player := get_player()
+    if player == nil do return
 
-  relative_direction_to_player := render.to_camera_relative(direction_to_player.xz)
-  e.sprite.flip = relative_direction_to_player.x < 0
+    direction = normalize(player.transform.position - e.transform.position)
+  }
+
+  physics.push(e.body, to_vec2(direction) * e.speed.current)
+
+  relative_direction := render.to_camera_relative(direction.xz)
+  e.sprite.flip = relative_direction.x < 0
 }
 
 enemy_attack :: proc(e: ^Entity) {

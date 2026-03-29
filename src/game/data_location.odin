@@ -11,7 +11,10 @@ DOOR_COUNT :: 2
 
 Location :: struct {
   tiles: [MAP_SIZE][MAP_SIZE]Tile,
-  doors: [DOOR_COUNT]Vec2,
+  doors: [DOOR_COUNT]struct {
+    position:  Vec2,
+    direction: Vec2,
+  },
   body:  Maybe(physics.Body),
 }
 
@@ -102,9 +105,19 @@ generate_location :: proc() {
   shuffle(cont.every(&potential_door_positions))
   for i := 0; i < DOOR_COUNT; i += 1 {
     pos := cont.pop(&potential_door_positions)
-    g.location.doors[i] = Vec2 {
-      f32(pos.x + TILE_OFFSET) * TILE_SIZE,
-      f32(pos.y + TILE_OFFSET) * TILE_SIZE,
+    door_direction: [2]i32
+    if kind_at(&tiles, pos.x + 1, pos.y) == .Floor {
+      door_direction = {1, 0}
+    } else if kind_at(&tiles, pos.x, pos.y + 1) == .Floor {
+      door_direction = {0, 1}
+    } else if kind_at(&tiles, pos.x - 1, pos.y) == .Floor {
+      door_direction = {-1, 0}
+    } else if kind_at(&tiles, pos.x, pos.y - 1) == .Floor {
+      door_direction = {0, -1}
+    }
+    g.location.doors[i] = {
+      position  = Vec2{f32(pos.x + TILE_OFFSET) * TILE_SIZE, f32(pos.y + TILE_OFFSET) * TILE_SIZE},
+      direction = Vec2{f32(door_direction.x), f32(door_direction.y)},
     }
     if is_visible_wall(&tiles, pos.x, pos.y) {
       tiles[pos.x][pos.y].kind = .DoorWall

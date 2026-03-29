@@ -13,6 +13,8 @@ Sprite :: struct {
 SpriteKind :: enum {
   None,
   Character,
+  EnemyA,
+  EnemyB,
 }
 
 @(private = "file")
@@ -28,16 +30,23 @@ sprites_end :: proc() {
 
   for sprite in every(&sprite_queue) {
     sprite_size :: 16
-    source := Rect{0, 0, sprite_size, sprite_size}
-    size := Vec2{1, 1} * sprite.size
-    origin := Vec2{size.x / 2, 0}
+    x, y := f32(0), f32(0)
     switch sprite.kind {
     case .None:
       continue
     case .Character:
-      source.x = 1 * sprite_size
-      source.y = 0 * sprite_size
+      x = 0
+      y = 0
+    case .EnemyA:
+      x = 0
+      y = 1
+    case .EnemyB:
+      x = 0
+      y = 2
     }
+    source := Rect{x * sprite_size, y * sprite_size, sprite_size, sprite_size}
+    size := Vec2{1, 1} * sprite.size
+    origin := Vec2{size.x / 2, 0}
     if sprite.flip {
       source.width *= -1
       source.x += sprite_size

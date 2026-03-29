@@ -23,9 +23,10 @@ Entity :: struct {
   model:     struct {
     kind: render.ModelKind,
   },
-  // ai:        struct {
-  //   state: AiState,
-  // },
+  ai:        struct {
+    state:  AiState,
+    target: Vec3,
+  },
   health:    EntityValue,
   speed:     EntityValue,
   weapon:    EntityWeapon,
@@ -37,6 +38,8 @@ EntityKind :: enum {
   None,
   Player,
   Enemy,
+  EnemyMelee,
+  EnemyShooter,
   // TODO: more enemy kinds
   WallSmall,
   // TODO: more obstacle kinds
@@ -50,6 +53,10 @@ EntityValue :: struct {
 StatusKind :: enum {
   None,
   Invincible,
+}
+
+AiState :: enum {
+  None,
 }
 
 EntityWeapon :: struct {
