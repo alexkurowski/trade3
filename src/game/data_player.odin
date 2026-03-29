@@ -8,6 +8,21 @@ import rl "vendor:raylib"
 
 PLAYER_AIM_HEIGHT :: 0.5
 
+Player :: struct {
+  id:            ID,
+  aim:           struct {
+    position:          Vec3,
+    last_shot:         Vec3,
+    show_last_timeout: f32,
+    world_radius:      f32,
+    screen_radius:     f32,
+  },
+  mouse:         Vec2,
+  weapon:        PlayerWeapon,
+  inventory:     Inventory,
+  pickup_radius: f32,
+}
+
 spawn_player :: proc() {
   e := spawn_at(Vec3(0))
   g.player.id = e.id
@@ -36,6 +51,7 @@ get_player :: proc() -> ^Entity {
 
 player_controls :: proc(e: ^Entity) {
   player_movement(e)
+  player_aiming(e)
   player_shooting(e)
   player_reloading(e)
 
@@ -45,11 +61,11 @@ player_controls :: proc(e: ^Entity) {
     to := g.player.aim.position
 
     to1 := to
-    rotate_vec3(&to1, g.player.weapon.spray.current * DEG_TO_RAD)
+    rotate_vec3(&to1, g.player.weapon.sway.current * DEG_TO_RAD)
     to1 = to1 + (to1 - from) * 20
 
     to2 := to
-    rotate_vec3(&to2, -g.player.weapon.spray.current * DEG_TO_RAD)
+    rotate_vec3(&to2, -g.player.weapon.sway.current * DEG_TO_RAD)
     to2 = to2 + (to2 - from) * 20
 
     render.shape(.Line, from, to1, rl.RED)
@@ -84,6 +100,27 @@ player_movement :: proc(e: ^Entity) {
     speed *= 0.66
   }
   physics.push(e.body, render.to_camera_relative(input) * speed)
+
+  if length(input) > 0.5 {
+    weapon_sway_increase(true)
+  }
+}
+
+player_aiming :: proc(e: ^Entity) {
+  g.player.mouse = render.get_screen_position(g.player.aim.position)
+  g.player.mouse += rl.GetMouseDelta()
+
+  g.player.aim.position = render.get_world_position(g.player.mouse)
+  g.player.aim.world_radius = get_weapon_aim_radius(e.transform.position)
+
+  aim_world_circle_point := g.player.aim.position
+  aim_world_circle_point.x += g.player.aim.world_radius
+
+  g.player.aim.screen_radius = length(
+    g.player.mouse - render.get_screen_position(aim_world_circle_point),
+  )
+
+  weapon_sway_decrease()
 }
 
 player_shooting :: proc(e: ^Entity) {
@@ -112,19 +149,11 @@ player_shooting :: proc(e: ^Entity) {
     speed := direction * PLAYER_BULLET_SPEED
     spawn_bullet(.Player, player_world_position, speed, e.crouch)
 
+    weapon_sway_increase()
+
     g.player.weapon.ammo.current -= 1
     g.player.aim.last_shot = aim_world_position
     g.player.aim.show_last_timeout = 0.33
-  }
-
-  if should_shoot {
-    if g.player.weapon.spray.current < g.player.weapon.spray.max {
-      g.player.weapon.spray.current += g.player.weapon.spray.max / 10
-    }
-  } else {
-    if g.player.weapon.spray.current > g.player.weapon.spray.min {
-      g.player.weapon.spray.current -= 20 * time.wdt
-    }
   }
 }
 

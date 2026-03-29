@@ -21,12 +21,14 @@ PlayerWeapon :: struct {
     qte_start:    f32,
     qte_duration: f32,
   },
-  spray:  struct {
-    current:   f32,
-    min:       f32,
-    max:       f32,
-    accuracy:  f32,
-    stability: f32,
+  sway:   struct {
+    current:  f32,
+    min:      f32,
+    max:      f32,
+    increase: f32,
+    decrease: f32,
+    cooldown: f32,
+    interval: f32,
   },
 }
 
@@ -43,9 +45,13 @@ reset_weapon :: proc() {
   g.player.weapon.reload.duration = 1.5
   g.player.weapon.reload.qte_start = 0.66
   g.player.weapon.reload.qte_duration = 0.075
-  g.player.weapon.spray.max = 10
-  g.player.weapon.spray.min = 2
-  g.player.weapon.spray.current = g.player.weapon.spray.min
+  g.player.weapon.sway.max = 10
+  g.player.weapon.sway.min = 2
+  g.player.weapon.sway.current = g.player.weapon.sway.min
+  g.player.weapon.sway.increase = 1
+  g.player.weapon.sway.decrease = 5
+  g.player.weapon.sway.cooldown = 0
+  g.player.weapon.sway.interval = 1
 }
 
 weapon_start_reload :: proc() {
@@ -74,9 +80,33 @@ weapon_is_in_qte_window :: proc() -> bool {
   )
 }
 
+weapon_sway_increase :: proc(continuous: bool = false) {
+  s := &g.player.weapon.sway
+  s.cooldown = s.interval
+  if continuous {
+    s.current += s.increase * time.wdt
+  } else {
+    s.current += s.increase
+  }
+  if s.current > s.max {
+    s.current = s.max
+  }
+}
+
+weapon_sway_decrease :: proc() {
+  s := &g.player.weapon.sway
+  if s.cooldown < 0 {
+    if s.current > s.min {
+      s.current -= s.decrease * time.wdt
+    }
+  } else {
+    s.cooldown -= time.wdt
+  }
+}
+
 get_weapon_aim_radius :: proc(position: Vec3) -> f32 {
   distance := length(position - g.player.aim.position)
-  radius := distance * sin(g.player.weapon.spray.current * DEG_TO_RAD)
+  radius := distance * sin(g.player.weapon.sway.current * DEG_TO_RAD)
   return radius
 }
 

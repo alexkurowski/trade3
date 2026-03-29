@@ -64,12 +64,15 @@ collision_ray :: proc(position, target: Vec3, mask: CollisionLayer = .None) -> ^
     data := cast(^CollisionData)data
     data.hit = true
     data.bid = b2.Shape_GetBody(shapeId)
+    data.position = Vec3{point.x, 0, point.y}
     return fraction
   }
 
   filter := b2.DefaultQueryFilter()
   filter.maskBits = u64(mask)
 
+  collision_data.position = position
+  collision_data.hit = false
   _ = b2.World_CastRay(
     world,
     position.xz,

@@ -58,12 +58,8 @@ get_bullet_collision_mask :: proc(from: BulletOwner, low: bool) -> physics.Colli
   }
 }
 
-bullet_check_collision_raycast :: proc(
-  from: BulletOwner,
-  position, target: Vec3,
-  low: bool = false,
-) -> bool {
-  collision := physics.collision_ray(position, target, get_bullet_collision_mask(from, low))
+bullet_check_collision_raycast :: proc(b: ^Bullet, position, target: Vec3) -> bool {
+  collision := physics.collision_ray(position, target, get_bullet_collision_mask(b.from, b.low))
   if collision.hit {
     if id, ok := g.body_to_entity[collision.bid]; ok {
       e := cont.get(&g.entities, id)

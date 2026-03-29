@@ -39,7 +39,6 @@ state_run_ready :: proc() {
 
 state_run :: proc() {
   time_step()
-  update_input()
 
   draw_location()
   update_bullets()
@@ -54,33 +53,10 @@ state_run :: proc() {
     set_state(.Run)
   }
 
+  update_input()
   update_spawners()
 
   draw_player_hud()
-}
-
-//
-//
-//
-
-update_input :: proc() {
-  player := get_player()
-  if player != nil {
-    g.player.mouse = render.get_screen_position(g.player.aim.position)
-    g.player.mouse += rl.GetMouseDelta()
-    g.player.aim.position = render.get_world_position(g.player.mouse)
-    g.player.aim.world_radius = get_weapon_aim_radius(player.transform.position)
-
-    aim_world_circle_point := g.player.aim.position
-    aim_world_circle_point.x += g.player.aim.world_radius
-
-    g.player.aim.screen_radius = length(
-      g.player.mouse - render.get_screen_position(aim_world_circle_point),
-    )
-  }
-
-  // Lock actual mouse cursor to center
-  rl.SetMousePosition(rl.GetScreenWidth() / 2, rl.GetScreenHeight() / 2)
 }
 
 //
@@ -254,12 +230,15 @@ draw_entity :: proc(e: ^Entity) {
 
 update_bullets :: proc() {
   #reverse for &b, idx in cont.every(&g.bullets) {
+    prev_position := b.position
     b.position += b.velocity * time.wdt
+    next_position := b.position
+
     if length(b.position) > BULLET_AREA_LIMIT {
       despawn_bullet(i32(idx))
       continue
     }
-    if bullet_check_collision_radius(&b) {
+    if bullet_check_collision_raycast(&b, prev_position, next_position) {
       despawn_bullet(i32(idx))
       continue
     }
@@ -306,6 +285,15 @@ draw_collectable :: proc(c: ^Collectable) {
   } else {
     render.shape(.Sphere, c.position, 0.3, rl.YELLOW)
   }
+}
+
+//
+//
+//
+
+update_input :: proc() {
+  // Lock mouse cursor to center
+  rl.SetMousePosition(rl.GetScreenWidth() / 2, rl.GetScreenHeight() / 2)
 }
 
 //
