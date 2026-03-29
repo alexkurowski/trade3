@@ -25,7 +25,7 @@ Entity :: struct {
   },
   ai:        struct {
     state:              AiState,
-    target:             Vec3,
+    target_position:    Vec3,
     direction_out_door: Vec3,
   },
   health:    EntityValue,
