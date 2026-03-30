@@ -10,6 +10,7 @@ Entity :: struct {
   kind:      bit_set[EntityKind],
   age:       f32,
   body:      physics.Body,
+  radius:    f32,
   transform: struct {
     position: Vec3, // cached value from box2d
     velocity: Vec3, // cached value from box2d
@@ -40,7 +41,7 @@ EntityKind :: enum {
   Player,
   Enemy,
   EnemyMelee,
-  EnemyShooter,
+  EnemyRanged,
   // TODO: more enemy kinds
   WallSmall,
   // TODO: more obstacle kinds
@@ -61,11 +62,12 @@ AiState :: enum {
 }
 
 EntityWeapon :: struct {
-  kind: WeaponKind,
-  fire: struct {
+  kind:  WeaponKind,
+  fire:  struct {
     current:  f32,
     interval: f32,
   },
+  range: f32,
 }
 
 spawn :: proc(entity: Entity) -> ^Entity {

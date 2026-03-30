@@ -16,13 +16,20 @@ spawn_enemy :: proc() {
   e := spawn_at(door.position + rand_offset(0, TILE_SIZE / 2))
   e.ai.direction_out_door = to_vec3(door.direction)
   e.kind = {.Enemy, .EnemyMelee}
-  e.health = val(DIFFICULTY.initial_health + DIFFICULTY.health * g.round_age)
-  e.speed = val(DIFFICULTY.initial_speed + DIFFICULTY.speed * g.round_age)
+  e.health = val(DIFFICULTY.initial_health + DIFFICULTY.health * g.round.age)
+  e.speed = val(DIFFICULTY.initial_speed + DIFFICULTY.speed * g.round.age)
   e.sprite = {
     kind = .EnemyA,
     size = 1,
   }
-  physics.set_body_shape(&e.body, .Circle, 0.75, mass = 2, category = .Enemy)
+  e.radius = 0.75
+  physics.set_body_shape(&e.body, .Circle, e.radius, mass = 2, category = .Enemy)
+
+  if .EnemyMelee in e.kind {
+    e.weapon.range = e.radius + PLAYER_RADIUS
+  } else if .EnemyRanged in e.kind {
+    e.weapon.range = 8
+  }
 }
 
 enemy_controls :: proc(e: ^Entity) {
@@ -31,15 +38,19 @@ enemy_controls :: proc(e: ^Entity) {
 }
 
 enemy_move :: proc(e: ^Entity) {
-  direction: Vec3
+  player := get_player()
+  if player == nil do return
 
+  direction: Vec3
   if e.age < 1.5 {
     direction = e.ai.direction_out_door
-  } else {
-    player := get_player()
-    if player == nil do return
-
+  } else if .EnemyMelee in e.kind {
     direction = normalize(player.transform.position - e.transform.position)
+  } else if .EnemyRanged in e.kind {
+    direction = normalize(player.transform.position - e.transform.position)
+    if length(player.transform.position - e.transform.position) < e.weapon.range * 0.75 {
+      return
+    }
   }
 
   physics.push(e.body, to_vec2(direction) * e.speed.current)
@@ -57,11 +68,25 @@ enemy_attack :: proc(e: ^Entity) {
     return
   }
 
-  distance_to_player := length(player.transform.position - e.transform.position)
-  if distance_to_player > 1.25 {
-    return
-  }
+  direction_to_player := player.transform.position - e.transform.position
+  distance_to_player := length(direction_to_player)
 
+  should_attack := false
+  if .EnemyMelee in e.kind {
+    if distance_to_player < e.radius + player.radius {
+      should_attack = true
+    }
+  } else if .EnemyRanged in e.kind {
+    if distance_to_player < e.weapon.range {
+      should_attack = true
+    }
+  }
+  if !should_attack do return
+
+  e.weapon.fire.current = e.weapon.fire.interval
+
+  // TODO: move this into separate function
+  //       because same things needed for damage by bullets
   if !has_status(player, .Invincible) {
     player.health.current -= 1
     set_status(player, .Invincible, 2)
@@ -69,7 +94,5 @@ enemy_attack :: proc(e: ^Entity) {
     physics.kick(e.body, to_vec2(dir) * 20)
     physics.kick(player.body, to_vec2(-dir) * 100)
   }
-
-  e.weapon.fire.current = e.weapon.fire.interval
 }
 

@@ -23,11 +23,10 @@ GameMemory :: struct {
   body_to_entity: map[physics.BID]ID,
   bullets:        cont.Pool(Bullet, 2048),
   collectables:   cont.Pool(Collectable, 2048),
-  round_age:      f32,
+  round:          Round,
   player:         Player,
   progress:       Progress,
   save_slot:      u32,
-  enemy_count:    u32,
   debug:          bool,
 }
 

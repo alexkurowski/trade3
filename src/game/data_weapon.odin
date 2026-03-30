@@ -104,6 +104,10 @@ weapon_sway_decrease :: proc() {
   }
 }
 
+weapon_sway_prolong :: proc() {
+  g.player.weapon.sway.cooldown = g.player.weapon.sway.interval
+}
+
 get_weapon_aim_radius :: proc(position: Vec3) -> f32 {
   distance := length(position - g.player.aim.position)
   radius := distance * sin(g.player.weapon.sway.current * DEG_TO_RAD)

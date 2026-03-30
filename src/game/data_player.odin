@@ -6,6 +6,7 @@ import "physics"
 import "render"
 import rl "vendor:raylib"
 
+PLAYER_RADIUS :: 0.75
 PLAYER_AIM_HEIGHT :: 0.5
 
 Player :: struct {
@@ -35,7 +36,8 @@ spawn_player :: proc() {
     kind = .Character,
     size = 1,
   }
-  physics.set_body_shape(&e.body, .Circle, 0.75, mass = 6, category = .Player)
+  e.radius = PLAYER_RADIUS
+  physics.set_body_shape(&e.body, .Circle, e.radius, mass = 6, category = .Player)
 
   g.player.aim.position = to_vec3(at_random_angle()) * 2
   g.player.aim.show_last_timeout = -1
@@ -54,24 +56,6 @@ player_controls :: proc(e: ^Entity) {
   player_aiming(e)
   player_shooting(e)
   player_reloading(e)
-
-  if g.debug {
-    // DEBUG
-    from := e.transform.position
-    to := g.player.aim.position
-
-    to1 := to
-    rotate_vec3(&to1, g.player.weapon.sway.current * DEG_TO_RAD)
-    to1 = to1 + (to1 - from) * 20
-
-    to2 := to
-    rotate_vec3(&to2, -g.player.weapon.sway.current * DEG_TO_RAD)
-    to2 = to2 + (to2 - from) * 20
-
-    render.shape(.Line, from, to1, rl.RED)
-    render.shape(.Line, from, to2, rl.RED)
-    render.shape(.CircleY, g.player.aim.position, g.player.aim.world_radius)
-  }
 }
 
 player_movement :: proc(e: ^Entity) {
@@ -102,7 +86,7 @@ player_movement :: proc(e: ^Entity) {
   physics.push(e.body, render.to_camera_relative(input) * speed)
 
   if length(input) > 0.5 {
-    weapon_sway_increase(true)
+    weapon_sway_prolong()
   }
 }
 

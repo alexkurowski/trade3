@@ -21,6 +21,7 @@ state_run_ready :: proc() {
 
   {
     // Generate fresh state
+    reset_round()
     generate_location()
     spawn_player()
     reset_weapon()
@@ -33,21 +34,21 @@ state_run_ready :: proc() {
     }
   }
 
-  g.round_age = 0
   rl.HideCursor()
 }
 
 state_run :: proc() {
   time_step()
 
+  update_round()
+
   draw_location()
   update_bullets()
   update_entities()
   update_base()
+  update_collectables()
 
   physics.update(time.dt)
-
-  update_collectables()
 
   if rl.IsKeyPressed(.R) {
     set_state(.Run)
@@ -147,7 +148,7 @@ update_entities :: proc() {
     draw_health(&e)
   }
 
-  g.enemy_count = enemy_count
+  g.round.enemy_count = enemy_count
 }
 
 update_base :: proc() {
@@ -300,30 +301,32 @@ update_input :: proc() {
 //
 //
 
+update_round :: proc() {
+  g.round.age += time.wdt
+  g.round.tick_timeout -= time.wdt
+  g.round.spawn_timeout -= time.wdt
+  g.round.crate_timeout -= time.wdt
+
+  if g.round.tick_timeout <= 0 {
+    g.round.tick_timeout = g.round.tick_interval
+    g.round.max_enemy_count += 2
+    g.round.spawn_timeout = g.round.spawn_interval * 5
+  }
+}
+
 update_spawners :: proc() {
   if g.debug do return
 
-  MAX_ENEMY_COUNT :: 20 // NOTE: this will depend on difficulty
-  if g.enemy_count > MAX_ENEMY_COUNT {
-    return
+  if g.round.spawn_timeout <= 0 {
+    if g.round.enemy_count < g.round.max_enemy_count {
+      g.round.spawn_timeout = g.round.spawn_interval
+      spawn_enemy()
+    }
   }
 
-  ENEMY_SPAWN_INTERVAL :: 0.75
-  @(static) enemy_spawn_timer: f32
-  enemy_spawn_timer -= time.wdt
-
-  if enemy_spawn_timer <= 0 {
-    spawn_enemy()
-    enemy_spawn_timer = ENEMY_SPAWN_INTERVAL
-  }
-
-  CRATE_SPAWN_INTERVAL :: 5
-  @(static) crate_spawn_timer: f32
-  crate_spawn_timer -= time.wdt
-
-  if crate_spawn_timer <= 0 {
+  if g.round.crate_timeout <= 0 {
+    g.round.crate_timeout = g.round.crate_interval
     spawn_collectable_crate()
-    crate_spawn_timer = CRATE_SPAWN_INTERVAL
   }
 }
 
