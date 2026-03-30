@@ -142,11 +142,6 @@ val :: proc(value: f32) -> EntityValue {
   return EntityValue{value, value}
 }
 
-val_add :: proc(v: ^EntityValue, a: f32) {
-  v.current += a
-  v.max += a
-}
-
 hurt :: proc(e: ^Entity, value: f32) {
   if value > 0 {
     e.health.current -= value
@@ -182,4 +177,3 @@ add_status :: proc(e: ^Entity, status: StatusKind, duration: f32) {
 has_status :: proc(e: ^Entity, status: StatusKind) -> bool {
   return e.status[status].current > 0
 }
-

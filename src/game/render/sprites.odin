@@ -15,6 +15,8 @@ SpriteKind :: enum {
   Character,
   EnemyA,
   EnemyB,
+  CollectableA,
+  CrateA,
 }
 
 @(private = "file")
@@ -43,6 +45,12 @@ sprites_end :: proc() {
     case .EnemyB:
       x = 0
       y = 2
+    case .CollectableA:
+      x = 15
+      y = 2
+    case .CrateA:
+      x = 15
+      y = 1
     }
     source := Rect{x * sprite_size, y * sprite_size, sprite_size, sprite_size}
     size := Vec2{1, 1} * sprite.size
@@ -77,4 +85,3 @@ add_sprite_vec3 :: proc(
 sprite :: proc {
   add_sprite_vec3,
 }
-

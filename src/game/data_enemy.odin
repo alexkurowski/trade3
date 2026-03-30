@@ -12,7 +12,7 @@ spawn_enemy :: proc() {
     speed:          f32,
   } : {initial_health = 1, health = 0.01, initial_speed = 10, speed = 0.1}
 
-  door := g.location.doors[randi(0, 1)]
+  door := rand_choice(g.location.doors[:])
   e := spawn_at(door.position + rand_offset(0, TILE_SIZE / 2))
   e.ai.direction_out_door = to_vec3(door.direction)
   e.kind = {.Enemy, .EnemyMelee}

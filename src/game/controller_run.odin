@@ -282,9 +282,9 @@ update_collectables :: proc() {
 
 draw_collectable :: proc(c: ^Collectable) {
   if c.amount < 10 {
-    render.shape(.Sphere, c.position, 0.1, rl.YELLOW)
+    render.sprite(.CollectableA, c.position)
   } else {
-    render.shape(.Sphere, c.position, 0.3, rl.YELLOW)
+    render.sprite(.CrateA, c.position, flip = c.flip)
   }
 }
 
@@ -397,4 +397,3 @@ draw_health :: proc(e: ^Entity) {
     }
   }
 }
-

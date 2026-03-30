@@ -7,6 +7,7 @@ import "render"
 Upgrade :: struct {
   id:        ID,
   kind:      UpgradeKind,
+  trigger:   UpgradeTrigger,
   icon:      render.UpgradeKind,
   parent_id: ID,
   current:   i32,
@@ -17,6 +18,12 @@ Upgrade :: struct {
 }
 
 UpgradeKind :: enum {
+  Health,
+  Damage,
+  Accuracy,
+}
+
+UpgradeTrigger :: enum {
   OnStart, // Apply when run begins
   OnHit, // Apply when player hits an enemy
   OnDamage, // Apply when player takes damage
@@ -48,7 +55,8 @@ prepare_upgrades :: proc() {
 
   // Root upgrade
   add(Upgrade {
-    kind = .OnStart,
+    kind = .Health,
+    trigger = .OnStart,
     icon = .Star,
     max = 5,
     price = price(A = 10),
@@ -56,12 +64,15 @@ prepare_upgrades :: proc() {
       e := cont.get(&g.entities, id)
       if e == nil do return
 
-      val_add(&e.health, 1 * f32(u.current))
+      v := 1 * f32(u.current)
+      e.health.current += v
+      e.health.max += v
     },
   })
 
   add(Upgrade {
-    kind = .OnStart,
+    kind = .Damage,
+    trigger = .OnStart,
     icon = .Station,
     max = 3,
     price = price(A = 20),
@@ -73,25 +84,27 @@ prepare_upgrades :: proc() {
     },
   }, 1, Vec2{32, 0})
   add(Upgrade {
-    kind = .OnHit,
+    kind = .Accuracy,
+    trigger = .OnStart,
     icon = .Planet,
     max = 3,
     price = price(A = 20),
     apply = proc(u: ^Upgrade, id: ID) {
-      e := cont.get(&g.entities, id)
-      if e == nil do return
-
+      for i := i32(0); i < u.current; i += 1 {
+        g.player.weapon.sway.interval *= 0.99
+      }
     },
   }, 2, Vec2{-32, -16})
   add(Upgrade {
-    kind = .OnHit,
+    kind = .Accuracy,
+    trigger = .OnStart,
     icon = .City,
     max = 3,
     price = price(A = 40),
     apply = proc(u: ^Upgrade, id: ID) {
-      e := cont.get(&g.entities, id)
-      if e == nil do return
-
+      for i := i32(0); i < u.current; i += 1 {
+        g.player.weapon.sway.increase *= 0.99
+      }
     },
   }, 3, Vec2{-32, 16})
 }
@@ -100,7 +113,7 @@ apply_upgrades :: proc() {
   for &u in g.progress.upgrades.items {
     if is_none(u.id) do continue
     if !upgrade_is_active(&u) do continue
-    switch u.kind {
+    switch u.trigger {
     case .OnStart:
       u.apply(&u, g.player.id)
     case .OnHit:
@@ -145,4 +158,3 @@ upgrade_purchase :: proc(u: ^Upgrade) {
   g.progress.inventory.resources[.F] -= u64(u.price[.F])
   u.current += 1
 }
-

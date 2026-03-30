@@ -2,12 +2,14 @@
 package game
 
 import cont "containers"
+import "render"
 
 Collectable :: struct {
   kind:     ResourceKind,
   amount:   u32,
   position: Vec3,
   velocity: Vec3,
+  flip:     bool,
 }
 
 spawn_collectable_at :: proc(
@@ -23,6 +25,7 @@ spawn_collectable_at :: proc(
       position = to_vec3(position),
       velocity = to_vec3(velocity),
       amount = amount,
+      flip = position.x > 0 || position.y < 0,
     },
   )
 }
@@ -45,4 +48,3 @@ despawn_all_collectables :: proc() {
 pickup_collectable :: proc(c: ^Collectable) {
   g.player.inventory.resources[c.kind] += u64(c.amount)
 }
-
