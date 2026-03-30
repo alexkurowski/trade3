@@ -117,7 +117,7 @@ player_shooting :: proc(e: ^Entity) {
 
   can_shoot :=
     g.player.weapon.fire.current <= 0 &&
-    g.player.weapon.ammo.current > 0 &&
+    g.player.weapon.clip.current > 0 &&
     g.player.weapon.reload.current <= 0
   should_shoot := can_shoot && rl.IsMouseButtonDown(.LEFT)
 
@@ -135,7 +135,7 @@ player_shooting :: proc(e: ^Entity) {
 
     weapon_sway_increase()
 
-    g.player.weapon.ammo.current -= 1
+    g.player.weapon.clip.current -= 1
     g.player.aim.last_shot = aim_world_position
     g.player.aim.show_last_timeout = 0.33
   }
@@ -143,7 +143,7 @@ player_shooting :: proc(e: ^Entity) {
 
 player_reloading :: proc(e: ^Entity) {
   is_reloading := g.player.weapon.reload.current > 0
-  can_reload := g.player.weapon.ammo.current < g.player.weapon.ammo.max && !is_reloading
+  can_reload := !is_reloading && g.player.weapon.clip.current < g.player.weapon.clip.max
 
   if is_reloading {
     g.player.weapon.reload.current += time.wdt
@@ -181,4 +181,3 @@ player_camera_follow :: proc(e: ^Entity) {
     render.move_camera_to(camera_target * factor)
   }
 }
-

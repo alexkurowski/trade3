@@ -8,8 +8,8 @@ Upgrade :: struct {
   parent_position: Maybe(Vec2),
   size:            f32,
   state:           UpgradeState,
-  current:         i32,
-  max:             i32,
+  current:         u32,
+  max:             u32,
 }
 
 UpgradeKind :: enum {
@@ -81,7 +81,7 @@ upgrades_end :: proc() {
       rect.y += rect.height
       rect.width /= f32(upgrade.max)
       rect.height = 4
-      for i := i32(0); i < upgrade.max; i += 1 {
+      for i := u32(0); i < upgrade.max; i += 1 {
         if i < upgrade.current {
           rl.DrawRectangleRec(rect, rl.WHITE)
         } else {
@@ -99,9 +99,8 @@ upgrade :: proc(
   parent_position: Maybe(Vec2) = nil,
   size: f32 = 1,
   state: UpgradeState = .Normal,
-  current: i32 = 0,
-  max: i32 = 0,
+  current: u32 = 0,
+  max: u32 = 0,
 ) {
   push(&upgrade_queue, Upgrade{kind, position, parent_position, size, state, current, max})
 }
-

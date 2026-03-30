@@ -5,17 +5,21 @@ import cont "containers"
 import "render"
 
 Upgrade :: struct {
-  id:        ID,
-  kind:      UpgradeKind,
-  trigger:   UpgradeTrigger,
-  icon:      render.UpgradeKind,
-  parent_id: ID,
-  current:   i32,
-  price:     [ResourceKind]u32,
-  max:       i32,
-  position:  Vec2,
-  apply:     proc(u: ^Upgrade, id: ID),
+  id:         ID,
+  kind:       UpgradeKind,
+  trigger:    UpgradeTrigger,
+  icon:       render.UpgradeKind,
+  parent_id:  ID,
+  price:      UpgradePrice,
+  price_step: u32,
+  current:    u32,
+  max:        u32,
+  position:   Vec2,
+  apply:      UpgradeApplyFn,
 }
+
+UpgradePrice :: [ResourceKind]u32
+UpgradeApplyFn :: #type proc(u: ^Upgrade, id: ID)
 
 UpgradeKind :: enum {
   Health,
@@ -39,28 +43,85 @@ prepare_upgrades :: proc() {
     D: u32 = 0,
     E: u32 = 0,
     F: u32 = 0,
-  ) -> [ResourceKind]u32 {
-    return [ResourceKind]u32{.A = A, .B = B, .C = C, .D = D, .E = E, .F = F}
+  ) -> UpgradePrice {
+    return UpgradePrice{.A = A, .B = B, .C = C, .D = D, .E = E, .F = F}
   }
 
-  add :: proc(u: Upgrade, parent_idx_offset: u32 = 0, parent_position_offset: Vec2 = 0) {
+  Direction :: enum {
+    None,
+    Right,
+    Left,
+    Up,
+    Down,
+    UpRight,
+    UpLeft,
+    DownRight,
+    DownLeft,
+  }
+  add :: proc(
+    kind: UpgradeKind = .Health,
+    trigger: UpgradeTrigger = .OnStart,
+    icon: render.UpgradeKind = .Star,
+    price: UpgradePrice,
+    price_step: u32 = 0,
+    max: u32 = 3,
+    parent: u32 = 0,
+    dir: Direction = .Right,
+    offset: Vec2 = 0,
+    apply: UpgradeApplyFn,
+  ) {
     idx := g.progress.upgrades.num_items
-    idx -= parent_idx_offset
+    idx -= parent
     parent := g.progress.upgrades.items[idx]
-    u := u
-    u.parent_id = parent.id
-    u.position = parent.position + parent_position_offset
-    cont.append(&g.progress.upgrades, u)
+
+    in_direction: Vec2
+    switch dir {
+    case .None:
+      in_direction = 0
+    case .Left:
+      in_direction = Vec2{-32, 0}
+    case .Right:
+      in_direction = Vec2{32, 0}
+    case .Up:
+      in_direction = Vec2{0, -32}
+    case .Down:
+      in_direction = Vec2{0, 32}
+    case .UpLeft:
+      in_direction = Vec2{-32, -32}
+    case .UpRight:
+      in_direction = Vec2{32, -32}
+    case .DownLeft:
+      in_direction = Vec2{-32, 32}
+    case .DownRight:
+      in_direction = Vec2{32, 32}
+    }
+
+    cont.append(
+      &g.progress.upgrades,
+      Upgrade {
+        kind = kind,
+        trigger = trigger,
+        icon = icon,
+        price = price,
+        price_step = price_step,
+        max = max,
+        parent_id = parent.id,
+        position = parent.position + in_direction + offset,
+        apply = apply,
+      },
+    )
   }
 
   // Root upgrade
-  add(Upgrade {
+  add(
     kind = .Health,
     trigger = .OnStart,
     icon = .Star,
     max = 5,
     price = price(A = 10),
+    price_step = 0,
     apply = proc(u: ^Upgrade, id: ID) {
+      // health + V
       e := cont.get(&g.entities, id)
       if e == nil do return
 
@@ -68,45 +129,53 @@ prepare_upgrades :: proc() {
       e.health.current += v
       e.health.max += v
     },
-  })
+    dir = .None,
+  )
 
-  add(Upgrade {
+  add(
     kind = .Damage,
     trigger = .OnStart,
     icon = .Station,
     max = 3,
     price = price(A = 20),
+    price_step = 20,
     apply = proc(u: ^Upgrade, id: ID) {
-      e := cont.get(&g.entities, id)
-      if e == nil do return
-
-      g.player.weapon.damage.current += 0.75 * f32(u.current)
+      // Damage + 0.75 * V
+      v := 0.75 * f32(u.current)
+      g.player.weapon.damage.current += v
     },
-  }, 1, Vec2{32, 0})
-  add(Upgrade {
+    parent = 1,
+    dir = .Right,
+  )
+  add(
     kind = .Accuracy,
     trigger = .OnStart,
     icon = .Planet,
     max = 3,
     price = price(A = 20),
     apply = proc(u: ^Upgrade, id: ID) {
-      for i := i32(0); i < u.current; i += 1 {
-        g.player.weapon.sway.interval *= 0.99
-      }
+      // Sway cooldown - 0.99-0.95
+      f := 1 - 0.01 * f32(u.current)
+      g.player.weapon.sway.interval *= f
     },
-  }, 2, Vec2{-32, -16})
-  add(Upgrade {
+    parent = 2,
+    dir = .DownLeft,
+  )
+
+  add(
     kind = .Accuracy,
     trigger = .OnStart,
     icon = .City,
     max = 3,
     price = price(A = 40),
     apply = proc(u: ^Upgrade, id: ID) {
-      for i := i32(0); i < u.current; i += 1 {
-        g.player.weapon.sway.increase *= 0.99
-      }
+      // Sway increase - 0.99-0.95
+      f := 1 - 0.01 * f32(u.current)
+      g.player.weapon.sway.increase *= f
     },
-  }, 3, Vec2{-32, 16})
+    parent = 3,
+    dir = .UpLeft,
+  )
 }
 
 apply_upgrades :: proc() {
@@ -138,23 +207,32 @@ upgrade_is_known :: proc(u: ^Upgrade) -> bool {
   return upgrade_is_active(parent)
 }
 
+upgrade_get_price :: proc(u: ^Upgrade) -> UpgradePrice {
+  price: UpgradePrice
+  for kind in ResourceKind {
+    if u.price[kind] > 0 {
+      price[kind] = u.price[kind] + u.price_step * u.current
+    }
+  }
+  return price
+}
+
 upgrade_can_afford :: proc(u: ^Upgrade) -> bool {
-  return(
-    g.progress.inventory.resources[.A] >= u64(u.price[.A]) &&
-    g.progress.inventory.resources[.B] >= u64(u.price[.B]) &&
-    g.progress.inventory.resources[.C] >= u64(u.price[.C]) &&
-    g.progress.inventory.resources[.D] >= u64(u.price[.D]) &&
-    g.progress.inventory.resources[.E] >= u64(u.price[.E]) &&
-    g.progress.inventory.resources[.F] >= u64(u.price[.F]) \
-  )
+  have := &g.progress.inventory.resources
+  price := upgrade_get_price(u)
+  for kind in ResourceKind {
+    if have[kind] < u64(price[kind]) {
+      return false
+    }
+  }
+  return true
 }
 
 upgrade_purchase :: proc(u: ^Upgrade) {
-  g.progress.inventory.resources[.A] -= u64(u.price[.A])
-  g.progress.inventory.resources[.B] -= u64(u.price[.B])
-  g.progress.inventory.resources[.C] -= u64(u.price[.C])
-  g.progress.inventory.resources[.D] -= u64(u.price[.D])
-  g.progress.inventory.resources[.E] -= u64(u.price[.E])
-  g.progress.inventory.resources[.F] -= u64(u.price[.F])
+  have := &g.progress.inventory.resources
+  price := upgrade_get_price(u)
+  for kind in ResourceKind {
+    have[kind] -= u64(price[kind])
+  }
   u.current += 1
 }

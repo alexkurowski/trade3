@@ -48,7 +48,7 @@ state_run :: proc() {
   update_base()
   update_collectables()
 
-  physics.update(time.dt)
+  physics.update(time.wdt)
 
   if rl.IsKeyPressed(.R) {
     set_state(.Run)
@@ -370,7 +370,14 @@ draw_player_hud :: proc() {
 
   if UI()({}) {
     if UI()({layout = {padding = {8, 8, 42, 8}}}) {
-      ui.text(fmt.tprintf("Ammo: %v/%v", g.player.weapon.ammo.current, g.player.weapon.ammo.max))
+      ui.text(
+        fmt.tprintf(
+          "Ammo: %v/%v (%v)",
+          g.player.weapon.clip.current,
+          g.player.weapon.clip.max,
+          g.player.weapon.ammo.current,
+        ),
+      )
     }
   }
   if UI()({}) {

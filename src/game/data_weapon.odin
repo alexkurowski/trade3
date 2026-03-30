@@ -6,9 +6,13 @@ PlayerWeapon :: struct {
   damage: struct {
     current: f32,
   },
+  clip:   struct {
+    current: u32,
+    max:     u32,
+  },
   ammo:   struct {
-    current: u16,
-    max:     u16,
+    current: u32,
+    max:     u32,
   },
   fire:   struct {
     current:  f32,
@@ -38,8 +42,10 @@ WeaponKind :: enum {
 }
 
 reset_weapon :: proc() {
-  g.player.weapon.ammo.current = 30
-  g.player.weapon.ammo.max = 30
+  g.player.weapon.clip.current = 30
+  g.player.weapon.clip.max = 30
+  g.player.weapon.ammo.current = 300
+  g.player.weapon.ammo.max = 300
   g.player.weapon.damage.current = 1
   g.player.weapon.fire.interval = 0.2
   g.player.weapon.reload.duration = 1.5
@@ -60,7 +66,9 @@ weapon_start_reload :: proc() {
 }
 
 weapon_reload :: proc() {
-  g.player.weapon.ammo.current = g.player.weapon.ammo.max
+  clip := min(g.player.weapon.clip.max, g.player.weapon.ammo.current)
+  g.player.weapon.clip.current = clip
+  g.player.weapon.ammo.current -= clip
 }
 
 weapon_is_reloading :: proc() -> bool {
@@ -113,4 +121,3 @@ get_weapon_aim_radius :: proc(position: Vec3) -> f32 {
   radius := distance * sin(g.player.weapon.sway.current * DEG_TO_RAD)
   return radius
 }
-

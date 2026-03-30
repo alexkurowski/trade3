@@ -156,4 +156,3 @@ upgrade_debug :: proc() {
   if rl.IsKeyDown(.E) do g.progress.inventory.resources[.E] = u64(int(g.progress.inventory.resources[.E]) + x)
   if rl.IsKeyDown(.F) do g.progress.inventory.resources[.F] = u64(int(g.progress.inventory.resources[.F]) + x)
 }
-
