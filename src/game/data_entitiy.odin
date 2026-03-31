@@ -155,6 +155,11 @@ hurt :: proc(e: ^Entity, value: f32) {
 
 die :: proc(e: ^Entity) {
   if .Player in e.kind {
+    for kind in ResourceKind {
+      if g.player.inventory.resources[kind] > 0 {
+        g.progress.inventory.resources[kind] += g.player.inventory.resources[kind]
+      }
+    }
     set_state(.Upgrade)
   }
   if .Enemy in e.kind {

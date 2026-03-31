@@ -45,7 +45,6 @@ state_run :: proc() {
   draw_location()
   update_bullets()
   update_entities()
-  update_base()
   update_collectables()
 
   physics.update(time.wdt)
@@ -149,54 +148,6 @@ update_entities :: proc() {
   }
 
   g.round.enemy_count = enemy_count
-}
-
-update_base :: proc() {
-  player := get_player()
-  if player == nil do return
-
-  TRANSFER_INTERVAL :: 0.33
-  @(static) transfer_timer: f32
-  transfer_timer -= time.wdt
-
-  TRANSFER_INFO_DURATION :: 2
-  @(static) transfer_info_timer: f32
-  transfer_info_timer -= time.wdt
-  @(static) transfer_info_amount: u64
-  if transfer_info_timer <= 0 do transfer_info_amount = 0
-
-  TRANSFER_RADIUS :: 3
-  distance_to_player := length(player.transform.position)
-  should_transfer := distance_to_player < TRANSFER_RADIUS
-
-  MAX_TRANSFER_AMOUNT :: 1
-
-  if should_transfer && transfer_timer <= 0 {
-    transfer_timer = TRANSFER_INTERVAL
-
-    amount_transferred := u64(0)
-    for kind in ResourceKind {
-      if g.player.inventory.resources[kind] > 0 {
-        amount := min(g.player.inventory.resources[kind], MAX_TRANSFER_AMOUNT)
-        g.player.inventory.resources[kind] -= amount
-        g.progress.inventory.resources[kind] += amount
-        amount_transferred += amount
-      }
-    }
-
-    if amount_transferred > 0 {
-      transfer_info_amount += amount_transferred
-      transfer_info_timer = TRANSFER_INFO_DURATION
-    }
-  }
-
-  if transfer_info_amount > 0 {
-    if UI()({floating = {offset = render.get_screen_position(Vec3{0, 2, 0}), attachTo = .Root}}) {
-      ui.text(text.format_number_prefix('+', f32(transfer_info_amount)))
-    }
-  }
-
-  render.shape(.CircleY, 0, TRANSFER_RADIUS, rl.LIME)
 }
 
 update_entity_statuses :: proc(e: ^Entity) {
