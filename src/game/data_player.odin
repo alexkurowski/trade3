@@ -8,6 +8,7 @@ import rl "vendor:raylib"
 
 PLAYER_RADIUS :: 0.75
 PLAYER_AIM_HEIGHT :: 0.5
+PLAYER_AIM_INTERVAL :: 0.5
 
 Player :: struct {
   id:            ID,
@@ -17,6 +18,7 @@ Player :: struct {
     show_last_timeout: f32,
     world_radius:      f32,
     screen_radius:     f32,
+    auto_cooldown:     f32,
   },
   mouse:         Vec2,
   weapon:        PlayerWeapon,
@@ -94,8 +96,15 @@ player_aiming :: proc(e: ^Entity) {
   g.player.mouse = render.get_screen_position(g.player.aim.position)
   g.player.mouse += rl.GetMouseDelta()
 
+  prev_aim_position := g.player.aim.position
   g.player.aim.position = render.get_world_position(g.player.mouse)
   g.player.aim.world_radius = get_weapon_aim_radius(e.transform.position)
+
+  g.player.aim.auto_cooldown -= time.wdt
+  p(length(prev_aim_position - g.player.aim.position))
+  if length(prev_aim_position - g.player.aim.position) > 0.1 {
+    g.player.aim.auto_cooldown = PLAYER_AIM_INTERVAL
+  }
 
   aim_world_circle_point := g.player.aim.position
   aim_world_circle_point.x += g.player.aim.world_radius
@@ -181,3 +190,4 @@ player_camera_follow :: proc(e: ^Entity) {
     render.move_camera_to(camera_target * factor)
   }
 }
+

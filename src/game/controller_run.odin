@@ -119,6 +119,12 @@ draw_tile :: proc(tile: Tile, position: Vec2) {
 
 update_entities :: proc() {
   enemy_count := u32(0)
+  closest_enemy: struct {
+    id:       ID,
+    distance: f32,
+  } = {
+    distance = 999999,
+  }
 
   #reverse for &e in g.entities.items {
     if is_none(e.id) do continue
@@ -141,6 +147,7 @@ update_entities :: proc() {
     if .Enemy in e.kind {
       enemy_count += 1
       enemy_controls(&e)
+      enemy_auto_aim(&e, &closest_enemy)
     }
 
     draw_entity(&e)
@@ -148,6 +155,14 @@ update_entities :: proc() {
   }
 
   g.round.enemy_count = enemy_count
+
+  if !is_none(closest_enemy.id) {
+    target_entity := cont.get(&g.entities, closest_enemy.id)
+    if target_entity != nil {
+      g.player.aim.position +=
+        (target_entity.transform.position - g.player.aim.position) * 5 * time.wdt
+    }
+  }
 }
 
 update_entity_statuses :: proc(e: ^Entity) {
@@ -355,3 +370,4 @@ draw_health :: proc(e: ^Entity) {
     }
   }
 }
+

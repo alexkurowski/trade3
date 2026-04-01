@@ -32,6 +32,19 @@ spawn_enemy :: proc() {
   }
 }
 
+enemy_auto_aim :: proc(e: ^Entity, control: ^struct {
+    id:       ID,
+    distance: f32,
+  }) {
+  if g.player.aim.auto_cooldown > 0 do return
+
+  distance_to_aim := length(e.transform.position - g.player.aim.position)
+  if control.distance > distance_to_aim {
+    control.distance = distance_to_aim
+    control.id = e.id
+  }
+}
+
 enemy_controls :: proc(e: ^Entity) {
   enemy_move(e)
   enemy_attack(e)
